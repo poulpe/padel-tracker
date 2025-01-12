@@ -2,14 +2,16 @@ from typing import Self
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from pydantic import NonNegativeInt
-from sqlmodel import SQLModel, Field
+from pydantic import BaseModel, NonNegativeInt, Field
+
+# from sqlmodel import SQLModel, Field
 
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.models.players import Team
+from padel_tracker.utils.validation import ensure_frozen_field
 
 
-class MatchScore(SQLModel, validate_assignment=True):
+class MatchScore(BaseModel, validate_assignment=True):
     games_set1_team1: NonNegativeInt = Field(0, le=7)
     games_set1_team2: NonNegativeInt = Field(0, le=7)
     games_set2_team1: NonNegativeInt = Field(None, le=7)
@@ -111,8 +113,8 @@ class MatchScore(SQLModel, validate_assignment=True):
             score += f", {self.games_set3_team1}-{self.games_set3_team2}"
         return score
 
-    @staticmethod
-    def from_string(score_string: str) -> Self:
+    @classmethod
+    def from_string(cls, score_string: str) -> Self:
         """Create a MatchScore object from string "comma-separated" formatted as i.e:
         "6-4, 3-6, 6-2"
 
@@ -146,12 +148,12 @@ class MatchScore(SQLModel, validate_assignment=True):
         return match_score
 
 
-class Match(SQLModel, table=True, validate_assignment=True):
-    team1: Team = Field(None)
-    team2: Team = Field(None)
+class Match(BaseModel, validate_assignment=True):  # , table=True,
+    team1: Team
+    team2: Team
     date: datetime = Field(default_factory=now, description="Match execution date")
     score: MatchScore = Field(default_factory=MatchScore)
-    id: UUID = Field(default_factory=uuid4)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(
         default_factory=now, description="Creation of match in database"
     )
@@ -161,8 +163,7 @@ class Match(SQLModel, table=True, validate_assignment=True):
     def __setattr__(self, key, value):
         # Ensure field is not "read-only"
         frozen_fields = {"id", "creation_date"}
-        if key in frozen_fields:
-            raise AttributeError(f"{key} is read-only, cannot be rewritten")
+        ensure_frozen_field(self, key, frozen_fields)
         # Write assignment
         super().__setattr__(key, value)
 
@@ -178,3 +179,35 @@ class Match(SQLModel, table=True, validate_assignment=True):
         else:
             raise ValueError(f"no winner yet ({self.score = })")
         return self.winner
+
+
+if __name__ == "__main__":
+    from padel_tracker.models.players import Player, Team
+
+    p1 = Player(name="p1", elo_rating=1000)
+    p2 = Player(name="p2", elo_rating=1000)
+    p3 = Player(name="p3", elo_rating=1200)
+    p4 = Player(name="p4", elo_rating=1300)
+
+    t1 = Team(player1=p1, player2=p2)
+    t2 = Team(player1=p3, player2=p4)
+
+    score = MatchScore(
+        games_set1_team1=7,
+        games_set1_team2=5,
+        games_set2_team1=6,
+        games_set2_team2=3,
+        # games_set1_team1=7,
+        # games_set1_team2=5,
+    )
+    print(score)
+    # print(str(score))
+    # score = MatchScore()
+
+    match1 = Match(team1=t1, team2=t2)
+    match1.score = score
+    winner = match1.get_winner()
+    print(winner)
+
+    score_from_str = MatchScore.from_string("6-4, 3-6, 6-2")
+    assert score_from_str.games_set2_team2 == 6

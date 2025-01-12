@@ -2,10 +2,11 @@ from datetime import datetime
 from uuid import UUID, uuid4
 from typing import Optional, Self
 
-from sqlmodel import SQLModel, Field
-from pydantic import PositiveInt, PositiveFloat, NonNegativeInt
+# TODO : from sqlmodel import SQLModel, Field
+from pydantic import BaseModel, Field, PositiveInt, PositiveFloat, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
+from padel_tracker.utils.validation import ensure_frozen_field
 from padel_tracker.models.ranking import (
     ELO_BASE_RATING,
     ELO_BASE_K,
@@ -14,7 +15,7 @@ from padel_tracker.models.ranking import (
 )
 
 
-class Player(SQLModel, table=True, validate_assignment=True):
+class Player(BaseModel, validate_assignment=True):  # table=True,
     name: str
     nickname: Optional[str] = Field(None, description="Player nickname, a la espanola")
     id: UUID = Field(default_factory=uuid4, primary_key=True, repr=False)
@@ -47,12 +48,7 @@ class Player(SQLModel, table=True, validate_assignment=True):
     def __setattr__(self, key, value):
         # Ensure field is not "read-only"
         frozen_fields = {"id", "creation_date"}
-        try:
-            field_exists = self.__getattr__(key) is not None
-        except AttributeError:
-            field_exists = False
-        if (key in frozen_fields) and field_exists:
-            raise AttributeError(f"{key} is read-only, cannot be rewritten")
+        ensure_frozen_field(self, key, frozen_fields)
         # Write assignment
         super().__setattr__(key, value)
         # Update "updated_date" if applicable
@@ -61,9 +57,10 @@ class Player(SQLModel, table=True, validate_assignment=True):
             super().__setattr__("updated_date", now())
 
 
-class Team(SQLModel):
+class Team(BaseModel):
     player1: Player
     player2: Player
+    # id: UUID = Field(default_factory=uuid4, repr=False)
     elo_rating: PositiveInt = Field(None, description="Avg of both players")
 
     def calc_team_elo_rating(self) -> int:
@@ -86,9 +83,10 @@ class Team(SQLModel):
 
 if __name__ == "__main__":
     p1 = Player(name="Coucou")
-
+    p2 = Player(name="mabite")
     print(p1)
-
     p1.elo_rating = 122
-
     print(p1)
+    t1 = Team(player1=p1, player2=p2)
+    print(t1.calc_team_elo_rating())
+    print("bye")
