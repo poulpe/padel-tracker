@@ -1,0 +1,39 @@
+from padel_tracker.models.players import Player, Team
+from padel_tracker.models.ranking import calc_team_expected_elo_score, calc_point_value
+
+
+def test_calculate_team_expected_score():
+    p1 = Player(name="p1", elo_rating=1000)
+    p2 = Player(name="p2", elo_rating=1000)
+    p3 = Player(name="p3", elo_rating=1200)
+    p4 = Player(name="p4", elo_rating=1300)
+
+    t1 = Team(player1=p1, player2=p2)
+    t2 = Team(player1=p3, player2=p4)
+
+    # Et1 = calc_team_expected_elo_score(
+    #     t1.player1.elo_rating,
+    #     t1.player2.elo_rating,
+    #     t2.player1.elo_rating,
+    #     t2.player2.elo_rating,
+    # )
+    # Et2 = calc_team_expected_elo_score(
+    #     t2.player1.elo_rating,
+    #     t2.player2.elo_rating,
+    #     t1.player1.elo_rating,
+    #     t1.player2.elo_rating,
+    # )
+
+    # print(f"{Et1=}")
+    # print(f"{Et2=}")
+    #
+    # Et1_yes = t1.calc_team_expected_elo_score(t2)
+    # Et2_yes = t2.calc_team_expected_elo_score(t1)
+    #
+    # print(f"{Et1_yes=}")
+    # print(f"{Et2_yes=}")
+
+
+def test_calc_point_value():
+    print(calc_point_value(1))
+    print(calc_point_value(2))

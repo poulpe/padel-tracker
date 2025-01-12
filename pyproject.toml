@@ -1,0 +1,45 @@
+[project]
+name = "padel-tracker"
+dynamic = ["version"]
+description = "App to keep track of Padel matches"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "Pierre Letousey"},
+]
+dependencies = [
+    "streamlit", # 
+    "sqlmodel", # Combines sqlalchemy and pydantic
+    "pandas",
+    "numpy",
+]
+[project.optional-dependencies]
+dev = [
+    "black>=23",
+    "ruff",
+    "pytest",
+    "coverage",
+]
+
+[build-system]
+requires = ["setuptools>=64.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "padel_tracker.__version__"}
+
+#[project.scripts]
+#main = "padel_tracker.__main__:main"
+
+#[project.urls]
+#Repository = ""
+
+[tool.black]
+extend-exclude = "examples"
+
+[tool.ruff]
+lint.ignore = ["E402", "E501", "F403", "F405"]
+exclude = ["examples/*"]
+
+[tool.pytest.ini_options]
+addopts = "--ignore=examples/" # --doctest-modules

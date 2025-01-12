@@ -1,0 +1,19 @@
+# Default ignored directories and Python-generated files
+.venv/
+venv/
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.idea/
+shelf/
+
+# Custom ignored directories
+
+# Custom ignored files and extensions
+.coverage
+*.pyc
+*.xml
+*.log
