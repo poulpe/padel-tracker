@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from padel_tracker.models.matches import Match, MatchScore
-from padel_tracker.models.players import Team
+from padel_tracker.models.players import Player
 from padel_tracker.services.ranking_manager import RankingManager
 
 
@@ -14,7 +14,8 @@ class MatchManager:
 
     @staticmethod
     def create_match(
-        team1: Team, team2: Team, date: datetime, score: MatchScore = None
+        team1: tuple[Player, Player], team2: tuple[Player, Player],
+        date: datetime, score: MatchScore = None
     ) -> Match:
         """
         Crée un nouveau match et l'ajoute à l'historique.
@@ -35,7 +36,7 @@ class MatchManager:
 
     @staticmethod
     def create_finished_match(
-        team1: Team, team2: Team, date: datetime, score: MatchScore
+        team1: tuple[Player, Player], team2: tuple[Player, Player], date: datetime, score: MatchScore
     ) -> Match:
         """
         Creates and process

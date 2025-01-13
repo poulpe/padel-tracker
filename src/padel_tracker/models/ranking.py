@@ -52,7 +52,7 @@ def calc_point_value(diff_nb_sets: int) -> float:
     return 2 + ((np.log10(1 + abs(diff_nb_sets))) ** 3)
 
 
-def calc_updated_player_elo_rating(
+def calc_player_elo_rating_gain(
     player_elo_rating: int,
     teammate_elo_rating: int,
     opponent_player1_elo_rating: int,
@@ -61,6 +61,31 @@ def calc_updated_player_elo_rating(
     has_won: bool,
     diff_nb_games: int,
 ) -> int:
+    """Calculate "gain" to add to get new elo rating of "player"
+
+    Examples
+    --------
+    >>> my_elo_rating = 1200
+    >>> elo_gain = calc_player_elo_rating_gain(
+    ...     player_elo_rating=my_elo_rating,
+    ...     teammate_elo_rating=1050,
+    ...     opponent_player1_elo_rating=1230,
+    ...     opponent_player2_elo_rating=1150,
+    ...     player_nb_matches=26,
+    ...     has_won=False,
+    ...     diff_nb_games=2,
+    ... )
+    >>> elo_gain
+    -34
+    >>> my_elo_rating += elo_gain
+    >>> my_elo_rating
+    1166
+
+    Returns
+    -------
+    elo_rating_gain:int
+        Gain to add to player's Elo to get it updated
+    """
     # Get teams Elo rating
     team_elo_rating = calc_team_elo_rating(player_elo_rating, teammate_elo_rating)
     opponent_elo_rating = calc_team_elo_rating(
@@ -74,6 +99,5 @@ def calc_updated_player_elo_rating(
     win_factor = 1 if has_won else 0
     k = calc_k_value(player_nb_matches)
     point_factor = calc_point_value(diff_nb_games)
-    elo_rating_gain = k * point_factor * (win_factor - team_expected_elo_score)
-    updated_player_elo = int(player_elo_rating + elo_rating_gain)
-    return updated_player_elo
+    elo_rating_gain = int(k * point_factor * (win_factor - team_expected_elo_score))
+    return elo_rating_gain

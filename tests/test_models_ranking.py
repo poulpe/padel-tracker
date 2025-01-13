@@ -1,4 +1,4 @@
-from padel_tracker.models.players import Player, Team
+from padel_tracker.models.players import Player
 from padel_tracker.models.ranking import calc_team_expected_elo_score, calc_point_value
 
 
@@ -8,8 +8,8 @@ def test_calculate_team_expected_score():
     p3 = Player(name="p3", elo_rating=1200)
     p4 = Player(name="p4", elo_rating=1300)
 
-    t1 = Team(player1=p1, player2=p2)
-    t2 = Team(player1=p3, player2=p4)
+    t1 = (p1, p2)
+    t2 = (p3, p4)
 
     # Et1 = calc_team_expected_elo_score(
     #     t1.player1.elo_rating,

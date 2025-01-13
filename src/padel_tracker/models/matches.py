@@ -7,22 +7,22 @@ from pydantic import BaseModel, NonNegativeInt, Field
 # from sqlmodel import SQLModel, Field
 
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.models.players import Team
+from padel_tracker.models.players import Player
 from padel_tracker.utils.validation import ensure_frozen_field
 
 
 class MatchScore(BaseModel, validate_assignment=True):
     games_set1_team1: NonNegativeInt = Field(0, le=7)
     games_set1_team2: NonNegativeInt = Field(0, le=7)
-    games_set2_team1: NonNegativeInt = Field(None, le=7)
-    games_set2_team2: NonNegativeInt = Field(None, le=7)
-    games_set3_team1: NonNegativeInt = Field(None, le=10)
-    games_set3_team2: NonNegativeInt = Field(None, le=10)
+    games_set2_team1: NonNegativeInt | None = Field(None, le=7)
+    games_set2_team2: NonNegativeInt | None = Field(None, le=7)
+    games_set3_team1: NonNegativeInt | None = Field(None, le=10)
+    games_set3_team2: NonNegativeInt | None = Field(None, le=10)
     nb_played_sets: NonNegativeInt = Field(0, le=3)
     nb_won_sets_team1: NonNegativeInt = Field(0, le=3)
     nb_won_sets_team2: NonNegativeInt = Field(0, le=3)
     nb_won_sets_diff: NonNegativeInt = Field(0, le=3)
-    won_sets: tuple[NonNegativeInt, NonNegativeInt] = Field(None)
+    won_sets: tuple[NonNegativeInt, NonNegativeInt] | None = Field(None)
 
     def check_basic_validity(self) -> None:
         """Checks games of both teams are given for a set and get number of played sets
@@ -149,16 +149,16 @@ class MatchScore(BaseModel, validate_assignment=True):
 
 
 class Match(BaseModel, validate_assignment=True):  # , table=True,
-    team1: Team
-    team2: Team
+    team1: tuple[Player, Player]
+    team2: tuple[Player, Player]
     date: datetime = Field(default_factory=now, description="Match execution date")
     score: MatchScore = Field(default_factory=MatchScore)
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    id: UUID = Field(default_factory=uuid4) #, primary_key=True #TODO : should probably have it as None, will be managed by Database system
     creation_date: datetime = Field(
         default_factory=now, description="Creation of match in database"
     )
-    winner: Team = Field(None)
-    loser: Team = Field(None)
+    winners: tuple[Player, Player] = Field(None)
+    losers: tuple[Player, Player] = Field(None)
 
     def __setattr__(self, key, value):
         # Ensure field is not "read-only"
@@ -167,30 +167,30 @@ class Match(BaseModel, validate_assignment=True):  # , table=True,
         # Write assignment
         super().__setattr__(key, value)
 
-    def get_winner(self) -> Team:
+    def get_winners(self) -> tuple[Player, Player]:
         """"""
         self.score.calc_won_sets()
         if self.score.nb_won_sets_team1 > self.score.nb_won_sets_team2:
-            self.winner = self.team1
-            self.loser = self.team2
+            self.winners = self.team1
+            self.losers = self.team2
         elif self.score.nb_won_sets_team1 < self.score.nb_won_sets_team2:
-            self.winner = self.team2
-            self.loser = self.team1
+            self.winners = self.team2
+            self.losers = self.team1
         else:
             raise ValueError(f"no winner yet ({self.score = })")
-        return self.winner
+        return self.winners
 
 
 if __name__ == "__main__":
-    from padel_tracker.models.players import Player, Team
+    from padel_tracker.models.players import Player
 
     p1 = Player(name="p1", elo_rating=1000)
     p2 = Player(name="p2", elo_rating=1000)
     p3 = Player(name="p3", elo_rating=1200)
     p4 = Player(name="p4", elo_rating=1300)
 
-    t1 = Team(player1=p1, player2=p2)
-    t2 = Team(player1=p3, player2=p4)
+    #t1 = Team(player1=p1, player2=p2)
+    #t2 = Team(player1=p3, player2=p4)
 
     score = MatchScore(
         games_set1_team1=7,
@@ -204,9 +204,9 @@ if __name__ == "__main__":
     # print(str(score))
     # score = MatchScore()
 
-    match1 = Match(team1=t1, team2=t2)
+    match1 = Match(team1=(p1,p2), team2=(p3,p4))
     match1.score = score
-    winner = match1.get_winner()
+    winner = match1.get_winners()
     print(winner)
 
     score_from_str = MatchScore.from_string("6-4, 3-6, 6-2")

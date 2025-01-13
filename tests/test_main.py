@@ -28,7 +28,7 @@ score = MatchScore(
 
 # match1 = Match(team1=t1, team2=t2, date=datetime.datetime.now())
 # match1.score = score
-# winner = match1.get_winner()
+# winner = match1.get_winners()
 # print(winner)
 
 #

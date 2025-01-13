@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from padel_tracker.models.players import Player, Team
+from padel_tracker.models.players import Player
 
 
 def test_player_creation():

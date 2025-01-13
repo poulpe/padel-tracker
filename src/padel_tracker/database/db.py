@@ -1,11 +1,15 @@
+#TODO (prio1) : db stuff now
+
 import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import Table, Column, String, ForeignKey, Float, DateTime, relationship
 from sqlalchemy.orm import declarative_base
 
-# from padel_tracker.models.players import Player, Team
-# from padel_tracker.models.matches import Match, MatchScore
+from padel_tracker.models.players import Player
+from padel_tracker.models.matches import Match, MatchScore
+
+
 
 
 if __name__ == "__main__":
