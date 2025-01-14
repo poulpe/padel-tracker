@@ -13,6 +13,7 @@ sqlite_url = f"sqlite:///{sqlite_file_name}"
 DB_ENGINE = create_engine(sqlite_url, echo=True)
 
 def create_db_and_tables():
+    """To be called in main at init"""
     SQLModel.metadata.create_all(DB_ENGINE)
 
 def commit_to_db(*objects, refresh:bool=True) -> None:
@@ -24,25 +25,31 @@ def commit_to_db(*objects, refresh:bool=True) -> None:
             for object in objects:
                 session.refresh(object)
 
-def read_from_db(class_, where=None) -> list:
+def read_from_db(class_, where=None, unique:bool=False, limit:int=0) -> list | object:
     """
 
     Examples
     --------
     # Basic usage (will return all players)
+
     >>> read_from_db(Player)
 
     # Filter result with a simple "where" statement
+
     >>> result_filter = col(Player.name) == "Patrick"
     >>> read_from_db(Player, where=result_filter)
 
     # Filter result with a multiple AND "where" statement
+
     >>> result_filter = col(Player.nb_matches) >= 10, col(Player.nb_victories) >= 5
     >>> read_from_db(Player, where=result_filter)
 
     # Filter result with a multiple OR "where" statement (use or_ from sqlmodel)
+
     >>> result_filter = or_(col(Player.nb_matches) >= 10, col(Player.nb_victories) >= 5)
     >>> read_from_db(Player, where=result_filter)
+
+    # Expect only one ro
 
     Parameters
     ----------
@@ -50,16 +57,26 @@ def read_from_db(class_, where=None) -> list:
         The class inherited from SQLModel (i.e : Player, Match...)
     where_req: optional
         As class_.name == "my_value"
+    unique: bool, optional
+        If only one is expected. Will raise specfic sqlmodel error if not exactly one.
+    limit: int, optional
+        To get only first "x" rows
 
     Returns
     -------
-    results:list
-        As a list of class instances, matching with the "where" request if mentioned
+    results: list | object
+        As a list of class instances, matching with the "where" request if mentioned.
+        If unique=True, will return only the object directly.
     """
     with Session(DB_ENGINE) as session:
         statement = select(class_)
         if where is not None:
             statement = statement.where(where)
+        if limit:
+            statement = statement.limit(limit)
         reply = session.exec(statement)
-        results = reply.all()
-    return results
+        if unique:
+            result = reply.one()
+        else:
+            result = reply.all()
+    return result

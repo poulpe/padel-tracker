@@ -19,12 +19,12 @@ def generate_default_elo_rating_history() -> dict[datetime, int]:
 
 
 class Player(BaseModel, validate_assignment=True):  # table=True,
-    name: str
+    name: str = Field(index=True)
     nickname: Optional[str] = Field(None, description="Player nickname, a la espanola")
     id: UUID = Field(default_factory=uuid4, repr=False) #primary_key=True, #TODO : should probably have it as None, will be managed by Database system
-    elo_rating: PositiveInt = Field(ELO_BASE_RATING, description="Current Elo rating")
+    elo_rating: PositiveInt = Field(ELO_BASE_RATING, index=True, description="Current Elo rating")
     elo_k: PositiveFloat = Field(ELO_BASE_K, description="K value for Elo calc")
-    rank: Optional[PositiveInt] = Field(None, description="Current rank in the league")
+    rank: Optional[PositiveInt] = Field(None, index=True, description="Current rank in the league")
     creation_date: datetime = Field(
         default_factory=now,
         description="Date of creation of player in database",

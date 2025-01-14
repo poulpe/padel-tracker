@@ -3,6 +3,6 @@ from sqlmodel import Field, SQLModel
 # Define Hero model
 class Hero(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field(index=True)
     secret_name: str
-    age: int | None = None
+    age: int | None = Field(default=None, index=True)
