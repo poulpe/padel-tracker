@@ -1,52 +1,95 @@
-#TODO (prio1) : db stuff now
+from sqlmodel import SQLModel, create_engine, Session, select
 
-import datetime
-from uuid import UUID, uuid4
+# Do this line to init all SQLModel defined
+from padel_tracker import models
+from padel_tracker.utils.paths import get_absolute_path
 
-from sqlalchemy import Table, Column, String, ForeignKey, Float, DateTime, relationship
-from sqlalchemy.orm import declarative_base
+DB_PATH = get_absolute_path(__file__, "./database_try.db")
+sqlite_url = f"sqlite:///{str(DB_PATH)}"
 
-from padel_tracker.models.players import Player
-from padel_tracker.models.matches import Match, MatchScore
+DB_ENGINE = create_engine(sqlite_url, echo=True)
 
+def create_db_and_tables():
+    """To be called in main at init"""
+    SQLModel.metadata.create_all(DB_ENGINE)
 
+def get_db_session() -> Session:
+    return Session(DB_ENGINE)
 
+def commit_to_db(*objects, refresh:bool=True) -> None:
+    """Create or update objects from database
+    Examples
+    --------
+    >>> "Create objects"
+    >>> commit_to_db(p1, p2, p3)
+    """
+    with Session(DB_ENGINE) as session:
+        for object in objects:
+            session.add(object)
+        session.commit()
+        if refresh:
+            for object in objects:
+                session.refresh(object)
 
-if __name__ == "__main__":
-    Base = declarative_base()
+def read_from_db(class_, where=None, unique:bool=False, limit:int=0) -> list | object:
+    """
 
-    player_match_association = Table(
-        "player_match",
-        Base.metadata,
-        Column("player_id", String, ForeignKey("players.id"), primary_key=True),
-        Column("match_id", String, ForeignKey("matches.id"), primary_key=True),
-    )
+    Examples
+    --------
+    # Basic usage (will return all players)
 
-    class Player(Base):
-        __tablename__ = "players"
+    >>> read_from_db(Player)
 
-        id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-        name = Column(String, nullable=False)
-        elo = Column(Float, default=1000.0)
-        created_at = Column(DateTime, default=datetime.datetime.now)
+    # Filter result with a simple "where" statement
 
-        # Relation avec les matchs
-        matches = relationship(
-            "Match",
-            secondary=player_match_association,
-            back_populates="players",
-        )
+    >>> result_filter = col(Player.name) == "Patrick"
+    >>> read_from_db(Player, where=result_filter)
 
-    class Match(Base):
-        __tablename__ = "matches"
+    # Filter result with a multiple AND "where" statement
 
-        id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-        date = Column(DateTime, default=datetime.datetime.now)
-        scores = Column(String, nullable=False)  # Exemple: "6-4, 7-5"
+    >>> result_filter = col(Player.nb_matches) >= 10, col(Player.nb_victories) >= 5
+    >>> read_from_db(Player, where=result_filter)
 
-        # Relation avec les joueurs
-        players = relationship(
-            "Player",
-            secondary=player_match_association,
-            back_populates="matches",
-        )
+    # Filter result with a multiple OR "where" statement (use or_ from sqlmodel)
+
+    >>> result_filter = or_(col(Player.nb_matches) >= 10, col(Player.nb_victories) >= 5)
+    >>> read_from_db(Player, where=result_filter)
+
+    # Expect only one row
+    >>> result_filter = col(Player.name) == "Legendary Patrick"
+    >>> my_player = read_from_db(Player, where=result_filter, unique=True)
+
+    Parameters
+    ----------
+    class_:
+        The class inherited from SQLModel (i.e : Player, Match...)
+    where_req: optional
+        As class_.name == "my_value"
+    unique: bool, optional
+        If only one is expected. Will raise specfic sqlmodel error if not exactly one.
+    limit: int, optional
+        To get only first "x" rows
+
+    Returns
+    -------
+    results: list | object
+        As a list of class instances, matching with the "where" request if mentioned.
+        If unique=True, will return only the object directly.
+    """
+    with Session(DB_ENGINE) as session:
+        statement = select(class_)
+        if where is not None:
+            statement = statement.where(where)
+        if limit:
+            statement = statement.limit(limit)
+        reply = session.exec(statement)
+        if unique:
+            result = reply.one()
+        else:
+            result = reply.all()
+    return result
+
+def delete_from_db(object_) -> None:
+    with Session(DB_ENGINE) as session:
+        session.delete(object_)
+        session.commit()

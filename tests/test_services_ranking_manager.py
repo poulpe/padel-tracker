@@ -2,7 +2,7 @@ import datetime
 
 from padel_tracker.models.players import Player
 from padel_tracker.models.matches import Match, MatchScore
-from padel_tracker.services.ranking_manager import RankingManager
+from padel_tracker.services.ranking_manager import update_players_results
 
 
 def test_update_elo_ratings():
@@ -44,7 +44,7 @@ def test_update_elo_ratings():
     print(f"INIT {p3.elo_rating = }")
     print(f"INIT {p4.elo_rating = }")
 
-    RankingManager.update_players_data(match1)
+    update_players_results(match1)
 
     print(f"UPDATED {p1.elo_rating = }")
     print(f"UPDATED {p2.elo_rating = }")
