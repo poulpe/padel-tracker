@@ -6,8 +6,8 @@ from sqlmodel import SQLModel, Field, Relationship
 from pydantic import BaseModel, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.models.links import PlayerMatchLink  # PlayerTeamLink, TeamMatchLink
-from padel_tracker.models.players import Player  # , Team
+from padel_tracker.models.links import PlayerMatchLink, TeamMatchLink
+from padel_tracker.models.players import Player, Team
 
 
 class MatchScore(BaseModel, validate_assignment=True):
@@ -169,7 +169,7 @@ class MatchScore(BaseModel, validate_assignment=True):
 
 
 class Match(SQLModel, table=True, validate_assignment=True):
-    # teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
+    teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
     players: list[Player] = Relationship(
         back_populates="matches", link_model=PlayerMatchLink
     )
@@ -180,36 +180,40 @@ class Match(SQLModel, table=True, validate_assignment=True):
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(default_factory=now, description="Creation in db")
-    name: str | None = Field(None, description="player1/player2 vs player3/player4")
+    name: str | None = Field(None, index=True, description="player1/player2 vs player3/player4")
 
     def _set_match_name(self) -> None:
-        team1_names = sorted([self.players[0].name, self.players[1].name])
-        team2_names = sorted([self.players[2].name, self.players[3].name])
-        self.name = (
-            f"{team1_names[0]}/{team1_names[1]} vs {team2_names[0]}/{team2_names[1]}"
-        )
+        self.name = f"{str(self.teams[0])} vs {str(self.teams[1])}"
+        # team1_names = sorted([self.players[0].name, self.players[1].name])
+        # team2_names = sorted([self.players[2].name, self.players[3].name])
+        # self.name = (
+        #     f"{team1_names[0]}/{team1_names[1]} vs {team2_names[0]}/{team2_names[1]}"
+        # )
 
     def validate_players(self):
         nb_players = len(self.players)
         if nb_players != 4:
             raise ValueError(f"a match must have exactly 4 players. Got {nb_players=}")
+        nb_teams = len(self.teams)
+        if nb_teams != 2:
+            raise ValueError(f"a match must have exactly 2 teams. Got {nb_teams=}")
 
     def post_init(self):
         """Validate players nb and set match name"""
         self.validate_players()
         self._set_match_name()
 
-    def get_winners_losers(self) -> tuple[list[Player], list[Player]]:
+    def get_winners_losers(self) -> list[Team, Team]: #tuple[list[Player], list[Player]]:
         """"""
         self.validate_players()
         match_score = MatchScore.from_string(self.score)
         match_score.calc_won_sets()
         if match_score.nb_won_sets_team1 > match_score.nb_won_sets_team2:
-            winners = [self.players[0], self.players[1]]
-            losers = [self.players[2], self.players[3]]
+            winners = self.teams[0] #[self.players[0], self.players[1]]
+            losers = self.teams[1] #[self.players[2], self.players[3]]
         elif match_score.nb_won_sets_team1 < match_score.nb_won_sets_team2:
-            losers = [self.players[0], self.players[1]]
-            winners = [self.players[2], self.players[3]]
+            losers = self.teams[0] #[self.players[0], self.players[1]]
+            winners = self.teams[1] # [self.players[2], self.players[3]]
         else:
             raise ValueError(f"no winner yet ({match_score = })")
         return winners, losers

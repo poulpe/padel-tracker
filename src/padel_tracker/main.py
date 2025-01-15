@@ -1,16 +1,18 @@
 # from padel_tracker.services.match_manager import MatchManager
 
 from padel_tracker.database.db import (
+    Session,
     create_db_and_tables,
     get_db_session,
     commit_to_db,
     read_from_db,
 )
-from padel_tracker.models.players import Player
+from padel_tracker.models.players import Player, Team
 from padel_tracker.models.matches import Match
 from padel_tracker.services.ranking_manager import (
     update_players_results_after_finished_match,
     update_players_rank,
+    update_teams_results_after_finished_match,
 )
 
 # from padel_tracker.models.hero_trials import Hero
@@ -32,6 +34,25 @@ def create_dummy_players():
     p3 = Player(name="p3", elo_rating=1200)
     p4 = Player(name="p4", elo_rating=1100, nb_matches=50)
     commit_to_db(p1, p2, p3, p4)
+
+def create_dummy_teams(session:Session):
+    p1: Player = read_from_db(
+        Player, where=Player.name == "p1", unique=True, session=session
+    )
+    p2: Player = read_from_db(
+        Player, where=Player.name == "p2", unique=True, session=session
+    )
+    p3: Player = read_from_db(
+        Player, where=Player.name == "p3", unique=True, session=session
+    )
+    p4: Player = read_from_db(
+        Player, where=Player.name == "p4", unique=True, session=session
+    )
+    t1 = Team(players=[p1,p2])
+    t2 = Team(players=[p3,p4])
+    t1.post_init()
+    t2.post_init()
+    commit_to_db(t1, t2, session=session)
 
 
 def get_p2() -> Player:
@@ -67,7 +88,20 @@ if __name__ == "__main__":
         print(f"INIT {p3.elo_rating = }")
         print(f"INIT {p4.elo_rating = }")
 
-        match1 = Match(players=[p1, p2, p3, p4], score="6-4, 6-3")
+        # Create teams
+        if not read_from_db(Team, where=Team.name == "p1/p2"):
+            create_dummy_teams(session=session)
+
+        t1_name = Team.get_name_from_players_name(p1.name, p2.name)
+        t1: Team = read_from_db(
+            Team, where=Team.name == t1_name, unique=True, session=session
+        )
+        t2_name = Team.get_name_from_players_name(p3.name, p4.name)
+        t2: Team = read_from_db(
+            Team, where=Team.name == t2_name, unique=True, session=session
+        )
+
+        match1 = Match(players=[p1, p2, p3, p4], teams=[t1,t2], score="6-4, 6-3")
         match1.post_init()
         match_id = match1.id
         commit_to_db(match1, session=session, close_session=False)
@@ -78,6 +112,7 @@ if __name__ == "__main__":
     # Update finished match results
     update_players_results_after_finished_match(match_id)
     update_players_rank()
+    update_teams_results_after_finished_match(match_id)
 
     # Check new results
     with get_db_session() as session:
