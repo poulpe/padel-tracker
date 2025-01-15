@@ -9,7 +9,7 @@ from padel_tracker.database.db import (
 from padel_tracker.models.players import Player
 from padel_tracker.models.matches import Match
 from padel_tracker.services.ranking_manager import (
-    update_players_results,
+    update_players_results_after_finished_match,
     update_players_rank,
 )
 
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         print(winners)
 
     # Update finished match results
-    update_players_results(match_id)
+    update_players_results_after_finished_match(match_id)
     update_players_rank()
 
     # Check new results

@@ -180,7 +180,8 @@ def read_from_db(
     return result
 
 
-def delete_from_db(object_) -> None:
-    with Session(DB_ENGINE) as session:
-        session.delete(object_)
-        session.commit()
+def delete_from_db(object_, session: Session, close_session: bool = False) -> None:
+    session.delete(object_)
+    session.commit()
+    if close_session:
+        session.close()

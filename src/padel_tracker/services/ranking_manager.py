@@ -6,7 +6,7 @@ from padel_tracker.models.ranking import calc_player_elo_rating_gain, calc_k_val
 from padel_tracker.database.db import commit_to_db, read_from_db, get_db_session
 
 
-def update_players_results(
+def update_players_results_after_finished_match(
     finished_match_id: UUID,
     # db_session:Session=None,
     # close_session:bool=False

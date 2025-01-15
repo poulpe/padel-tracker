@@ -177,6 +177,7 @@ class Match(SQLModel, table=True, validate_assignment=True):
     score: str | None = Field(
         None, description="Score as a string formatted '6-4, 7-5'"
     )
+    # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(default_factory=now, description="Creation in db")
     name: str | None = Field(None, description="player1/player2 vs player3/player4")
