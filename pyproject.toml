@@ -43,7 +43,7 @@ lint.ignore = [
     "E501",
     "F403",
     "F405",
-    "F821", # For compatibility with SQLModel Relationship
+    "F821", # For compatibility with SQLModel Relationship ("name not defined")
 ]
 exclude = ["examples/*"]
 
