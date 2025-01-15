@@ -20,7 +20,9 @@ class MatchScore(BaseModel, validate_assignment=True):
     nb_won_sets_team1: NonNegativeInt = Field(0, le=3)
     nb_won_sets_team2: NonNegativeInt = Field(0, le=3)
     nb_won_sets_diff: NonNegativeInt = Field(0, le=3)
+    nb_won_games_diff: NonNegativeInt = Field(0, le=16)
     won_sets: tuple[NonNegativeInt, NonNegativeInt] | None = Field(None)
+    won_games: tuple[NonNegativeInt, NonNegativeInt] | None = Field(None)
 
     def check_basic_validity(self) -> None:
         """Checks games of both teams are given for a set and get number of played sets
@@ -53,13 +55,10 @@ class MatchScore(BaseModel, validate_assignment=True):
 
     def check_set_validity(self, games_team1: int, games_team2: int) -> None:
         """Checks 2 games diff in a set or arrived to 7"""
-        if (games_team1 == 6 or games_team2 == 6) and (
-            abs(games_team2 - games_team1) >= 2
-        ):
+        games_diff = abs(games_team2 - games_team1)
+        if (games_team1 == 6 or games_team2 == 6) and (games_diff >= 2):
             pass
-        elif (games_team1 >= 7 or games_team2 >= 7) and (
-            abs(games_team2 - games_team1) >= 1
-        ):
+        elif (games_team1 >= 7 or games_team2 >= 7) and (games_diff >= 1):
             pass
         else:
             raise ValueError(f"set is not valid. {games_team1=} and {games_team2=}")
@@ -76,7 +75,27 @@ class MatchScore(BaseModel, validate_assignment=True):
         if self.nb_played_sets >= 3:
             self.check_set_validity(self.games_set3_team1, self.games_set3_team2)
 
+    def calc_won_games(self) -> tuple[int, int]:
+        """Returns as a tuple of (nb_won_games_team1, nb_won_games_team2)"""
+        self.check_final_validity()
+        nb_won_games_team1 = 0
+        nb_won_games_team2 = 0
+        # Team 1
+        for nb_games in [self.games_set1_team1, self.games_set2_team1, self.games_set3_team1]:
+            if nb_games is not None:
+                nb_won_games_team1 += nb_games
+        # Team 2
+        for nb_games in [self.games_set1_team2, self.games_set2_team2, self.games_set3_team2]:
+            if nb_games is not None:
+                nb_won_games_team2 += nb_games
+        self.nb_won_games_team1 = nb_won_games_team1
+        self.nb_won_games_team2 = nb_won_games_team2
+        self.nb_won_games_diff = abs(nb_won_games_team1 - nb_won_games_team2)
+        self.won_games = (nb_won_games_team1, nb_won_games_team2)
+        return self.won_games
+
     def calc_won_sets(self) -> tuple[int, int]:
+        """Returns as a tuple of (nb_won_sets_team1, nb_won_sets_team2)"""
         self.check_final_validity()
         self.nb_won_sets_team1 = 0
         self.nb_won_sets_team2 = 0
@@ -97,7 +116,6 @@ class MatchScore(BaseModel, validate_assignment=True):
                 self.nb_won_sets_team1 += 1
             else:
                 self.nb_won_sets_team2 += 1
-
         self.won_sets = (self.nb_won_sets_team1, self.nb_won_sets_team2)
         self.nb_won_sets_diff = abs(self.nb_won_sets_team1 - self.nb_won_sets_team2)
         return self.won_sets
@@ -120,7 +138,8 @@ class MatchScore(BaseModel, validate_assignment=True):
         --------
         >>> score = MatchScore.from_string("6-4, 3-6, 6-2")
         """
-        list_sets = score_string.split(", ")
+        list_sets = score_string.replace(" ","") # Remove spaces
+        list_sets = list_sets.split(",")
 
         list_games = []
         while len(list_sets) > 0:
@@ -150,12 +169,10 @@ class Match(SQLModel, table=True, validate_assignment=True):
     #teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
     players: list[Player] = Relationship(back_populates="matches", link_model=PlayerMatchLink)
     date: datetime = Field(default_factory=now, description="Match execution date")
-    score:str|None = Field(None, description="Score as a string formatted '6-4, 7-5'")
+    score: str|None = Field(None, description="Score as a string formatted '6-4, 7-5'")
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    creation_date: datetime = Field(
-        default_factory=now, description="Creation of match in database"
-    )
-    name:str|None = Field(None, description="")
+    creation_date: datetime = Field(default_factory=now, description="Creation in db")
+    name: str|None = Field(None, description="player1/player2 vs player3/player4")
 
     def _set_match_name(self)->None:
         team1_names = sorted([self.players[0].name, self.players[1].name])
@@ -168,6 +185,7 @@ class Match(SQLModel, table=True, validate_assignment=True):
             raise ValueError(f"a match must have exactly 4 players. Got {nb_players=}")
 
     def post_init(self):
+        """Validate players nb and set match name"""
         self.validate_players()
         self._set_match_name()
 
@@ -185,39 +203,3 @@ class Match(SQLModel, table=True, validate_assignment=True):
         else:
             raise ValueError(f"no winner yet ({match_score = })")
         return winners, losers
-
-if __name__ == "__main__":
-    p1 = Player(name="p1", elo_rating=1000)
-    p2 = Player(name="p2", elo_rating=1000)
-    p3 = Player(name="p3", elo_rating=1200)
-    p4 = Player(name="p4", elo_rating=1300)
-
-    # t1 = Team(players=[p1,p2])
-    # t2 = Team(players=[p3,p4])
-
-    score = MatchScore(
-        games_set1_team1=7,
-        games_set1_team2=5,
-        games_set2_team1=6,
-        games_set2_team2=3,
-        # games_set1_team1=7,
-        # games_set1_team2=5,
-    )
-    print(score)
-    # print(str(score))
-    # score = MatchScore()
-
-    match1 = Match(
-        players=[p1,p2,p3,p4],
-        score=str(score),
-        #teams=[t1,t2],
-    )
-    print(match1)
-    winners, losers = match1.get_winners_losers()
-    print(match1.get_winners_losers())
-    #match1.score = score
-    #winner = match1.get_winners()
-    #print(winner)
-
-    #score_from_str = MatchScore.from_string("6-4, 3-6, 6-2")
-    #assert score_from_str.games_set2_team2 == 6

@@ -1,5 +1,5 @@
 from padel_tracker.models.players import Player
-from padel_tracker.models.ranking import calc_team_expected_elo_score, calc_point_value
+from padel_tracker.models.ranking import calc_team_expected_elo_score, calc_points_factor
 
 
 def test_calculate_team_expected_score():
@@ -35,5 +35,5 @@ def test_calculate_team_expected_score():
 
 
 def test_calc_point_value():
-    print(calc_point_value(1))
-    print(calc_point_value(2))
+    print(calc_points_factor(1))
+    print(calc_points_factor(2))

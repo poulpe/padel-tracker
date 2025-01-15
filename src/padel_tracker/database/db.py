@@ -32,7 +32,7 @@ def commit_to_db_no_session(*objects, refresh:bool=True) -> None:
                 session.refresh(object)
 
 def commit_to_db_session(*objects, session:Session, refresh:bool=True, close_session:bool=False) -> None:
-    excecption = None
+    exception = None
     try:
         for object in objects:
             session.add(object)
@@ -41,13 +41,13 @@ def commit_to_db_session(*objects, session:Session, refresh:bool=True, close_ses
             for object in objects:
                 session.refresh(object)
     except Exception as exc:
-        excecption = exc
+        exception = exc
     finally:
         if close_session:
             session.close()
-    if excecption:
+    if exception:
         session.close()
-        raise excecption
+        raise exception
 
 def commit_to_db(*objects, session:Session=None, close_session:bool=False, refresh:bool=True) -> None:
     if session is None:
@@ -55,15 +55,22 @@ def commit_to_db(*objects, session:Session=None, close_session:bool=False, refre
     else:
         commit_to_db_session(*objects, session=session, refresh=refresh, close_session=close_session)
 
-def make_read_request(class_,  where=None, limit:int=0):
+def make_read_statement(class_, where=None, limit:int=0, order_by=None, order_descending:bool=False):
     statement = select(class_)
     if where is not None:
         statement = statement.where(where)
     if limit:
         statement = statement.limit(limit)
+    if order_by:
+        if order_descending:
+            statement = statement.order_by(order_by.desc())
+        else:
+            statement = statement.order_by(order_by)
     return statement
 
-def read_from_db(class_, where=None, unique:bool=False, limit:int=0, session:Session=None, close_session:bool=False) -> list | object:
+def read_from_db(
+    class_, where=None, unique:bool=False, limit:int=0, order_by=None, order_descending:bool=False,
+    session:Session=None, close_session:bool=False) -> list | object:
     """
 
     Examples
@@ -109,7 +116,7 @@ def read_from_db(class_, where=None, unique:bool=False, limit:int=0, session:Ses
         If unique=True, will return only the object directly.
     """
     # Make statement
-    statement = make_read_request(class_, where=where, limit=limit)
+    statement = make_read_statement(class_, where=where, limit=limit, order_by=order_by, order_descending=order_descending)
     # Send read request to session
     if session is None:
         with Session(DB_ENGINE) as session:
