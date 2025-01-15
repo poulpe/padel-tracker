@@ -36,18 +36,20 @@ def calc_team_expected_elo_score(
     opponent_elo_rating: int,
 ) -> float:
     """As team"""
-    return 1 / (1 + 10**((opponent_elo_rating - team_elo_rating) / ELO_RATIO_RATING))
+    return 1 / (1 + 10 ** ((opponent_elo_rating - team_elo_rating) / ELO_RATIO_RATING))
+
 
 def calc_k_value(nb_matches: int) -> float:
     """Calc factor for adjusting vs number of matches / XP / representativity of current Elo"""
     return ELO_BASE_K / (1 + nb_matches / ELO_RATIO_K)
 
 
-#TODO (prio 3) : adapt point values based on nb_sets or/and nb_games
+# TODO (prio 3) : adapt point values based on nb_sets or/and nb_games
 def calc_points_factor(diff_nb_sets: int, diff_nb_games: int) -> float:
     """Calc factor for adjusting vs score difference"""
     # return 1 + (1.5**(2*diff_nb_games)/10)
     return 2 + log10(1 + abs(diff_nb_sets)) ** 3
+
 
 def calc_player_elo_rating_gain(
     player_elo_rating: int,
@@ -56,7 +58,7 @@ def calc_player_elo_rating_gain(
     opponent_player2_elo_rating: int,
     player_nb_matches: int,
     has_won: bool,
-    diff_nb_sets:int,
+    diff_nb_sets: int,
     diff_nb_games: int,
 ) -> int:
     """Calculate "gain" to add to get new elo rating of "player"
@@ -98,8 +100,7 @@ def calc_player_elo_rating_gain(
     win_factor = 1 if has_won else 0
     k = calc_k_value(player_nb_matches)
     point_factor = calc_points_factor(
-        diff_nb_games=diff_nb_games,
-        diff_nb_sets=diff_nb_sets
+        diff_nb_games=diff_nb_games, diff_nb_sets=diff_nb_sets
     )
     elo_rating_gain = int(k * point_factor * (win_factor - team_expected_elo_score))
     return elo_rating_gain

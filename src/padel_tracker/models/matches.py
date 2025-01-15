@@ -6,8 +6,9 @@ from sqlmodel import SQLModel, Field, Relationship
 from pydantic import BaseModel, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.models.links import PlayerMatchLink #, PlayerTeamLink, TeamMatchLink
-from padel_tracker.models.players import Player #, Team
+from padel_tracker.models.links import PlayerMatchLink  # PlayerTeamLink, TeamMatchLink
+from padel_tracker.models.players import Player  # , Team
+
 
 class MatchScore(BaseModel, validate_assignment=True):
     games_set1_team1: NonNegativeInt = Field(0, le=7)
@@ -81,11 +82,13 @@ class MatchScore(BaseModel, validate_assignment=True):
         nb_won_games_team1 = 0
         nb_won_games_team2 = 0
         # Team 1
-        for nb_games in [self.games_set1_team1, self.games_set2_team1, self.games_set3_team1]:
+        games_t1 = [self.games_set1_team1, self.games_set2_team1, self.games_set3_team1]
+        for nb_games in games_t1:
             if nb_games is not None:
                 nb_won_games_team1 += nb_games
         # Team 2
-        for nb_games in [self.games_set1_team2, self.games_set2_team2, self.games_set3_team2]:
+        games_t2 = [self.games_set1_team2, self.games_set2_team2, self.games_set3_team2]
+        for nb_games in games_t2:
             if nb_games is not None:
                 nb_won_games_team2 += nb_games
         self.nb_won_games_team1 = nb_won_games_team1
@@ -138,7 +141,7 @@ class MatchScore(BaseModel, validate_assignment=True):
         --------
         >>> score = MatchScore.from_string("6-4, 3-6, 6-2")
         """
-        list_sets = score_string.replace(" ","") # Remove spaces
+        list_sets = score_string.replace(" ", "")  # Remove spaces
         list_sets = list_sets.split(",")
 
         list_games = []
@@ -166,18 +169,24 @@ class MatchScore(BaseModel, validate_assignment=True):
 
 
 class Match(SQLModel, table=True, validate_assignment=True):
-    #teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
-    players: list[Player] = Relationship(back_populates="matches", link_model=PlayerMatchLink)
+    # teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
+    players: list[Player] = Relationship(
+        back_populates="matches", link_model=PlayerMatchLink
+    )
     date: datetime = Field(default_factory=now, description="Match execution date")
-    score: str|None = Field(None, description="Score as a string formatted '6-4, 7-5'")
+    score: str | None = Field(
+        None, description="Score as a string formatted '6-4, 7-5'"
+    )
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(default_factory=now, description="Creation in db")
-    name: str|None = Field(None, description="player1/player2 vs player3/player4")
+    name: str | None = Field(None, description="player1/player2 vs player3/player4")
 
-    def _set_match_name(self)->None:
+    def _set_match_name(self) -> None:
         team1_names = sorted([self.players[0].name, self.players[1].name])
         team2_names = sorted([self.players[2].name, self.players[3].name])
-        self.name =  f"{team1_names[0]}/{team1_names[1]} vs {team2_names[0]}/{team2_names[1]}"
+        self.name = (
+            f"{team1_names[0]}/{team1_names[1]} vs {team2_names[0]}/{team2_names[1]}"
+        )
 
     def validate_players(self):
         nb_players = len(self.players)

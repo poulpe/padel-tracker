@@ -1,11 +1,19 @@
-#from padel_tracker.services.match_manager import MatchManager
+# from padel_tracker.services.match_manager import MatchManager
 
-from padel_tracker.database.db import create_db_and_tables, get_db_session, commit_to_db, read_from_db
+from padel_tracker.database.db import (
+    create_db_and_tables,
+    get_db_session,
+    commit_to_db,
+    read_from_db,
+)
 from padel_tracker.models.players import Player
 from padel_tracker.models.matches import Match
-from padel_tracker.services.ranking_manager import update_players_results, update_players_rank
+from padel_tracker.services.ranking_manager import (
+    update_players_results,
+    update_players_rank,
+)
 
-#from padel_tracker.models.hero_trials import Hero
+# from padel_tracker.models.hero_trials import Hero
 #
 # def create_heroes():
 #     hero_1 = Hero(name="Deadpond", secret_name="Dive Wilson")
@@ -17,15 +25,17 @@ from padel_tracker.services.ranking_manager import update_players_results, updat
 #
 #     print(f"hero_1.id = {hero_1.id}")
 
+
 def create_dummy_players():
     p1 = Player(name="p1", elo_rating=1000)
     p2 = Player(name="p2", elo_rating=940, nb_matches=100)
     p3 = Player(name="p3", elo_rating=1200)
     p4 = Player(name="p4", elo_rating=1100, nb_matches=50)
-    commit_to_db(p1,p2,p3,p4)
+    commit_to_db(p1, p2, p3, p4)
+
 
 def get_p2() -> Player:
-    result = read_from_db(Player, where=Player.name=="p2", unique=True)
+    result = read_from_db(Player, where=Player.name == "p2", unique=True)
     return result
 
 
@@ -34,22 +44,30 @@ if __name__ == "__main__":
     create_db_and_tables()
 
     # Create players
-    if not read_from_db(Player, where=Player.name=="p1"):
+    if not read_from_db(Player, where=Player.name == "p1"):
         create_dummy_players()
 
     # Create a match
     with get_db_session() as session:
-        p1:Player = read_from_db(Player, where=Player.name=="p1", unique=True, session=session)
-        p2:Player = read_from_db(Player, where=Player.name=="p2", unique=True, session=session)
-        p3:Player = read_from_db(Player, where=Player.name=="p3", unique=True, session=session)
-        p4:Player = read_from_db(Player, where=Player.name=="p4", unique=True, session=session)
+        p1: Player = read_from_db(
+            Player, where=Player.name == "p1", unique=True, session=session
+        )
+        p2: Player = read_from_db(
+            Player, where=Player.name == "p2", unique=True, session=session
+        )
+        p3: Player = read_from_db(
+            Player, where=Player.name == "p3", unique=True, session=session
+        )
+        p4: Player = read_from_db(
+            Player, where=Player.name == "p4", unique=True, session=session
+        )
 
         print(f"INIT {p1.elo_rating = }")
         print(f"INIT {p2.elo_rating = }")
         print(f"INIT {p3.elo_rating = }")
         print(f"INIT {p4.elo_rating = }")
 
-        match1 = Match(players=[p1,p2,p3,p4], score="6-4, 6-3")
+        match1 = Match(players=[p1, p2, p3, p4], score="6-4, 6-3")
         match1.post_init()
         match_id = match1.id
         commit_to_db(match1, session=session, close_session=False)
@@ -63,10 +81,18 @@ if __name__ == "__main__":
 
     # Check new results
     with get_db_session() as session:
-        p1:Player = read_from_db(Player, where=Player.name=="p1", unique=True, session=session)
-        p2:Player = read_from_db(Player, where=Player.name=="p2", unique=True, session=session)
-        p3:Player = read_from_db(Player, where=Player.name=="p3", unique=True, session=session)
-        p4:Player = read_from_db(Player, where=Player.name=="p4", unique=True, session=session)
+        p1: Player = read_from_db(
+            Player, where=Player.name == "p1", unique=True, session=session
+        )
+        p2: Player = read_from_db(
+            Player, where=Player.name == "p2", unique=True, session=session
+        )
+        p3: Player = read_from_db(
+            Player, where=Player.name == "p3", unique=True, session=session
+        )
+        p4: Player = read_from_db(
+            Player, where=Player.name == "p4", unique=True, session=session
+        )
 
         print(f"UPDATED {p1.elo_rating = }")
         print(f"UPDATED {p2.elo_rating = }")

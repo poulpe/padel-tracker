@@ -5,14 +5,14 @@ from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.models.ranking import calc_player_elo_rating_gain, calc_k_value
 from padel_tracker.database.db import commit_to_db, read_from_db, get_db_session
 
+
 def update_players_results(
     finished_match_id: UUID,
-    #db_session:Session=None,
-    #close_session:bool=False
+    # db_session:Session=None,
+    # close_session:bool=False
 ) -> dict[UUID, int]:
-    """Update for each players
-    - Elo ratings
-    - Elo k
+    """Update for each players:
+    - Elo ratings, Elo k
     - Nb matches played, nb victories, nb defeats
     - Best Elo
     - Elo history
@@ -24,9 +24,9 @@ def update_players_results(
     """
     with get_db_session() as session:
         # Retrieve Match
-        finished_match:Match = read_from_db(
+        finished_match: Match = read_from_db(
             Match,
-            where=Match.id==finished_match_id,
+            where=Match.id == finished_match_id,
             unique=True,
             session=session,
             close_session=False,
@@ -120,17 +120,24 @@ def update_players_results(
 
         # Update db
         commit_to_db(
-            *winners, *losers, *elo_history_entries, finished_match,
-            session=session, close_session=False
+            *winners,
+            *losers,
+            *elo_history_entries,
+            finished_match,
+            session=session,
+            close_session=False,
         )
 
     return dict_elo_rating_gains
+
 
 def update_players_rank() -> None:
     """Calc ranks and updated database"""
     with get_db_session() as session:
         # Get all players, sorted by top Elo to bottom Elo (descending order)
-        sorted_players = read_from_db(Player, order_by=Player.elo_rating, order_descending=True)
+        sorted_players = read_from_db(
+            Player, order_by=Player.elo_rating, order_descending=True
+        )
         # Update players
         rank_history_entries = []
         for rank, player in enumerate(sorted_players, start=1):
@@ -146,4 +153,6 @@ def update_players_rank() -> None:
                 rank=rank,
             )
             rank_history_entries.append(rank_history_entry)
-        commit_to_db(*sorted_players, *rank_history_entries, session=session, close_session=False)
+        commit_to_db(
+            *sorted_players, *rank_history_entries, session=session, close_session=False
+        )

@@ -12,13 +12,23 @@ from padel_tracker.models.ranking import (
     ELO_BASE_K,
 )
 
+
 class PlayerBase(SQLModel, validate_assignment=True):
     """Logic without links to Matches and history"""
-    name: str = Field(index=True, description="Player nickname, a la espanola", min_length=2, max_length=32)
+
+    name: str = Field(
+        index=True,
+        min_length=2,
+        max_length=32,
+    )
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    elo_rating: PositiveInt = Field(ELO_BASE_RATING, index=True, description="Current Elo rating")
+    elo_rating: PositiveInt = Field(
+        ELO_BASE_RATING, index=True, description="Current Elo rating"
+    )
     elo_k: PositiveFloat = Field(ELO_BASE_K, description="K value for Elo calc")
-    rank: Optional[PositiveInt] = Field(None, index=True, description="Current rank in the league")
+    rank: Optional[PositiveInt] = Field(
+        None, index=True, description="Current rank in the league"
+    )
     creation_date: datetime = Field(
         default_factory=now,
         description="Date of creation of player in database",
@@ -36,38 +46,41 @@ class PlayerBase(SQLModel, validate_assignment=True):
     best_elo_rating: PositiveInt = Field(
         ELO_BASE_RATING, description="Best achieved Elo rating ever"
     )
-    best_rank: Optional[PositiveInt] = Field(
-        None, description="Best achieved rank ever"
-    )
+    best_rank: PositiveInt | None = Field(None, description="Best achieved rank ever")
 
-    def update_date(self)->None:
+    def update_date(self) -> None:
         self.last_match_date = now()
+
 
 class EloRatingHistory(SQLModel, table=True, validate_assignment=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    player_id : UUID | None = Field(default=None, foreign_key="player.id")
+    player_id: UUID | None = Field(default=None, foreign_key="player.id")
     player_name: str = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="elo_rating_history")
-    # Data
-    date:datetime = Field(default_factory=now, index=True)
+    # Actual data
+    date: datetime = Field(default_factory=now, index=True)
     elo_rating: NonNegativeInt = Field(index=True)
     elo_rating_gain: int = Field(index=True)
 
 
 class RankHistory(SQLModel, table=True, validate_assignment=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    player_id : UUID | None = Field(default=None, foreign_key="player.id")
+    player_id: UUID | None = Field(default=None, foreign_key="player.id")
     player_name: str = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="rank_history")
-    date:datetime = Field(default_factory=now, index=True)
+    # Actual data
+    date: datetime = Field(default_factory=now, index=True)
     rank: PositiveInt = Field(index=True)
 
 
 class Player(PlayerBase, table=True):
-    matches:list["Match"] = Relationship(back_populates="players", link_model=PlayerMatchLink)
-    #teams:list["Team"] = Relationship(back_populates="players", link_model=PlayerTeamLink)
-    elo_rating_history:list[EloRatingHistory] = Relationship(back_populates="player")
-    rank_history:list[RankHistory] = Relationship(back_populates="player")
+    matches: list["Match"] = Relationship(
+        back_populates="players", link_model=PlayerMatchLink
+    )
+    # teams:list["Team"] = Relationship(back_populates="players", link_model=PlayerTeamLink)
+    elo_rating_history: list[EloRatingHistory] = Relationship(back_populates="player")
+    rank_history: list[RankHistory] = Relationship(back_populates="player")
+
 
 # TOCHECK (prio3) : use Teams ?
 # class Team(SQLModel, table=True):

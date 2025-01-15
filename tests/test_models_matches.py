@@ -32,6 +32,7 @@ def test_create_match_score():
     winner = match1.get_winners()
     print(winner)
 
+
 def test_create_match_score_from_string():
     # With 3 sets
     score_from_str = MatchScore.from_string("6-4, 3-6, 6-2")

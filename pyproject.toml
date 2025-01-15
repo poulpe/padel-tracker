@@ -8,7 +8,7 @@ authors = [
     {name = "Pierre Letousey"},
 ]
 dependencies = [
-    "streamlit", # 
+    "streamlit", # For UI
     "sqlmodel", # Combines sqlalchemy and pydantic
     "pandas",
     "numpy",
@@ -31,14 +31,20 @@ version = {attr = "padel_tracker.__version__"}
 #[project.scripts]
 #main = "padel_tracker.__main__:main"
 
-#[project.urls]
-#Repository = ""
+[project.urls]
+Repository = "https://github.com/poulpe/padel-tracker"
 
 [tool.black]
 extend-exclude = "examples"
 
 [tool.ruff]
-lint.ignore = ["E402", "E501", "F403", "F405"]
+lint.ignore = [
+    "E402",
+    "E501",
+    "F403",
+    "F405",
+    "F821", # For compatibility with SQLModel Relationship
+]
 exclude = ["examples/*"]
 
 [tool.pytest.ini_options]

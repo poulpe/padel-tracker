@@ -1,4 +1,6 @@
 from pathlib import Path
+
+
 def get_absolute_path(current_file: str | Path, rel_path: str | Path) -> Path:
     """
     Get an absolute path of a relative position from current module/package
