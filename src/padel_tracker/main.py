@@ -32,50 +32,48 @@ def get_p2() -> Player:
 
 if __name__ == "__main__":
     # Creation
-    # create_db_and_tables()
+    create_db_and_tables()
+
+    # Create players
     # p1 = Player(name="p1", elo_rating=1000)
     # p2 = Player(name="p2", elo_rating=940, nb_matches=100)
     # p3 = Player(name="p3", elo_rating=1200)
     # p4 = Player(name="p4", elo_rating=1100, nb_matches=50)
-    # commit_to_db(p1,p2,p3,p4)
+    #commit_to_db(p1,p2,p3,p4)
 
+    # Create a match
+    with get_db_session() as session:
+        p1:Player = read_from_db(Player, where=Player.name=="p1", unique=True, session=session)
+        p2:Player = read_from_db(Player, where=Player.name=="p2", unique=True, session=session)
+        p3:Player = read_from_db(Player, where=Player.name=="p3", unique=True, session=session)
+        p4:Player = read_from_db(Player, where=Player.name=="p4", unique=True, session=session)
 
-    # Update a match
-    p1:Player = read_from_db(Player, where=Player.name=="p1", unique=True)
-    p2:Player = read_from_db(Player, where=Player.name=="p2", unique=True)
-    p3:Player = read_from_db(Player, where=Player.name=="p3", unique=True)
-    p4:Player = read_from_db(Player, where=Player.name=="p4", unique=True)
+        print(f"INIT {p1.elo_rating = }")
+        print(f"INIT {p2.elo_rating = }")
+        print(f"INIT {p3.elo_rating = }")
+        print(f"INIT {p4.elo_rating = }")
 
-    print(f"INIT {p1.elo_rating = }")
-    print(f"INIT {p2.elo_rating = }")
-    print(f"INIT {p3.elo_rating = }")
-    print(f"INIT {p4.elo_rating = }")
+        match1 = Match(players=[p1,p2,p3,p4], score="6-4, 6-3")
+        match1.post_init()
+        match_id = match1.id
+        commit_to_db(match1, session=session, close_session=False)
+        print(match1)
+        winners, losers = match1.get_winners_losers()
+        print(winners)
 
-    match1 = Match(players=[p1,p2,p3,p4], score="6-4, 6-3")
-    #match_id = match1.id
-    #commit_to_db(match1)
-    #match1:Match = read_from_db(Match, where=Match.id==match_id, unique=True)
-    print(match1)
-    winners, losers = match1.get_winners_losers()
-    print(winners)
+    # Update finished match results
+    update_players_results(match_id)
 
-    update_players_results(match1)
-    commit_to_db(match1)
+    # Check new results
+    with get_db_session() as session:
+        p1:Player = read_from_db(Player, where=Player.name=="p1", unique=True, session=session)
+        p2:Player = read_from_db(Player, where=Player.name=="p2", unique=True, session=session)
+        p3:Player = read_from_db(Player, where=Player.name=="p3", unique=True, session=session)
+        p4:Player = read_from_db(Player, where=Player.name=="p4", unique=True, session=session)
 
-    print(f"UPDATED {p1.elo_rating = }")
-    print(f"UPDATED {p2.elo_rating = }")
-    print(f"UPDATED {p3.elo_rating = }")
-    print(f"UPDATED {p4.elo_rating = }")
-    print(p1)
-
-    p1:Player = read_from_db(Player, where=Player.name=="p1", unique=True)
-    p2:Player = read_from_db(Player, where=Player.name=="p2", unique=True)
-    p3:Player = read_from_db(Player, where=Player.name=="p3", unique=True)
-    p4:Player = read_from_db(Player, where=Player.name=="p4", unique=True)
-
-    print(f"UPDATED FROM DB {p1.elo_rating = }")
-    print(f"UPDATED FROM DB {p2.elo_rating = }")
-    print(f"UPDATED FROM DB {p3.elo_rating = }")
-    print(f"UPDATED FROM DB {p4.elo_rating = }")
+        print(f"UPDATED {p1.elo_rating = }")
+        print(f"UPDATED {p2.elo_rating = }")
+        print(f"UPDATED {p3.elo_rating = }")
+        print(f"UPDATED {p4.elo_rating = }")
 
     print("END")

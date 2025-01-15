@@ -51,12 +51,21 @@ class Player(PlayerBase, table=True):
     #     else:
     #         raise AttributeError("tried to re-init existing history")
 
+# TOCHECK (prio3) : use Teams ?
 
-# class Team(SQLModel, table=True, validate_assignment=True):
+# class Team(SQLModel, table=True):
 #     players:list[Player] = Relationship(back_populates="teams", link_model=PlayerTeamLink)
 #     matches:list["Match"] = Relationship(back_populates="teams", link_model=TeamMatchLink)
-#     id: UUID = Field(default_factory=uuid4, repr=False)
-#     elo_rating: PositiveInt = Field(None, description="Avg of both players")
+#     id: UUID = Field(default_factory=uuid4, primary_key=True, repr=False)
+#     elo_rating: PositiveInt | None = Field(None, description="Avg of both players")
+#     name:str|None = Field(None, description="Team name as 'player1-player2', in alphabetical order")
+#     # History related
+#     nb_matches: NonNegativeInt = Field(0, description="Total number of played matches")
+#     nb_victories: NonNegativeInt = Field(0, description="Total number of victories")
+#     nb_defeats: NonNegativeInt = Field(0, description="Total number of defeats")
+#     best_elo_rating: PositiveInt = Field(
+#         ELO_BASE_RATING, description="Best achieved Elo rating ever"
+#     )
 #
 #     def ensure_two_players(self):
 #         nb_players = len(self.players)
@@ -71,13 +80,15 @@ class Player(PlayerBase, table=True):
 #         )
 #         return self.elo_rating
 #
-#     def calc_team_expected_elo_score(self, opponent_team: Self) -> float:
-#         return calc_team_expected_elo_score(
-#             self.calc_team_elo_rating(), opponent_team.calc_team_elo_rating()
-#         )
+#     def _set_team_name(self) -> None:
+#         self.ensure_two_players()
+#         sorted_names = sorted([self.players[0].name, self.players[1].name])
+#         self.name =  f"{sorted_names[0]}/{sorted_names[1]}"
 #
-#     def __str__(self):
-#         return f"{self.player1.name}-{self.player2.name}"
+#     def post_init(self):
+#         """Define name and elo_rating"""
+#         self.calc_team_elo_rating()
+#         self._set_team_name()
 
 if __name__ == "__main__":
     p1 = PlayerBase(name="Coucou")

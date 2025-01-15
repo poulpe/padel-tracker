@@ -7,7 +7,7 @@ from padel_tracker.utils.paths import get_absolute_path
 DB_PATH = get_absolute_path(__file__, "./database_try.db")
 sqlite_url = f"sqlite:///{str(DB_PATH)}"
 
-DB_ENGINE = create_engine(sqlite_url, echo=True)
+DB_ENGINE = create_engine(sqlite_url, echo=False)
 
 def create_db_and_tables():
     """To be called in main at init"""
@@ -16,7 +16,7 @@ def create_db_and_tables():
 def get_db_session() -> Session:
     return Session(DB_ENGINE)
 
-def commit_to_db(*objects, refresh:bool=True) -> None:
+def commit_to_db_no_session(*objects, refresh:bool=True) -> None:
     """Create or update objects from database
     Examples
     --------
@@ -31,7 +31,39 @@ def commit_to_db(*objects, refresh:bool=True) -> None:
             for object in objects:
                 session.refresh(object)
 
-def read_from_db(class_, where=None, unique:bool=False, limit:int=0) -> list | object:
+def commit_to_db_session(*objects, session:Session, refresh:bool=True, close_session:bool=False) -> None:
+    excecption = None
+    try:
+        for object in objects:
+            session.add(object)
+        session.commit()
+        if refresh:
+            for object in objects:
+                session.refresh(object)
+    except Exception as exc:
+        excecption = exc
+    finally:
+        if close_session:
+            session.close()
+    if excecption:
+        session.close()
+        raise excecption
+
+def commit_to_db(*objects, session:Session=None, close_session:bool=False, refresh:bool=True) -> None:
+    if session is None:
+        commit_to_db_no_session(*objects, refresh=refresh)
+    else:
+        commit_to_db_session(*objects, session=session, refresh=refresh, close_session=close_session)
+
+def make_read_request(class_,  where=None, limit:int=0):
+    statement = select(class_)
+    if where is not None:
+        statement = statement.where(where)
+    if limit:
+        statement = statement.limit(limit)
+    return statement
+
+def read_from_db(class_, where=None, unique:bool=False, limit:int=0, session:Session=None, close_session:bool=False) -> list | object:
     """
 
     Examples
@@ -76,17 +108,18 @@ def read_from_db(class_, where=None, unique:bool=False, limit:int=0) -> list | o
         As a list of class instances, matching with the "where" request if mentioned.
         If unique=True, will return only the object directly.
     """
-    with Session(DB_ENGINE) as session:
-        statement = select(class_)
-        if where is not None:
-            statement = statement.where(where)
-        if limit:
-            statement = statement.limit(limit)
+    # Make statement
+    statement = make_read_request(class_, where=where, limit=limit)
+    # Send read request to session
+    if session is None:
+        with Session(DB_ENGINE) as session:
+            reply = session.exec(statement)
+            result = reply.one() if unique else reply.all()
+    else:
         reply = session.exec(statement)
-        if unique:
-            result = reply.one()
-        else:
-            result = reply.all()
+        result = reply.one() if unique else reply.all()
+        if close_session:
+            session.close()
     return result
 
 def delete_from_db(object_) -> None:

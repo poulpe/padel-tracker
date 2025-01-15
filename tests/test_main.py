@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from padel_tracker.models.players import Player, Team
+from padel_tracker.models.players import Player
 from padel_tracker.models.matches import Match, MatchScore
 
 from padel_tracker.services.match_manager import MatchManager

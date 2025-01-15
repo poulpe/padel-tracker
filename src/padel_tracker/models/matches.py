@@ -9,8 +9,6 @@ from padel_tracker.utils.datetime_utils import now
 from padel_tracker.models.links import PlayerMatchLink #, PlayerTeamLink, TeamMatchLink
 from padel_tracker.models.players import Player #, Team
 
-############ Match ############
-
 class MatchScore(BaseModel, validate_assignment=True):
     games_set1_team1: NonNegativeInt = Field(0, le=7)
     games_set1_team2: NonNegativeInt = Field(0, le=7)
@@ -148,56 +146,30 @@ class MatchScore(BaseModel, validate_assignment=True):
         return match_score
 
 
-#TODO (prio1) : should players be a list ? and then point out to teams after
-
-# class Match(SQLModel, table=True, validate_assignment=True):
-#     team1: tuple[Player, Player] = Relationship(back_populates="matches_history")
-#     team2: tuple[Player, Player] = Relationship(back_populates="matches_history")
-#     id: int | None = Field(None, primary_key=True)
-#     date: datetime = Field(default_factory=now, description="Match execution date")
-#     score:str|None = Field(None)
-#     #score: MatchScore = Field(default_factory=MatchScore) #TODO : doubt, should be string ?
-#     creation_date: datetime = Field(
-#         default_factory=now, description="Creation of match in database"
-#     )
-#     winners: tuple[Player, Player] = Field(None)
-#     losers: tuple[Player, Player] = Field(None)
-#
-#     def __setattr__(self, key, value):
-#         # Ensure field is not "read-only"
-#         frozen_fields = {"id", "creation_date"}
-#         ensure_frozen_field(self, key, frozen_fields)
-#         # Write assignment
-#         super().__setattr__(key, value)
-#
-#     def get_winners(self) -> tuple[Player, Player]:
-#         """"""
-#         match_score = MatchScore.from_string(self.score)
-#         match_score.calc_won_sets()
-#         if match_score.nb_won_sets_team1 > match_score.nb_won_sets_team2:
-#             self.winners = self.team1
-#             self.losers = self.team2
-#         elif match_score.nb_won_sets_team1 < match_score.nb_won_sets_team2:
-#             self.winners = self.team2
-#             self.losers = self.team1
-#         else:
-#             raise ValueError(f"no winner yet ({match_score = })")
-#         return self.winners
-
 class Match(SQLModel, table=True, validate_assignment=True):
     #teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
     players: list[Player] = Relationship(back_populates="matches", link_model=PlayerMatchLink)
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
     date: datetime = Field(default_factory=now, description="Match execution date")
     score:str|None = Field(None, description="Score as a string formatted '6-4, 7-5'")
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(
         default_factory=now, description="Creation of match in database"
     )
+    name:str|None = Field(None, description="")
+
+    def _set_match_name(self)->None:
+        team1_names = sorted([self.players[0].name, self.players[1].name])
+        team2_names = sorted([self.players[2].name, self.players[3].name])
+        self.name =  f"{team1_names[0]}/{team1_names[1]} vs {team2_names[0]}/{team2_names[1]}"
 
     def validate_players(self):
         nb_players = len(self.players)
         if nb_players != 4:
             raise ValueError(f"a match must have exactly 4 players. Got {nb_players=}")
+
+    def post_init(self):
+        self.validate_players()
+        self._set_match_name()
 
     def get_winners_losers(self) -> tuple[list[Player], list[Player]]:
         """"""
