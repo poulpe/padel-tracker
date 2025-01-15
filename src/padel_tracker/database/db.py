@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel, create_engine, Session, select
 
 # Do this line to init all SQLModel defined
-from padel_tracker import models as models
+from padel_tracker import models
 from padel_tracker.utils.paths import get_absolute_path
 
 DB_PATH = get_absolute_path(__file__, "./database_try.db")
