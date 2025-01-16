@@ -54,10 +54,11 @@ class MatchScore(BaseModel, validate_assignment=True):
         ):
             raise ValueError("Games/Points must be given for both teams in Set#3")
 
+    @classmethod
     def check_set_validity(self, games_team1: int, games_team2: int) -> None:
         """Checks 2 games diff in a set or arrived to 7"""
         games_diff = abs(games_team2 - games_team1)
-        if (games_team1 == 6 or games_team2 == 6) and (games_diff >= 2):
+        if ((games_team1 == 6) != (games_team2 == 6)) and (games_diff >= 2):
             pass
         elif (games_team1 >= 7 or games_team2 >= 7) and (games_diff >= 1):
             pass
@@ -169,26 +170,19 @@ class MatchScore(BaseModel, validate_assignment=True):
 
 
 class Match(SQLModel, table=True, validate_assignment=True):
-    teams:list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
+    teams: list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
     players: list[Player] = Relationship(
         back_populates="matches", link_model=PlayerMatchLink
     )
     date: datetime = Field(default_factory=now, description="Match execution date")
-    score: str | None = Field(
-        None, description="Score as a string formatted '6-4, 7-5'"
-    )
+    score: str | None = Field(None, description="string formatted as '6-4, 7-5'")
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(default_factory=now, description="Creation in db")
-    name: str | None = Field(None, index=True, description="player1/player2 vs player3/player4")
+    name: str | None = Field(None, index=True, description="as 'p1/p2 vs p3/p4'")
 
     def _set_match_name(self) -> None:
         self.name = f"{str(self.teams[0])} vs {str(self.teams[1])}"
-        # team1_names = sorted([self.players[0].name, self.players[1].name])
-        # team2_names = sorted([self.players[2].name, self.players[3].name])
-        # self.name = (
-        #     f"{team1_names[0]}/{team1_names[1]} vs {team2_names[0]}/{team2_names[1]}"
-        # )
 
     def validate_players(self):
         nb_players = len(self.players)
@@ -203,17 +197,19 @@ class Match(SQLModel, table=True, validate_assignment=True):
         self.validate_players()
         self._set_match_name()
 
-    def get_winners_losers(self) -> list[Team, Team]: #tuple[list[Player], list[Player]]:
+    def get_winners_losers(
+        self,
+    ) -> list[Team, Team]:  # tuple[list[Player], list[Player]]:
         """"""
         self.validate_players()
         match_score = MatchScore.from_string(self.score)
         match_score.calc_won_sets()
         if match_score.nb_won_sets_team1 > match_score.nb_won_sets_team2:
-            winners = self.teams[0] #[self.players[0], self.players[1]]
-            losers = self.teams[1] #[self.players[2], self.players[3]]
+            winners = self.teams[0]  # [self.players[0], self.players[1]]
+            losers = self.teams[1]  # [self.players[2], self.players[3]]
         elif match_score.nb_won_sets_team1 < match_score.nb_won_sets_team2:
-            losers = self.teams[0] #[self.players[0], self.players[1]]
-            winners = self.teams[1] # [self.players[2], self.players[3]]
+            losers = self.teams[0]  # [self.players[0], self.players[1]]
+            winners = self.teams[1]  # [self.players[2], self.players[3]]
         else:
             raise ValueError(f"no winner yet ({match_score = })")
         return winners, losers

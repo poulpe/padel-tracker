@@ -1,55 +1,74 @@
 """
 CRUD on Matches and repercussions on players/teams
+
+'session' refers as "database session", that can be obtained via call to get_db_session()
 """
 
 from uuid import UUID
 from datetime import datetime
 
-from pydantic import validate_call
-
-from padel_tracker.models.players import Player
+from padel_tracker.models.players import Team
 from padel_tracker.models.matches import Match, MatchScore
-from padel_tracker.database.db import Session, get_db_session, commit_to_db, read_from_db, delete_from_db
-from padel_tracker.services.ranking_manager import update_players_results_after_finished_match, update_players_rank
+from padel_tracker.database.db import (
+    Session,
+    commit_to_db,
+    read_from_db,
+    delete_from_db,
+)
+from padel_tracker.services.ranking_manager import (
+    update_players_results_after_finished_match,
+    update_players_rank,
+)
 
 
-def process_finished_match(finished_match_id: UUID) -> None:
-    update_players_results_after_finished_match(finished_match_id=finished_match_id)
-    update_players_rank()
+def process_finished_match(session: Session, finished_match: Match) -> None:
+    update_players_results_after_finished_match(
+        session=session, finished_match=finished_match
+    )
+    update_players_rank(session=session)
 
-@validate_call
-def create_finished_match(
-    players:list[Player],
-    date:datetime,
-    score:str|MatchScore,
+
+def create_match(
     session: Session,
+    teams: list[Team],
+    date: datetime,
+    score: str | MatchScore | None = None,
 ) -> Match:
+    """If score is not given, match will not be considered finished"""
+    # Normalize score as str for creation
     if isinstance(score, MatchScore):
         score = str(score)
-    match = Match(players=players, date=date, score=score)
-    match_id = match.id
+    # Basic check nb teams
+    nb_teams = len(teams)
+    if nb_teams != 2:
+        raise ValueError(f"a match must have exactly 2 teams. Got {nb_teams=}")
+    for team in teams:
+        nb_player = len(team.players)
+        if nb_player != 2:
+            err_msg = f"a team must have exactly 2 players. Got {nb_player=} in {team=}"
+            raise ValueError(err_msg)
+    # Create match
+    players = [
+        teams[0].players[0],
+        teams[0].players[1],
+        teams[1].players[0],
+        teams[1].players[1],
+    ]
+    match = Match(teams=teams, players=players, date=date, score=score)
+    match.post_init()
     # Commit
     commit_to_db(match, session=session)
-    # Process
-    process_finished_match(match_id)
+    # Check if match is finished and process it if it's the case
+    try:
+        match.get_winners_losers()
+    except ValueError:
+        pass
+    else:
+        process_finished_match(session=session, finished_match=match)
     return match
 
-@validate_call
-def create_unfinished_match(
-    players:list[Player],
-    date:datetime,
-    session: Session,
-    score:str|MatchScore|None = None,
-) -> Match:
-    if isinstance(score, MatchScore):
-        score = str(score)
-    match = Match(players=players, date=date, score=score)
-    # Commit
-    commit_to_db(match, session=session)
-    return match
 
-@validate_call
-def get_match_from_id(match_id:UUID, session: Session | None = None) -> Match:
+def get_match_from_id(session: Session, match_id: UUID) -> Match:
     match = read_from_db(
         Match,
         where=Match.id == match_id,
@@ -58,10 +77,10 @@ def get_match_from_id(match_id:UUID, session: Session | None = None) -> Match:
     )
     return match
 
-#TODO : delete_match, mucho work to cascade_delete + revert correct Elo
+
+# TODO : delete_match, mucho work to cascade_delete + revert correct Elo
 # (idea: remove history.elo_gain corresponding to this match from players current elo?)
-@validate_call
-def delete_match(match_id:UUID, session: Session | None = None)->None:
+def delete_match(session: Session, match_id: UUID) -> None:
     # Retrieve match
     match = get_match_from_id(match_id=match_id, session=session)
 

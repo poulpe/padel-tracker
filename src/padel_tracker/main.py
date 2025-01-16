@@ -1,63 +1,61 @@
-# from padel_tracker.services.match_manager import MatchManager
-
 from padel_tracker.database.db import (
     Session,
     create_db_and_tables,
     get_db_session,
-    commit_to_db,
-    read_from_db,
 )
-from padel_tracker.models.players import Player, Team
-from padel_tracker.models.matches import Match
-from padel_tracker.services.ranking_manager import (
-    update_players_results_after_finished_match,
-    update_players_rank,
-    update_teams_results_after_finished_match,
+from padel_tracker.services.player_manager import (
+    create_player,
+    get_player_from_name,
+    create_team,
+    # TeamExistsError,
+    TeamNotFoundError,
+    get_team_from_players_name,
+    PlayerExistsError,
 )
-
-# from padel_tracker.models.hero_trials import Hero
-#
-# def create_heroes():
-#     hero_1 = Hero(name="Deadpond", secret_name="Dive Wilson")
-#     hero_2 = Hero(name="Spider-Boy", secret_name="Pedro Parqueador")
-#     hero_3 = Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48)
-#
-#     commit_to_db(hero_1, hero_2, hero_3)
-#     #commit_to_db(hero_1)
-#
-#     print(f"hero_1.id = {hero_1.id}")
+from padel_tracker.services.match_manager import create_match
+from padel_tracker.utils.datetime_utils import now
 
 
-def create_dummy_players():
-    p1 = Player(name="p1", elo_rating=1000)
-    p2 = Player(name="p2", elo_rating=940, nb_matches=100)
-    p3 = Player(name="p3", elo_rating=1200)
-    p4 = Player(name="p4", elo_rating=1100, nb_matches=50)
-    commit_to_db(p1, p2, p3, p4)
-
-def create_dummy_teams(session:Session):
-    p1: Player = read_from_db(
-        Player, where=Player.name == "p1", unique=True, session=session
-    )
-    p2: Player = read_from_db(
-        Player, where=Player.name == "p2", unique=True, session=session
-    )
-    p3: Player = read_from_db(
-        Player, where=Player.name == "p3", unique=True, session=session
-    )
-    p4: Player = read_from_db(
-        Player, where=Player.name == "p4", unique=True, session=session
-    )
-    t1 = Team(players=[p1,p2])
-    t2 = Team(players=[p3,p4])
-    t1.post_init()
-    t2.post_init()
-    commit_to_db(t1, t2, session=session)
+def create_dummy_players(session: Session):
+    try:
+        create_player(session=session, name="p1", elo_rating=1000)
+        create_player(session=session, name="p2", elo_rating=940, nb_matches=100)
+        create_player(session=session, name="p3", elo_rating=1200)
+        create_player(session=session, name="p4", elo_rating=1100, nb_matches=100)
+    except PlayerExistsError:
+        pass
 
 
-def get_p2() -> Player:
-    result = read_from_db(Player, where=Player.name == "p2", unique=True)
-    return result
+def create_dummy_teams_and_match(session: Session):
+    p1 = get_player_from_name(session, "p1")
+    p2 = get_player_from_name(session, "p2")
+    p3 = get_player_from_name(session, "p3")
+    p4 = get_player_from_name(session, "p4")
+
+    print(f"INIT {p1.elo_rating = }")
+    print(f"INIT {p2.elo_rating = }")
+    print(f"INIT {p3.elo_rating = }")
+    print(f"INIT {p4.elo_rating = }")
+
+    t1_names = ["p1", "p2"]
+    try:
+        t1 = get_team_from_players_name(session, *t1_names)
+    except TeamNotFoundError:
+        t1 = create_team(session, *t1_names)
+    t2_names = ["p3", "p4"]
+    try:
+        t2 = get_team_from_players_name(session, *t2_names)
+    except TeamNotFoundError:
+        t2 = create_team(session, *t2_names)
+
+    match = create_match(session, teams=[t1, t2], date=now(), score="6-4, 6-3")
+
+    print(f"UPDATED {p1.elo_rating = }")
+    print(f"UPDATED {p2.elo_rating = }")
+    print(f"UPDATED {p3.elo_rating = }")
+    print(f"UPDATED {p4.elo_rating = }")
+
+    print(match)
 
 
 if __name__ == "__main__":
@@ -65,73 +63,11 @@ if __name__ == "__main__":
     create_db_and_tables()
 
     # Create players
-    if not read_from_db(Player, where=Player.name == "p1"):
-        create_dummy_players()
+    with get_db_session() as session:
+        create_dummy_players(session)
 
     # Create a match
     with get_db_session() as session:
-        p1: Player = read_from_db(
-            Player, where=Player.name == "p1", unique=True, session=session
-        )
-        p2: Player = read_from_db(
-            Player, where=Player.name == "p2", unique=True, session=session
-        )
-        p3: Player = read_from_db(
-            Player, where=Player.name == "p3", unique=True, session=session
-        )
-        p4: Player = read_from_db(
-            Player, where=Player.name == "p4", unique=True, session=session
-        )
-
-        print(f"INIT {p1.elo_rating = }")
-        print(f"INIT {p2.elo_rating = }")
-        print(f"INIT {p3.elo_rating = }")
-        print(f"INIT {p4.elo_rating = }")
-
-        # Create teams
-        if not read_from_db(Team, where=Team.name == "p1/p2"):
-            create_dummy_teams(session=session)
-
-        t1_name = Team.get_name_from_players_name(p1.name, p2.name)
-        t1: Team = read_from_db(
-            Team, where=Team.name == t1_name, unique=True, session=session
-        )
-        t2_name = Team.get_name_from_players_name(p3.name, p4.name)
-        t2: Team = read_from_db(
-            Team, where=Team.name == t2_name, unique=True, session=session
-        )
-
-        match1 = Match(players=[p1, p2, p3, p4], teams=[t1,t2], score="6-4, 6-3")
-        match1.post_init()
-        match_id = match1.id
-        commit_to_db(match1, session=session, close_session=False)
-        print(match1)
-        winners, losers = match1.get_winners_losers()
-        print(winners)
-
-    # Update finished match results
-    update_players_results_after_finished_match(match_id)
-    update_players_rank()
-    update_teams_results_after_finished_match(match_id)
-
-    # Check new results
-    with get_db_session() as session:
-        p1: Player = read_from_db(
-            Player, where=Player.name == "p1", unique=True, session=session
-        )
-        p2: Player = read_from_db(
-            Player, where=Player.name == "p2", unique=True, session=session
-        )
-        p3: Player = read_from_db(
-            Player, where=Player.name == "p3", unique=True, session=session
-        )
-        p4: Player = read_from_db(
-            Player, where=Player.name == "p4", unique=True, session=session
-        )
-
-        print(f"UPDATED {p1.elo_rating = }")
-        print(f"UPDATED {p2.elo_rating = }")
-        print(f"UPDATED {p3.elo_rating = }")
-        print(f"UPDATED {p4.elo_rating = }")
+        create_dummy_teams_and_match(session)
 
     print("END")

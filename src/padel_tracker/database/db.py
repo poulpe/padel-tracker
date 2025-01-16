@@ -1,10 +1,10 @@
 from sqlmodel import SQLModel, create_engine, Session, select
 
-# Do this line to init all SQLModel defined
-from padel_tracker import models
+# Must keep this line below to init all SQLModel defined
+from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
 
-DB_PATH = get_absolute_path(__file__, "./database_try.db")
+DB_PATH = get_absolute_path(__file__, "./database.db")
 sqlite_url = f"sqlite:///{str(DB_PATH)}"
 
 DB_ENGINE = create_engine(sqlite_url, echo=False)
@@ -20,12 +20,6 @@ def get_db_session() -> Session:
 
 
 def commit_to_db_no_session(*objects, refresh: bool = True) -> None:
-    """Create or update objects from database
-    Examples
-    --------
-    >>> "Create objects"
-    >>> commit_to_db(p1, p2, p3)
-    """
     with Session(DB_ENGINE) as session:
         for object in objects:
             session.add(object)
@@ -35,36 +29,32 @@ def commit_to_db_no_session(*objects, refresh: bool = True) -> None:
                 session.refresh(object)
 
 
-def commit_to_db_session(
-    *objects, session: Session, refresh: bool = True, close_session: bool = False
-) -> None:
-    exception = None
-    try:
+def commit_to_db_session(*objects, session: Session, refresh: bool = True) -> None:
+    for object in objects:
+        session.add(object)
+    session.commit()
+    if refresh:
         for object in objects:
-            session.add(object)
-        session.commit()
-        if refresh:
-            for object in objects:
-                session.refresh(object)
-    except Exception as exc:
-        exception = exc
-    finally:
-        if close_session:
-            session.close()
-    if exception:
-        session.close()
-        raise exception
+            session.refresh(object)
 
 
-def commit_to_db(
-    *objects, session: Session = None, close_session: bool = False, refresh: bool = True
-) -> None:
-    if session is None:
-        commit_to_db_no_session(*objects, refresh=refresh)
+def commit_to_db(*objects, session: Session = None, refresh: bool = True) -> None:
+    """Create or update objects from database
+
+    Examples
+    --------
+    >>> with get_db_session() as session:
+    ...     "Create objects p1, p2 and p3"
+    ...     commit_to_db(p1, p2, p3, session=session)
+
+    >>> # If no need to access objects updated attributes after commit
+    >>> "Create objects p1, p2 and p3"
+    >>> commit_to_db(p1, p2, p3)
+    """
+    if session:
+        commit_to_db_session(*objects, session=session, refresh=refresh)
     else:
-        commit_to_db_session(
-            *objects, session=session, refresh=refresh, close_session=close_session
-        )
+        commit_to_db_no_session(*objects, refresh=refresh)
 
 
 def make_read_statement(
@@ -91,39 +81,32 @@ def read_from_db(
     order_by=None,
     order_descending: bool = False,
     session: Session = None,
-    close_session: bool = False,
 ) -> list | object:
     """Query database for table/class and return found object.
     Can be called within a db session if existing, without closing it, if `session` is specified.
 
     Examples
     --------
-    # Basic usage (will return all players)
-
+    >>> # Basic usage (will return all players)
     >>> read_from_db(Player)
 
-    # Filter result with a simple "where" statement
-
+    >>> # Filter result with a simple "where" statement
     >>> result_filter = col(Player.name) == "Patrick"
     >>> read_from_db(Player, where=result_filter)
 
-    # Filter result with a multiple AND "where" statement
-
+    >>> # Filter result with a multiple AND "where" statement
     >>> result_filter = col(Player.nb_matches) >= 10, col(Player.nb_victories) >= 5
     >>> read_from_db(Player, where=result_filter)
 
-    # Filter result with a multiple OR "where" statement (use or_ from sqlmodel)
-
+    >>> # Filter result with a multiple OR "where" statement (use or_ from sqlmodel)
     >>> result_filter = or_(col(Player.nb_matches) >= 10, col(Player.nb_victories) >= 5)
     >>> read_from_db(Player, where=result_filter)
 
-    # Expect only one row
-
+    >>> # Expect only one row
     >>> result_filter = col(Player.name) == "Legendary Patrick"
     >>> my_player = read_from_db(Player, where=result_filter, unique=True)
 
-    # SESSION : already opened a session and want the read to be executed in this context
-
+    >>> # SESSION : already opened a session and want the read to be executed in this context
     >>> match_id_to_retrieve = 12
     >>> with get_db_session() as session:
     ...     # Retrieve Match
@@ -132,12 +115,11 @@ def read_from_db(
     ...         where=Match.id == match_id_to_retrieve,
     ...         unique=True,
     ...         session=session,
-    ...         close_session=False,
     ...     )
     ...     # Now do stuff with finished_match and its players
     ...     winners, losers = finished_match.get_winners_losers()
     ...     finished_match.players[0].elo_rating = 824
-    ...     commit_to_db(finished_match, session=session, close_session=False)
+    ...     commit_to_db(finished_match, session=session)
 
     Parameters
     ----------
@@ -150,8 +132,7 @@ def read_from_db(
     limit: int, optional
         To get only first "x" rows
     session: Session, optional
-        Important if wanted
-    close_session: bool, optional
+        Important if wanted to have variables "kept alive" in the session context manager
 
     Returns
     -------
@@ -175,13 +156,9 @@ def read_from_db(
     else:
         reply = session.exec(statement)
         result = reply.one() if unique else reply.all()
-        if close_session:
-            session.close()
     return result
 
 
-def delete_from_db(object_, session: Session, close_session: bool = False) -> None:
+def delete_from_db(object_, session: Session) -> None:
     session.delete(object_)
     session.commit()
-    if close_session:
-        session.close()
