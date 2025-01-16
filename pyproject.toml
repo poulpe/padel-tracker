@@ -39,11 +39,9 @@ extend-exclude = "examples"
 
 [tool.ruff]
 lint.ignore = [
-    "E402",
-    "E501",
-    "F403",
-    "F405",
-    "F821", # For compatibility with SQLModel Relationship ("name not defined")
+    "E402", # Import not all on top of file
+    "E501", # Line too long : balek, managed by Black
+    "F821", # Must for compatibility with SQLModel Relationship ("name not defined")
 ]
 exclude = ["examples/*"]
 
