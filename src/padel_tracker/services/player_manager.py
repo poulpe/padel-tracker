@@ -4,6 +4,7 @@ CRUD on Players and Teams
 
 import sqlalchemy
 
+from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
 from padel_tracker.database.db import (
     Session,
@@ -12,6 +13,8 @@ from padel_tracker.database.db import (
     read_from_db,
     # delete_from_db,
 )
+
+LOGGER = get_logger("player_manager")
 
 
 ##### Players #####
@@ -46,17 +49,28 @@ def get_player_from_name(session: Session, player_name: str) -> Player:
     return player
 
 
+def get_all_players(session: Session) -> list[Player]:
+    list_all_players = read_from_db(Player, session=session)
+    return list_all_players
+
+
 def create_player(session: Session, name: str, **kwargs) -> Player:
+    logger = LOGGER.getChild("create_player")
     # Checks player doesn't exist
     try:
         player = get_player_from_name(session=session, player_name=name)
     except PlayerNotFoundError:
         pass  # It's actually OK, player doesn't exists
     else:
-        raise PlayerExistsError(f"player '{str(player)}' already exists, won't create")
+        err_msg = (
+            f"player ({player.name=}, {player.id=}) already exists, won't recreate"
+        )
+        logger.error(err_msg)
+        raise PlayerExistsError(err_msg)
     # Let's go
     player = Player(name=name, **kwargs)
     commit_to_db(player, session=session)
+    logger.log(LOG_LEVEL_NOTIF, f"created {player = }")
     return player
 
 
@@ -77,7 +91,10 @@ class TeamNotFoundError(Exception):
 
 
 def get_team_from_players_name(
-    session: Session, player1_name: str, player2_name: str
+    session: Session,
+    player1_name: str,
+    player2_name: str,
+    create_if_not_found: bool = False,
 ) -> Team:
     """
     Parameters
@@ -88,6 +105,8 @@ def get_team_from_players_name(
         Player1 name
     player2_name:str
         Player2 name
+    create_if_not_found:bool, optional
+        Create the team if it's not existing in db. Default to False,
 
     Raises
     ------
@@ -100,13 +119,20 @@ def get_team_from_players_name(
             Team, where=Team.name == team_name, unique=True, session=session
         )
     except sqlalchemy.exc.NoResultFound:
-        raise TeamNotFoundError(
-            f"team '{team_name}' not found in database, probably doesn't exist"
-        )
+        if create_if_not_found:
+            player1 = get_player_from_name(session=session, player_name=player1_name)
+            player2 = get_player_from_name(session=session, player_name=player2_name)
+            ## Create team and commit
+            team = Team(players=[player1, player2])
+            team.post_init()
+            commit_to_db(team, session=session)
+        else:
+            raise TeamNotFoundError(f"team '{team_name}' not found in db")
     return team
 
 
 def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
+    logger = LOGGER.getChild("create_team")
     # Checks team doesn't exist
     try:
         team = get_team_from_players_name(
@@ -115,7 +141,9 @@ def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
     except TeamNotFoundError:
         pass  # It's actually OK, team doesn't exists
     else:
-        raise TeamExistsError(f"team '{str(team)}' already exists, won't recreate it")
+        err_msg = f"team '{str(team)}' already exists, won't recreate it"
+        logger.error(err_msg)
+        raise TeamExistsError(err_msg)
     # Let's go
     ## Retrieve players
     player1 = get_player_from_name(session=session, player_name=player1_name)
@@ -124,6 +152,7 @@ def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
     team = Team(players=[player1, player2])
     team.post_init()
     commit_to_db(team, session=session)
+    logger.log(LOG_LEVEL_NOTIF, f"created {team=} (id={team.id})")
     return team
 
 

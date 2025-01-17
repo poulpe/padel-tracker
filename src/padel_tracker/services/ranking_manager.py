@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import (
     Player,
     EloRatingHistory,
@@ -13,6 +14,8 @@ from padel_tracker.database.db import (
     commit_to_db,
     read_from_db,
 )
+
+LOGGER = get_logger("ranking_manager")
 
 
 def update_players_results_after_finished_match(
@@ -31,6 +34,8 @@ def update_players_results_after_finished_match(
     dict_elo_rating_gains:dict[UUID, int]
         Elo gains for convenience, as dict[player.id, elo_rating_gain]
     """
+    logger = LOGGER
+
     # Retrieve Match
     finished_match.post_init()  # To write match name + validate players OK
     match_date = finished_match.date
@@ -158,6 +163,9 @@ def update_players_results_after_finished_match(
         finished_match,
         session=session,
     )
+    logger.log(
+        LOG_LEVEL_NOTIF, f"updated players results for match id={finished_match.id}"
+    )
 
     return dict_elo_rating_gains
 
@@ -165,6 +173,7 @@ def update_players_results_after_finished_match(
 def update_players_rank(session: Session) -> None:
     """Calc ranks and updated database"""
     # Get all players, sorted by top Elo to bottom Elo (descending order)
+    logger = LOGGER
     sorted_players = read_from_db(
         Player,
         order_by=Player.elo_rating,
@@ -176,8 +185,10 @@ def update_players_rank(session: Session) -> None:
     for rank, player in enumerate(sorted_players, start=1):
         # Update rank
         player.rank = rank
-        # Update best rank
-        if (player.best_rank is None) or (player.best_rank > rank):
+        # Update best rank (not at 1st match, so nb_matches not None and not 0)
+        if (player.nb_matches > 1) and (
+            (player.best_rank is None) or (player.best_rank > rank)
+        ):
             player.best_rank = rank
         # Update RankHistory (date will be auto fulfilled as "now" if not provided)
         rank_history_entry = RankHistory(
@@ -188,3 +199,4 @@ def update_players_rank(session: Session) -> None:
         rank_history_entries.append(rank_history_entry)
     # Commit
     commit_to_db(*sorted_players, *rank_history_entries, session=session)
+    logger.log(LOG_LEVEL_NOTIF, "updated players ranking")

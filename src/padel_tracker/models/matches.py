@@ -153,9 +153,12 @@ class MatchScore(BaseModel, validate_assignment=True):
             games_team2 = current_set.split("-")[1]
             list_games.append(games_team2)
 
-        if len(list_games) == 4:
+        while len(list_games) < 6:
             list_games.append(None)
-            list_games.append(None)
+
+        # if len(list_games) == 4:
+        #     list_games.append(None)
+        #     list_games.append(None)
 
         match_score = MatchScore(
             games_set1_team1=list_games[0],

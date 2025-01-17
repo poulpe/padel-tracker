@@ -4,10 +4,10 @@ from sqlmodel import SQLModel, create_engine, Session, select
 from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
 
-DB_PATH = get_absolute_path(__file__, "./database.db")
-sqlite_url = f"sqlite:///{str(DB_PATH)}"
+DB_PATH = get_absolute_path(__file__, "../../../data/database.db")
+SQLITE_URL = f"sqlite:///{str(DB_PATH)}"
 
-DB_ENGINE = create_engine(sqlite_url, echo=False)
+DB_ENGINE = create_engine(SQLITE_URL, echo=False)
 
 
 def create_db_and_tables():
@@ -58,13 +58,17 @@ def commit_to_db(*objects, session: Session = None, refresh: bool = True) -> Non
 
 
 def make_read_statement(
-    class_, where=None, limit: int = 0, order_by=None, order_descending: bool = False
+    class_,
+    where=None,
+    limit_first: int = None,
+    order_by=None,
+    order_descending: bool = False,
 ):
     statement = select(class_)
     if where is not None:
         statement = statement.where(where)
-    if limit:
-        statement = statement.limit(limit)
+    if limit_first:
+        statement = statement.limit(limit_first)
     if order_by:
         if order_descending:
             statement = statement.order_by(order_by.desc())
@@ -77,7 +81,8 @@ def read_from_db(
     class_,
     where=None,
     unique: bool = False,
-    limit: int = 0,
+    limit_first: int = None,
+    limit_last: int = None,
     order_by=None,
     order_descending: bool = False,
     session: Session = None,
@@ -144,7 +149,7 @@ def read_from_db(
     statement = make_read_statement(
         class_,
         where=where,
-        limit=limit,
+        limit_first=limit_first,
         order_by=order_by,
         order_descending=order_descending,
     )
@@ -156,6 +161,8 @@ def read_from_db(
     else:
         reply = session.exec(statement)
         result = reply.one() if unique else reply.all()
+    if limit_last:
+        result = result[:-limit_last]
     return result
 
 

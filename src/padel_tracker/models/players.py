@@ -21,7 +21,7 @@ class PlayerBase(SQLModel, validate_assignment=True):
     name: str = Field(index=True, min_length=2, max_length=32)
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     elo_rating: PositiveInt = Field(ELO_BASE_RATING, index=True)
-    elo_k: PositiveFloat = Field(ELO_BASE_K, description="K value for Elo calc")
+    elo_k: PositiveFloat = Field(ELO_BASE_K, repr=False)
     rank: PositiveInt | None = Field(None, index=True, description="Rank in the league")
     creation_date: datetime = Field(
         default_factory=now,
@@ -38,9 +38,11 @@ class PlayerBase(SQLModel, validate_assignment=True):
     nb_victories: NonNegativeInt = Field(0, description="Total number of victories")
     nb_defeats: NonNegativeInt = Field(0, description="Total number of defeats")
     best_elo_rating: PositiveInt = Field(
-        ELO_BASE_RATING, description="Best achieved Elo rating ever"
+        ELO_BASE_RATING, description="Best achieved Elo rating ever", repr=False
     )
-    best_rank: PositiveInt | None = Field(None, description="Best achieved rank ever")
+    best_rank: PositiveInt | None = Field(
+        None, description="Best achieved rank ever", repr=False
+    )
 
 
 class EloRatingHistory(SQLModel, table=True, validate_assignment=True):
