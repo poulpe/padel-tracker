@@ -49,8 +49,8 @@ def get_player_from_name(session: Session, player_name: str) -> Player:
     return player
 
 
-def get_all_players(session: Session) -> list[Player]:
-    list_all_players = read_from_db(Player, session=session)
+def get_all_players(session: Session, as_df:bool=False) -> list[Player]:
+    list_all_players = read_from_db(Player, session=session, as_df=as_df)
     return list_all_players
 
 

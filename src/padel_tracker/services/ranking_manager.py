@@ -1,5 +1,7 @@
 from uuid import UUID
 
+import pandas as pd
+
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import (
     Player,
@@ -13,6 +15,7 @@ from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
+    get_db_session,
 )
 
 LOGGER = get_logger("ranking_manager")
@@ -200,3 +203,12 @@ def update_players_rank(session: Session) -> None:
     # Commit
     commit_to_db(*sorted_players, *rank_history_entries, session=session)
     logger.log(LOG_LEVEL_NOTIF, "updated players ranking")
+
+def get_elo_rating_history(session:Session, as_df:bool=False) -> list[EloRatingHistory] | pd.DataFrame:
+    return read_from_db(EloRatingHistory, session=session, order_by=EloRatingHistory.date, as_df=as_df)
+
+if __name__  == "__main__":
+    from padel_tracker.database.db import get_db_session
+    with get_db_session() as session:
+        yes = get_elo_rating_history(session, as_df=True)
+    print("END")

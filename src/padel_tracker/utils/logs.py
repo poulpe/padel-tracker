@@ -123,22 +123,8 @@ def init_loggings(
 
     return logger
 
+def set_logging_level(log_level:str|int)->None:
+    logging.getLogger(MAIN_LOG_NAME).setLevel(log_level)
 
-# Init loggings according to config / paths defaults
-# try:
-#     CONFIG_LOG_LEVEL_CONSOLE = DICT_CONFIG["logs"]["log_level_console"]
-# except KeyError:
-#     CONFIG_LOG_LEVEL_CONSOLE = DEFAULT_LOG_LEVEL_CONSOLE
-#
-# try:
-#     CONFIG_LOG_LEVEL_FILE = DICT_CONFIG["logs"]["log_level_file"]
-# except KeyError:
-#     CONFIG_LOG_LEVEL_FILE = DEFAULT_LOG_LEVEL_FILE
-
-# def init_loggings() -> None:
-#
-#     _init_loggings_with_parameters(
-#         log_level=DEFAULT_LOG_LEVEL_CONSOLE,
-#         log_file_folder=DEFAULT_LOG_FOLDER,
-#         log_level_file=DEFAULT_LOG_LEVEL_FILE,
-#     )
+def disable_loggings() -> None:
+    logging.getLogger(MAIN_LOG_NAME).setLevel(logging.CRITICAL)

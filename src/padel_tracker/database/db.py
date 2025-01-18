@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlmodel import SQLModel, create_engine, Session, select
 
 # Must keep this line below to init all SQLModel defined
@@ -8,7 +9,6 @@ DB_PATH = get_absolute_path(__file__, "../../../data/database.db")
 SQLITE_URL = f"sqlite:///{str(DB_PATH)}"
 
 DB_ENGINE = create_engine(SQLITE_URL, echo=False)
-
 
 def create_db_and_tables():
     """To be called in main at init"""
@@ -86,7 +86,8 @@ def read_from_db(
     order_by=None,
     order_descending: bool = False,
     session: Session = None,
-) -> list | object:
+    as_df:bool = False,
+) -> object | list | pd.DataFrame:
     """Query database for table/class and return found object.
     Can be called within a db session if existing, without closing it, if `session` is specified.
 
@@ -138,12 +139,15 @@ def read_from_db(
         To get only first "x" rows
     session: Session, optional
         Important if wanted to have variables "kept alive" in the session context manager
+    as_df:bool
+        Returns result under a pd.DataFrame format (using .model_dump() from SQLModel). Default is False.
 
     Returns
     -------
-    results: list | object
+    results: list | object | pd.DataFrame
         As a list of class instances, matching with the "where" request if mentioned.
         If unique=True, will return only the object directly.
+        If as_df=True, will return under a pd.DataFrame format.
     """
     # Make statement
     statement = make_read_statement(
@@ -163,6 +167,11 @@ def read_from_db(
         result = reply.one() if unique else reply.all()
     if limit_last:
         result = result[:-limit_last]
+    if as_df:
+        if isinstance(result, list):
+            result = pd.DataFrame([row.model_dump() for row in result])
+        else:
+            result = pd.DataFrame([result.model_dump()])
     return result
 
 

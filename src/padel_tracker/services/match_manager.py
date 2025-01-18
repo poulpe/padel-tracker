@@ -7,6 +7,8 @@ CRUD on Matches and repercussions on players/teams
 from uuid import UUID
 from datetime import datetime
 
+import pandas as pd
+
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
 from padel_tracker.models.matches import Match, MatchScore
@@ -84,7 +86,6 @@ def create_match(
 
 # GET
 
-
 def get_match_from_id(session: Session, match_id: UUID) -> Match:
     match = read_from_db(
         Match,
@@ -95,35 +96,29 @@ def get_match_from_id(session: Session, match_id: UUID) -> Match:
     return match
 
 
-def get_all_matches(session: Session) -> list[Match]:
-    list_all_matches = read_from_db(Match, session=session)
-    return list_all_matches
+def get_all_matches(session: Session, as_df:bool=False) -> list[Match] | pd.DataFrame:
+    return read_from_db(Match, session=session, as_df=as_df)
 
 
-def get_last_matches(session: Session, limit_last: int = 10) -> list[Match]:
-    list_all_matches = read_from_db(Match, session=session, limit_last=limit_last)
-    return list_all_matches
+def get_last_matches(session: Session, limit_last: int = 10, as_df:bool=False) -> list[Match] | pd.DataFrame:
+    return read_from_db(Match, session=session, limit_last=limit_last, as_df=as_df)
 
 
-def get_all_matches_from_player(session: Session, player: Player) -> list[Match]:
+def get_all_matches_from_player(player: Player) -> list[Match]:
     list_player_matches = player.matches
     return list_player_matches
 
 
-def get_last_matches_from_player(
-    session: Session, player: Player, limit_last: int = 10
-) -> list[Match]:
+def get_last_matches_from_player(player: Player, limit_last: int = 10) -> list[Match]:
     list_player_matches = player.matches[:-limit_last]
     return list_player_matches
 
 
-def get_all_matches_from_team(session: Session, team: Team) -> list[Match]:
+def get_all_matches_from_team(team: Team) -> list[Match]:
     return team.matches
 
 
-def get_last_matches_from_team(
-    session: Session, team: Player, limit_last: int = 10
-) -> list[Match]:
+def get_last_matches_from_team(team: Player, limit_last: int = 10) -> list[Match]:
     return team.matches[:-limit_last]
 
 
