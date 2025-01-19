@@ -11,7 +11,8 @@ wheels/
 shelf/
 
 # Custom ignored directories
-debug/*.py
+/tests/debug
+tests/debug/streamlit_app_gpt.py
 
 # Custom ignored files and extensions
 .coverage
@@ -19,3 +20,4 @@ debug/*.py
 *.xml
 *.log
 *.db
+
