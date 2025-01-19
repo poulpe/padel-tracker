@@ -10,9 +10,11 @@ from padel_tracker.ui.languages import (
     LanguageTranslator,
 )
 from padel_tracker.ui.cards import define_cards_css
+from padel_tracker.main import init_app
 
+##### Init #####
+init_app()
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
-
 
 ##### Utils func #####
 def get_base64_image(image_path: Path) -> str:

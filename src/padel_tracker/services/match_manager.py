@@ -88,10 +88,15 @@ def create_match(
     match.post_init()
     # Commit
     commit_to_db(match, session=session)
-    logger.log(LOG_LEVEL_NOTIF, f"created new match id={match.id}")
+    match_id = match.id
+    logger.log(LOG_LEVEL_NOTIF, f"created new match id={match_id}")
     # Process it if finished
     if is_finished:
-        process_finished_match(session=session, finished_match=match)
+        try:
+            process_finished_match(session=session, finished_match=match)
+        except:
+            delete_from_db(match, session=session)
+            logger.error("match is not finished, deleted it from db and won't process")
     return match
 
 
@@ -165,8 +170,6 @@ def check_match_not_already_created(
 
 
 # DELETE
-
-
 # TODO (prio 3): delete_match, mucho work to cascade_delete + revert correct Elo
 # (idea: remove history.elo_gain corresponding to this match from players current elo?)
 def delete_match(session: Session, match_id: UUID) -> None:

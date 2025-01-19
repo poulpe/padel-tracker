@@ -38,7 +38,7 @@ list_match_data = [
     {"day":29, "month":11, "year": 2024, "hour":19, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Maximator","Sergissimo"], "score":"7-6"},
     {"day":7, "month":1, "year": 2025,   "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
     {"day":14, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
-    #{"day":14, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
+    # {"day":14, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
 ]
 # fmt: on
 

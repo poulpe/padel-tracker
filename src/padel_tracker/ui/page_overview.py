@@ -51,7 +51,7 @@ make_overview_elo_history_chart(translator=st.session_state.translator)
 st.markdown(
     f"""
     <div style="text-align: center;">
-        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("match_history")} </div>
+        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("last_match_history")} </div>
         <br>
     </div>
     """,
