@@ -1,5 +1,9 @@
 import streamlit as st
 
+from padel_tracker.database.db import get_db_session
+from padel_tracker.services.match_manager import get_all_matches, get_last_matches
+from padel_tracker.models.matches import MatchScore
+
 def define_cards_css()->None:
     # Define CSS
     st.markdown("""
@@ -91,7 +95,7 @@ def display_match_card(
 
     def render_date(date)->str:
         if date is not None:
-            return f"Date : {date}"
+            return f"{date}"
         else:
             return " "
 
@@ -119,6 +123,28 @@ def display_match_card(
         unsafe_allow_html=True
     )
     st.write("")
+
+def make_match_cards(limit_last:int|None=10)->None:
+    with get_db_session() as session:
+        if not limit_last:
+            list_matches = get_all_matches(session=session)
+        else:
+            list_matches = get_last_matches(session=session, limit_last=limit_last)
+        list_matches.reverse()  # From latest to oldest
+        for match in list_matches:
+            match_score = MatchScore.from_string(match.score)
+            display_match_card(
+                team1=match.teams[0],
+                team2=match.teams[1],
+                team1_won=match.team1_won,
+                date=match.date.strftime("%d/%b/%Y %H:%M"),
+                games_set1_team1=match_score.games_set1_team1,
+                games_set1_team2=match_score.games_set1_team2,
+                games_set2_team1=match_score.games_set2_team1,
+                games_set2_team2=match_score.games_set2_team2,
+                games_set3_team1=match_score.games_set3_team1,
+                games_set3_team2=match_score.games_set3_team2,
+            )
 
 #TODO : display player_card
 def display_player_card():

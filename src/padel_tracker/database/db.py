@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import pandas as pd
 from sqlmodel import SQLModel, create_engine, Session, select
 
@@ -66,7 +68,11 @@ def make_read_statement(
 ):
     statement = select(class_)
     if where is not None:
-        statement = statement.where(where)
+        if not isinstance(where, Iterable):
+            statement = statement.where(where)
+        else:
+            for where_statement in where:
+                statement = statement.where(where_statement)
     if limit_first:
         statement = statement.limit(limit_first)
     if order_by:
@@ -166,7 +172,7 @@ def read_from_db(
         reply = session.exec(statement)
         result = reply.one() if unique else reply.all()
     if limit_last:
-        result = result[:-limit_last]
+        result = result[-limit_last:]
     if as_df:
         if isinstance(result, list):
             result = pd.DataFrame([row.model_dump() for row in result])

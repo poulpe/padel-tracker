@@ -29,7 +29,15 @@ _DICT_TO_FR = {
     "ranking": "Classement",
     "players_teams": "Joueurs/Equipes",
     "players_table": "Tableau des joueurs",
-
+    "team1":"Equipe 1",
+    "team2":"Equipe 2",
+    "player1":"Joueur 1",
+    "player2":"Joueur 2",
+    "time": "Heure",
+    "match_added_success": "Match enregistré !",
+    "match_added_error" : "Impossible d'ajouter le match, erreur inconnue",
+    "match_exists_error": "Le match a déja été enregistré",
+    "next_feature": "BIENTOT",
 }
 
 _DICT_TO_EN = {
@@ -59,6 +67,15 @@ _DICT_TO_EN = {
     "ranking": "Ranking",
     "players_teams": "Players/Teams",
     "players_table": "Players table",
+    "team1":"Team 1",
+    "team2":"Team 2",
+    "player1":"Player 1",
+    "player2":"Player 2",
+    "time": "Time",
+    "match_added_success": "Match added with success !",
+    "match_added_error" : "Unknown error during match creation",
+    "match_exists_error": "Match already added",
+    "next_feature": "SOON",
 }
 
 class Language(StrEnum):

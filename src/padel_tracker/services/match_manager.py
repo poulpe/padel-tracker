@@ -26,6 +26,14 @@ from padel_tracker.services.ranking_manager import (
 LOGGER = get_logger("match_manager")
 
 
+class MatchExistsError(Exception):
+    """Match already exists in database"""
+
+
+class MatchNotFoundError(Exception):
+    """Match not found and probably doesn't exist in database"""
+
+
 def process_finished_match(session: Session, finished_match: Match) -> None:
     update_players_results_after_finished_match(
         session=session, finished_match=finished_match
@@ -43,6 +51,7 @@ def create_match(
     teams: list[Team],
     date: datetime,
     score: str | MatchScore | None = None,
+    is_finished:bool=True,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
     logger = LOGGER.getChild("create_match")
@@ -62,6 +71,7 @@ def create_match(
             err_msg = f"a team must have exactly 2 players. Got {nb_player=} in {team=}"
             logger.error(err_msg)
             raise ValueError(err_msg)
+
     # Create match
     players = [
         teams[0].players[0],
@@ -69,17 +79,16 @@ def create_match(
         teams[1].players[0],
         teams[1].players[1],
     ]
+    ## Check match doesn't exist already
+    check_match_not_already_created(session=session, teams=teams, date=date, score=score)
+
     match = Match(teams=teams, players=players, date=date, score=score)
     match.post_init()
     # Commit
     commit_to_db(match, session=session)
     logger.log(LOG_LEVEL_NOTIF, f"created new match id={match.id}")
-    # Check if match is finished and process it if it's the case
-    try:
-        match.get_winners_losers()
-    except ValueError:
-        pass
-    else:
+    # Process it if finished
+    if is_finished:
         process_finished_match(session=session, finished_match=match)
     return match
 
@@ -121,17 +130,41 @@ def get_all_matches_from_team(team: Team) -> list[Match]:
 def get_last_matches_from_team(team: Player, limit_last: int = 10) -> list[Match]:
     return team.matches[:-limit_last]
 
+def check_match_not_already_created(
+    session: Session,
+    teams:list[Team],
+    #players:list[Player],
+    date: datetime,
+    score: str | MatchScore | None = None,
+)->None:
+    list_matches_same_date_score = read_from_db(
+        Match,
+        session=session,
+        where=(Match.date==date, Match.score==score),
+    )
+    if list_matches_same_date_score:
+        is_team1_in_match = False
+        is_team2_in_match = False
+        for match in list_matches_same_date_score:
+            # Checks if teams in
+            if teams[0] in match.teams:
+                is_team1_in_match = True
+            if teams[1] in match.teams:
+                is_team2_in_match = True
+            if is_team1_in_match and is_team2_in_match:
+                # TODO : err_msg and logs
+                raise MatchExistsError
 
 # DELETE
 
 
-# TODO : delete_match, mucho work to cascade_delete + revert correct Elo
+# TODO (prio 3): delete_match, mucho work to cascade_delete + revert correct Elo
 # (idea: remove history.elo_gain corresponding to this match from players current elo?)
 def delete_match(session: Session, match_id: UUID) -> None:
     # Retrieve match
     match = get_match_from_id(match_id=match_id, session=session)
 
-    # TODO: Revert Elo gain from players from this match
+    # Revert Elo gain from players from this match
 
     # Finally delete
     delete_from_db(match, session=session)

@@ -179,6 +179,7 @@ class Match(SQLModel, table=True, validate_assignment=True):
     )
     date: datetime = Field(default_factory=now, description="Match execution date")
     score: str | None = Field(None, description="string formatted as '6-4, 7-5'")
+    team1_won:bool|None = Field(None, description="True/False if team1_won. None for no winner")
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(default_factory=now, description="Creation in db")
@@ -210,9 +211,11 @@ class Match(SQLModel, table=True, validate_assignment=True):
         if match_score.nb_won_sets_team1 > match_score.nb_won_sets_team2:
             winners = self.teams[0]  # [self.players[0], self.players[1]]
             losers = self.teams[1]  # [self.players[2], self.players[3]]
+            self.team1_won = True
         elif match_score.nb_won_sets_team1 < match_score.nb_won_sets_team2:
             losers = self.teams[0]  # [self.players[0], self.players[1]]
             winners = self.teams[1]  # [self.players[2], self.players[3]]
+            self.team1_won = False
         else:
             raise ValueError(f"no winner yet ({match_score = })")
         return winners, losers
