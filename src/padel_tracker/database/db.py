@@ -12,6 +12,7 @@ SQLITE_URL = f"sqlite:///{str(DB_PATH)}"
 
 DB_ENGINE = create_engine(SQLITE_URL, echo=False)
 
+
 def create_db_and_tables():
     """To be called in main at init"""
     SQLModel.metadata.create_all(DB_ENGINE)
@@ -92,7 +93,7 @@ def read_from_db(
     order_by=None,
     order_descending: bool = False,
     session: Session = None,
-    as_df:bool = False,
+    as_df: bool = False,
 ) -> object | list | pd.DataFrame:
     """Query database for table/class and return found object.
     Can be called within a db session if existing, without closing it, if `session` is specified.

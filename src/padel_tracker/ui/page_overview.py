@@ -11,12 +11,20 @@ st.write("")
 st.write("")
 
 # Top quick access buttons
-col_button_1, col_button_2 = st.columns([1,1])
+col_button_1, col_button_2 = st.columns([1, 1])
 
 with col_button_1:
-    button_add_match = st.button(st.session_state.translator("add_match"), type="primary", use_container_width=True)
+    button_add_match = st.button(
+        st.session_state.translator("add_match"),
+        type="primary",
+        use_container_width=True,
+    )
 with col_button_2:
-    button_feature_2 = st.button(st.session_state.translator("next_feature"), type="primary", use_container_width=True)
+    button_feature_2 = st.button(
+        st.session_state.translator("next_feature"),
+        type="primary",
+        use_container_width=True,
+    )
 
 if button_add_match:
     st.switch_page("page_add_match.py")
@@ -35,9 +43,8 @@ st.markdown(
         <br>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-#make_DUMMY_overview_elo_history_chart()
 make_overview_elo_history_chart(translator=st.session_state.translator)
 
 # View last match history
@@ -48,15 +55,14 @@ st.markdown(
         <br>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-_, col_matches_cont, _ = st.columns([1,4,1])
+_, col_matches_cont, _ = st.columns([1, 4, 1])
 
 with col_matches_cont:
     matches_cont = st.container(border=True, height=400)
-
 with matches_cont:
-    make_match_cards(limit_last=6)
+    make_match_cards(limit_last=8)
 
 # Player data table overview
 st.write("")
@@ -67,7 +73,7 @@ st.markdown(
         <br>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 make_player_overview_table(translator=st.session_state.translator)

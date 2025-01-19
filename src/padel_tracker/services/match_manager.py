@@ -51,7 +51,7 @@ def create_match(
     teams: list[Team],
     date: datetime,
     score: str | MatchScore | None = None,
-    is_finished:bool=True,
+    is_finished: bool = True,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
     logger = LOGGER.getChild("create_match")
@@ -80,7 +80,9 @@ def create_match(
         teams[1].players[1],
     ]
     ## Check match doesn't exist already
-    check_match_not_already_created(session=session, teams=teams, date=date, score=score)
+    check_match_not_already_created(
+        session=session, teams=teams, date=date, score=score
+    )
 
     match = Match(teams=teams, players=players, date=date, score=score)
     match.post_init()
@@ -95,6 +97,7 @@ def create_match(
 
 # GET
 
+
 def get_match_from_id(session: Session, match_id: UUID) -> Match:
     match = read_from_db(
         Match,
@@ -105,11 +108,15 @@ def get_match_from_id(session: Session, match_id: UUID) -> Match:
     return match
 
 
-def get_all_matches(session: Session, as_df:bool=False) -> list[Match] | pd.DataFrame:
+def get_all_matches(
+    session: Session, as_df: bool = False
+) -> list[Match] | pd.DataFrame:
     return read_from_db(Match, session=session, as_df=as_df)
 
 
-def get_last_matches(session: Session, limit_last: int = 10, as_df:bool=False) -> list[Match] | pd.DataFrame:
+def get_last_matches(
+    session: Session, limit_last: int = 10, as_df: bool = False
+) -> list[Match] | pd.DataFrame:
     return read_from_db(Match, session=session, limit_last=limit_last, as_df=as_df)
 
 
@@ -130,17 +137,18 @@ def get_all_matches_from_team(team: Team) -> list[Match]:
 def get_last_matches_from_team(team: Player, limit_last: int = 10) -> list[Match]:
     return team.matches[:-limit_last]
 
+
 def check_match_not_already_created(
     session: Session,
-    teams:list[Team],
-    #players:list[Player],
+    teams: list[Team],
+    # players:list[Player],
     date: datetime,
     score: str | MatchScore | None = None,
-)->None:
+) -> None:
     list_matches_same_date_score = read_from_db(
         Match,
         session=session,
-        where=(Match.date==date, Match.score==score),
+        where=(Match.date == date, Match.score == score),
     )
     if list_matches_same_date_score:
         is_team1_in_match = False
@@ -154,6 +162,7 @@ def check_match_not_already_created(
             if is_team1_in_match and is_team2_in_match:
                 # TODO : err_msg and logs
                 raise MatchExistsError
+
 
 # DELETE
 

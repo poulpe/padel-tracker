@@ -179,7 +179,9 @@ class Match(SQLModel, table=True, validate_assignment=True):
     )
     date: datetime = Field(default_factory=now, description="Match execution date")
     score: str | None = Field(None, description="string formatted as '6-4, 7-5'")
-    team1_won:bool|None = Field(None, description="True/False if team1_won. None for no winner")
+    team1_won: bool | None = Field(
+        None, description="True/False if team1_won. None for no winner"
+    )
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     creation_date: datetime = Field(default_factory=now, description="Creation in db")

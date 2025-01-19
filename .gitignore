@@ -11,6 +11,7 @@ wheels/
 shelf/
 
 # Custom ignored directories
+debug/*.py
 
 # Custom ignored files and extensions
 .coverage

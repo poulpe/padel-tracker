@@ -123,8 +123,10 @@ def init_loggings(
 
     return logger
 
-def set_logging_level(log_level:str|int)->None:
+
+def set_logging_level(log_level: str | int) -> None:
     logging.getLogger(MAIN_LOG_NAME).setLevel(log_level)
+
 
 def disable_loggings() -> None:
     logging.getLogger(MAIN_LOG_NAME).setLevel(logging.CRITICAL)

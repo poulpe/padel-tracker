@@ -50,7 +50,9 @@ def get_player_from_name(session: Session, player_name: str) -> Player:
     return player
 
 
-def get_all_players(session: Session, as_df:bool=False) -> list[Player] | pd.DataFrame:
+def get_all_players(
+    session: Session, as_df: bool = False
+) -> list[Player] | pd.DataFrame:
     return read_from_db(Player, session=session, as_df=as_df)
 
 

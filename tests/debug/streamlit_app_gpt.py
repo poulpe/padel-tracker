@@ -21,7 +21,7 @@ menu = st.sidebar.radio(
     "Menu", ["Classement", "Joueur", "Saisie de Matchs", "Administration"]
 )
 
-#print("coucou")
+# print("coucou")
 
 # 3. Classement des joueurs
 if menu == "Classement":

@@ -4,9 +4,11 @@ from padel_tracker.database.db import get_db_session
 from padel_tracker.services.match_manager import get_all_matches, get_last_matches
 from padel_tracker.models.matches import MatchScore
 
-def define_cards_css()->None:
+
+def define_cards_css() -> None:
     # Define CSS
-    st.markdown("""
+    st.markdown(
+        """
         <style>
             .match-card {
                 border: 2px solid #e6e6e6;
@@ -59,17 +61,18 @@ def define_cards_css()->None:
         unsafe_allow_html=True,
     )
 
+
 def display_match_card(
-    team1:str,
-    team2:str,
-    team1_won:bool=None,
-    date:str=None,
-    games_set1_team1:int=None,
-    games_set1_team2:int=None,
-    games_set2_team1:int=None,
-    games_set2_team2:int=None,
-    games_set3_team1:int=None,
-    games_set3_team2:int=None,
+    team1: str,
+    team2: str,
+    team1_won: bool = None,
+    date: str = None,
+    games_set1_team1: int = None,
+    games_set1_team2: int = None,
+    games_set2_team1: int = None,
+    games_set2_team2: int = None,
+    games_set3_team1: int = None,
+    games_set3_team2: int = None,
 ) -> None:
     # Sets winner logic for icon (no icon if no team won)
     if team1_won is None:
@@ -77,11 +80,11 @@ def display_match_card(
     else:
         team2_won = not team1_won
 
-    def render_score_box(score:str|int)->str:
+    def render_score_box(score: str | int) -> str:
         """Render a framed box for a score (empty if None)"""
         return f'<div class="match-card-score-box">{score if score is not None else ""}</div>'
 
-    def render_team(team_name:str, is_winner:bool)->str:
+    def render_team(team_name: str, is_winner: bool) -> str:
         """Render aligned container with or without winner icon"""
         icon = ""
         if is_winner:
@@ -93,13 +96,14 @@ def display_match_card(
             </div>
         """
 
-    def render_date(date)->str:
+    def render_date(date) -> str:
         if date is not None:
             return f"{date}"
         else:
             return " "
 
-    st.markdown(f"""
+    st.markdown(
+        f"""
         <div class="match-card">
             <div class="match-card-team">
                 <div>{render_team(team1, team1_won)}</div>
@@ -120,11 +124,12 @@ def display_match_card(
             <div class="match-card-date">{render_date(date)}</div>
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
     st.write("")
 
-def make_match_cards(limit_last:int|None=10)->None:
+
+def make_match_cards(limit_last: int | None = 10) -> None:
     with get_db_session() as session:
         if not limit_last:
             list_matches = get_all_matches(session=session)
@@ -146,6 +151,7 @@ def make_match_cards(limit_last:int|None=10)->None:
                 games_set3_team2=match_score.games_set3_team2,
             )
 
-#TODO : display player_card
+
+# TODO : display player_card
 def display_player_card():
     return NotImplementedError

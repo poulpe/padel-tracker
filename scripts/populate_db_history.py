@@ -1,6 +1,7 @@
 """
 Populate db with previous data from my history on PadelID
 """
+
 import logging
 
 from padel_tracker.utils.logs import set_logging_level, DEFAULT_LOG_FORMATTER
@@ -58,7 +59,10 @@ def create_matches(session: Session, list_match_data):
         t2 = get_team_from_players_name(session, *t2_names, create_if_not_found=True)
 
         match_date = make_datetime(
-            match_data["day"], match_data["month"], match_data["year"], match_data["hour"]
+            match_data["day"],
+            match_data["month"],
+            match_data["year"],
+            match_data["hour"],
         )
         match = create_match(
             session, teams=[t1, t2], date=match_date, score=match_data["score"]
