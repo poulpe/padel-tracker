@@ -4,8 +4,8 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-# from padel_tracker.database.db import get_db_session
-# from padel_tracker.services.ranking_manager import get_elo_rating_history
+from padel_tracker.database.db import get_db_session
+from padel_tracker.services.ranking_manager import get_elo_rating_history
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
@@ -13,10 +13,10 @@ def make_overview_elo_history_chart(
     df_elo_history:pd.DataFrame=None,
     translator:LanguageTranslator=DEFAULT_TRANSLATOR,
 ) -> None:
-    # if df_elo_history is None:
-    #     # Get db_data as df
-    #     with get_db_session() as session:
-    #         df_elo_history = get_elo_rating_history(session, as_df=True).copy()
+    if df_elo_history is None:
+        # Get db_data as df
+        with get_db_session() as session:
+            df_elo_history = get_elo_rating_history(session, as_df=True).copy()
     ## Keep only useful columns
     col_to_keep = ["date", "elo_rating", "player_name", "elo_rating_gain"]
     df_elo_history = df_elo_history[col_to_keep]

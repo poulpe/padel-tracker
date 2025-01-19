@@ -3,6 +3,7 @@ CRUD on Players and Teams
 """
 
 import sqlalchemy
+import pandas as pd
 
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
@@ -49,9 +50,8 @@ def get_player_from_name(session: Session, player_name: str) -> Player:
     return player
 
 
-def get_all_players(session: Session, as_df:bool=False) -> list[Player]:
-    list_all_players = read_from_db(Player, session=session, as_df=as_df)
-    return list_all_players
+def get_all_players(session: Session, as_df:bool=False) -> list[Player] | pd.DataFrame:
+    return read_from_db(Player, session=session, as_df=as_df)
 
 
 def create_player(session: Session, name: str, **kwargs) -> Player:

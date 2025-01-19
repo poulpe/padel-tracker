@@ -5,6 +5,7 @@ import streamlit as st
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.ui.languages import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, LanguageTranslator
+from padel_tracker.ui.cards import define_cards_css
 
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
@@ -45,6 +46,9 @@ html_code_top_header = f"""
 </div>
 """
 st.markdown(html_code_top_header, unsafe_allow_html=True)
+
+##### Define CSS #####
+define_cards_css()
 
 ##### Pages definition #####
 page_overview = st.Page("page_overview.py", title="Overview", icon="🗺️", default=True)

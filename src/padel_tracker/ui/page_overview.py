@@ -1,7 +1,13 @@
 import streamlit as st
+import pandas as pd
 
-from padel_tracker.ui.charts import make_DUMMY_overview_elo_history_chart
+# from padel_tracker.database.db import get_db_session
+from padel_tracker.ui.charts import make_overview_elo_history_chart, make_DUMMY_overview_elo_history_chart
 from padel_tracker.ui.cards import display_match_card
+from padel_tracker.ui.tables import make_player_overview_table
+
+FONT_SIZE_HEADER = 30
+FONT_SIZE_SUBHEADER = 20
 
 st.write("")
 st.write("")
@@ -26,20 +32,22 @@ st.write("")
 st.markdown(
     f"""
     <div style="text-align: center;">
-        <div style="font-size: 30px; font-weight: bold; margin: 0;"> Billboard </div>
-        <div style="font-size: 20px; margin: 0;"> Top of the pops </div>
+        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> Billboard </div>
+        <div style="font-size: {FONT_SIZE_SUBHEADER}px; margin: 0;"> Top of the pops </div>
         <br>
     </div>
     """,
     unsafe_allow_html=True
 )
-make_DUMMY_overview_elo_history_chart()
+#make_DUMMY_overview_elo_history_chart()
+make_overview_elo_history_chart(translator=st.session_state.translator)
 
 # View last match history
 st.markdown(
     f"""
     <div style="text-align: center;">
-        <div style="font-size: 30px; font-weight: bold; margin: 0;"> {st.session_state.translator("match_history")} </div>
+        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("match_history")} </div>
+        <br>
     </div>
     """,
     unsafe_allow_html=True
@@ -50,7 +58,7 @@ with col_matches_cont:
     matches_cont = st.container(border=True, height=400)
 
 with matches_cont:
-    #TOCHECK : display_match_card
+    #TODO : get_match_list and display_match_card
 
     # Exemple d'affichage d'un match
     team1 = "ElPoulpo/Sergissimo"
@@ -91,7 +99,7 @@ with matches_cont:
         team1=team1,
         team2=team2,
         team1_won=True,
-        date=date,
+        date=None,
         games_set1_team1=games_set1_team1,
         games_set1_team2=games_set1_team2,
         games_set2_team1=games_set2_team1,
@@ -101,3 +109,17 @@ with matches_cont:
     )
 
 # TODO : Player data table
+st.write("")
+st.markdown(
+    f"""
+    <div style="text-align: center;">
+        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("players_table")} </div>
+        <br>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+#_, col_players_cont, _ = st.columns([1,4,1])
+#with col_players_cont:
+make_player_overview_table(translator=st.session_state.translator)

@@ -28,6 +28,7 @@ _DICT_TO_FR = {
     "submit": "Roule ma poule",
     "ranking": "Classement",
     "players_teams": "Joueurs/Equipes",
+    "players_table": "Tableau des joueurs",
 
 }
 
@@ -57,6 +58,7 @@ _DICT_TO_EN = {
     "submit": "Submit",
     "ranking": "Ranking",
     "players_teams": "Players/Teams",
+    "players_table": "Players table",
 }
 
 class Language(StrEnum):
