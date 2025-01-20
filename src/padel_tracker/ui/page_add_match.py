@@ -101,20 +101,20 @@ with form:
     team_word = st.session_state.translator("team")
     df = pd.DataFrame(
         [
-            {team_word: f"{team_word} 1", "Set 1": None, "Set 2": None, "Set 3": None},
-            {team_word: f"{team_word} 2", "Set 1": None, "Set 2": None, "Set 3": None},
+            {team_word: f"{team_word}1", "Set1": None, "Set2": None, "Set3": None},
+            {team_word: f"{team_word}2", "Set1": None, "Set2": None, "Set3": None},
         ]
     )
     df = df.set_index(team_word)
     # fmt: off
     column_config = {
-        team_word: st.column_config.TextColumn(pinned=True, required=True, validate=fr"^{team_word} [12]$"),
-        "Set 1": st.column_config.NumberColumn(default=None, format="%i", min_value=0, max_value=7, step=1, required=True),
-        "Set 2": st.column_config.NumberColumn(default=None, format="%i", min_value=0, max_value=7, step=1),
-        "Set 3": st.column_config.NumberColumn(default=None, format="%i", min_value=0, max_value=10, step=1),
+        team_word: st.column_config.TextColumn(pinned=True, required=True, validate=fr"^{team_word}[12]$"),
+        "Set1": st.column_config.NumberColumn(default=None, width="small", format="%i", min_value=0, max_value=7, step=1, required=True),
+        "Set2": st.column_config.NumberColumn(default=None, width="small", format="%i", min_value=0, max_value=7, step=1),
+        "Set3": st.column_config.NumberColumn(default=None, width="small", format="%i", min_value=0, max_value=10, step=1),
     }
     # fmt: on
-    _, center_col, _ = st.columns([1, 2.5, 1])
+    _, center_col, _ = st.columns([1, 2.8, 1])
     with center_col:
         score_cont = st.container(border=True)
         with score_cont:
@@ -130,12 +130,12 @@ with form:
             df_score = st.data_editor(
                 df, use_container_width=True, column_config=column_config
             )
-            games_set1_team1 = df_score.at[f"{team_word} 1", "Set 1"]
-            games_set1_team2 = df_score.at[f"{team_word} 2", "Set 1"]
-            games_set2_team1 = df_score.at[f"{team_word} 1", "Set 2"]
-            games_set2_team2 = df_score.at[f"{team_word} 2", "Set 2"]
-            games_set3_team1 = df_score.at[f"{team_word} 1", "Set 3"]
-            games_set3_team2 = df_score.at[f"{team_word} 2", "Set 3"]
+            games_set1_team1 = df_score.at[f"{team_word}1", "Set1"]
+            games_set1_team2 = df_score.at[f"{team_word}2", "Set1"]
+            games_set2_team1 = df_score.at[f"{team_word}1", "Set2"]
+            games_set2_team2 = df_score.at[f"{team_word}2", "Set2"]
+            games_set3_team1 = df_score.at[f"{team_word}1", "Set3"]
+            games_set3_team2 = df_score.at[f"{team_word}2", "Set3"]
 
     # Date selection
     _, date_col, time_col, _ = st.columns([1, 1, 1, 1])

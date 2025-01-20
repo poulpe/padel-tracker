@@ -27,8 +27,8 @@ def define_cards_css() -> None:
                 /*color: #666;*/ 
             }
             .match-card-score-box {
-                width: 35px;
-                height: 35px;
+                width: 32px;
+                height: 32px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -37,9 +37,9 @@ def define_cards_css() -> None:
                 margin-left: 5px;
             }
             .match-card-winner-icon {
-                width: 18px;
-                height: 18px;
-                margin-right: 10px;
+                width: 16px;
+                height: 16px;
+                margin-right: 7px;
                 display: flex;
                 /*align-items: center;*/
                 justify-content: center;
@@ -83,6 +83,18 @@ def display_match_card(
         icon = ""
         if is_winner:
             icon = "✌️"
+        # Strip team length if too long:
+        max_team_length = 15
+        max_player_length = int(max_team_length/2)
+        if len(team_name) > max_team_length:
+            player1, player2 = team_name.split("/")
+            if len(player1) > max_player_length+1:
+                player1 = player1[:max_player_length]
+                player1 += "."
+            if len(player2) > max_player_length+1:
+                player2 = player2[:max_player_length]
+                player2 += "."
+            team_name = f"{player1}/{player2}"
         return f"""
             <div class="match-card-team">
                 <div class="match-card-winner-icon">{icon}</div>
@@ -133,8 +145,8 @@ def make_match_cards(limit_last: int | None = 10) -> None:
         for match in list_matches:
             match_score = MatchScore.from_string(match.score)
             display_match_card(
-                team1=match.teams[0],
-                team2=match.teams[1],
+                team1=str(match.teams[0]),
+                team2=str(match.teams[1]),
                 team1_won=match.team1_won,
                 date=match.date.strftime("%d %b %Y %H:%M"),
                 games_set1_team1=match_score.games_set1_team1,
