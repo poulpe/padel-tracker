@@ -21,3 +21,5 @@ tests/debug/
 *.db
 *.csv
 .env
+conf.toml
+secrets.toml
