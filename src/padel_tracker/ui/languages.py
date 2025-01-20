@@ -20,6 +20,7 @@ _DICT_TO_FR = {
     # UI message
     "language": "Langue",
     "add_match": "Nouveau match",
+    "add_player": "Nouveau joueur",
     "match_history": "Historique des matches",
     "last_match_history": "Historique des derniers matchs",
     "billboard": "Billboard",
@@ -37,6 +38,9 @@ _DICT_TO_FR = {
     "match_added_success": " Match enregistré !",
     "match_added_error": " Impossible d'ajouter le match, erreur inconnue",
     "match_exists_error": " Le match a déja été enregistré",
+    "player_added_success": " a été ajouté avec succès !",
+    "player_added_error": " Impossible d'ajouter le joueur, erreur inconnue:",
+    "player_exists_error": " a déja été enregistré",
     "next_feature": "BIENTOT",
 }
 
@@ -58,6 +62,7 @@ _DICT_TO_EN = {
     # UI message
     "language": "Language",
     "add_match": "Add match",
+    "add_player": "Add player",
     "match_history": "Match history",
     "last_match_history": "Last matches history",
     "billboard": "Billboard",
@@ -75,6 +80,9 @@ _DICT_TO_EN = {
     "match_added_success": " Match added successfully !",
     "match_added_error": " Unknown error during match creation",
     "match_exists_error": " Match already added",
+    "player_added_success": " added successfully !",
+    "player_added_error": " Unknown error during player creation:",
+    "player_exists_error": " has already been added",
     "next_feature": "SOON",
 }
 

@@ -67,15 +67,15 @@ page_overview = st.Page("page_overview.py", title="Overview", icon="🗺️", de
 page_add_match = st.Page(
     "page_add_match.py", title=st.session_state.translator("add_match"), icon="➕"
 )
-page_players = st.Page(
-    "page_players.py", title=st.session_state.translator("players_teams"), icon="👥️"
+page_add_player = st.Page(
+    "page_add_player.py", title=st.session_state.translator("add_player"), icon="👥️"
 )
 
 pg = st.navigation(
     {
         "Padel Tracker": [page_overview],
         st.session_state.translator("matches"): [page_add_match],
-        st.session_state.translator("players_teams"): [page_players],
+        st.session_state.translator("players_teams"): [page_add_player],
         st.session_state.translator("analytics"): [],
     }
 )

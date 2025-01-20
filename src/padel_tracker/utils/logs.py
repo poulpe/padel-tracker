@@ -1,8 +1,11 @@
 import logging
 from pathlib import Path
 
+import supabase  # Cloud loggings
+
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
+from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
 
 # Define custom log level for notif from main (between INFO and WARNING)
 LOG_LEVEL_NOTIF = 25
@@ -39,6 +42,33 @@ class NoTracebackStreamHandler(logging.StreamHandler):
             record.exc_text = cache
 
 
+def create_supabase_client():
+    return supabase.create_client(
+        supabase_url=DICT_CONF["db_credentials"]["supabase_api_url"],
+        supabase_key=DICT_CONF["db_credentials"]["supabase_api_key"],
+    )
+
+
+class SupabaseLogHandler(logging.Handler):
+    def __init__(self, supabase_client: supabase.Client):
+        super().__init__()
+        self.supabase_client = supabase_client
+
+    def emit(self, record):
+        try:
+            # Make log record
+            log_entry = {
+                "timestamp": str(now()),
+                "name": record.name,
+                "level": record.levelname,
+                "message": record.getMessage(),
+            }
+            # Insert in Supabase logs table
+            self.supabase_client.table("logs").insert(log_entry).execute()
+        except Exception as e:
+            print(f"Failed to log to Supabase: {e}")
+
+
 def get_logger(
     log_name: str = "",
     log_level: str | int = None,
@@ -63,6 +93,10 @@ def get_logger(
 
     >>> logger = get_logger('my_object_to_debug', log_level='DEBUG')
     """
+    # If loggings have not been init, init them
+    if not logging.getLogger(MAIN_LOG_NAME).hasHandlers():
+        init_loggings()
+    # Create logger
     if log_name:
         logger_name = f"{MAIN_LOG_NAME}.{log_name}"
     else:
@@ -74,37 +108,54 @@ def get_logger(
 
 
 def init_loggings(
-    log_level: str | int = None,
+    log_level_console: str | int = None,
     log_file_folder: str | Path = None,
     log_level_file: str | int = None,
+    db_mode: DB_MODE_TYPE = None,
+    run_mode: RUN_MODE_TYPE = None,
 ) -> logging.Logger:
     # Get default parameters if None
-    if log_level is None:
-        log_level = DEFAULT_LOG_PARAMETERS["log_level"]
+    if log_level_console is None:
+        try:
+            log_level_console = DICT_CONF["general"]["log_level_console"]
+        except KeyError:
+            log_level_console = DEFAULT_LOG_PARAMETERS["log_level"]
     if log_file_folder is None:
         log_file_folder = DEFAULT_LOG_PARAMETERS["log_file_folder"]
     if log_level_file is None:
         log_level_file = DEFAULT_LOG_PARAMETERS["log_level_file"]
+    if db_mode is None:
+        try:
+            db_mode = DICT_CONF["general"]["db_mode"]
+        except KeyError:
+            db_mode = "local"
+    if run_mode is None:
+        try:
+            run_mode = DICT_CONF["general"]["run_mode"]
+        except KeyError:
+            run_mode = "test"
 
-    logger = logging.getLogger(MAIN_LOG_NAME)
-    logger.setLevel("DEBUG")
+    main_logger = logging.getLogger(MAIN_LOG_NAME)
+    main_logger.setLevel("DEBUG")
 
     # Convert log levels to take into account custom NOTIF level
     # log_level = logging.getLevelName(log_level)
     # log_level_file = logging.getLevelName(log_level_file)
 
     # Remove all handlers (allows refreshing if called several times)
-    if logger.hasHandlers():
-        logger.handlers = []
+    is_reinit = False
+    if main_logger.hasHandlers():
+        main_logger.handlers = []
+        is_reinit = True
 
     # Add console handler
     log_handler_console = NoTracebackStreamHandler()  # logging.StreamHandler()
     log_handler_console.setFormatter(DEFAULT_LOG_FORMATTER)
-    log_handler_console.setLevel(log_level)
-    logger.addHandler(log_handler_console)
+    log_handler_console.setLevel(log_level_console)
+    main_logger.addHandler(log_handler_console)
 
-    # Add file handler
-    if log_file_folder:
+    # Add file handler for local mode
+    if log_file_folder and (db_mode.lower() == "local"):
         # Ensure log folder exists
         if not log_file_folder.exists():
             log_file_folder.mkdir(parents=True)
@@ -113,15 +164,32 @@ def init_loggings(
         log_handler_file = logging.FileHandler(std_log_file)
         log_handler_file.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_file.setLevel(log_level_file)
-        logger.addHandler(log_handler_file)
+        main_logger.addHandler(log_handler_file)
         # Add log file for ERRORS and above only
         err_log_file = log_file_folder / "errors.log"
         log_handler_file = logging.FileHandler(err_log_file)
         log_handler_file.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_file.setLevel("ERROR")
-        logger.addHandler(log_handler_file)
+        main_logger.addHandler(log_handler_file)
 
-    return logger
+    # Add Cloud Supabase handler for "cloud" mode
+    if db_mode.lower() == "cloud":
+        supabase_client = create_supabase_client()
+        log_handler_supabase = SupabaseLogHandler(supabase_client=supabase_client)
+        log_handler_supabase.setFormatter(DEFAULT_LOG_FORMATTER)
+        log_handler_supabase.setLevel(log_level_file)
+        main_logger.addHandler(log_handler_supabase)
+
+    # Log starting message logging
+    logger_init = main_logger.getChild("init_loggings")
+    if is_reinit:
+        msg = f"re-initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
+        logger_init.debug(msg)
+    else:
+        msg = f"initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
+        logger_init.log(LOG_LEVEL_NOTIF, msg)
+
+    return main_logger
 
 
 def set_logging_level(log_level: str | int) -> None:

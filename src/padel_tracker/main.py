@@ -5,13 +5,10 @@ from padel_tracker import models as models
 from padel_tracker.utils.logs import init_loggings
 from padel_tracker.database.db import init_db_and_tables
 from padel_tracker.utils.paths import get_absolute_path
-from padel_tracker.utils.conf import get_conf
-
-DICT_CONF = get_conf()
 
 
-def init_app() -> None:
-    init_loggings(log_level=DICT_CONF["LOG_LEVEL"])
+def init_app(log_level_console: str | int = None) -> None:
+    init_loggings(log_level_console=log_level_console)
     init_db_and_tables()
 
 
@@ -21,4 +18,5 @@ def run_streamlit_app() -> None:
 
 
 if __name__ == "__main__":
+    # init_app() is already called in streamlit app, no needs to recall it
     run_streamlit_app()

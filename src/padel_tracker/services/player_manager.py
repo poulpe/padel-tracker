@@ -12,6 +12,7 @@ from padel_tracker.database.db import (
     get_db_session,
     commit_to_db,
     read_from_db,
+    delete_from_db,
     # delete_from_db,
 )
 
@@ -64,9 +65,7 @@ def create_player(session: Session, name: str, **kwargs) -> Player:
     except PlayerNotFoundError:
         pass  # It's actually OK, player doesn't exists
     else:
-        err_msg = (
-            f"player ({player.name=}, {player.id=}) already exists, won't recreate"
-        )
+        err_msg = f"Player({player.name=}, {player.id=}) already exists, won't recreate"
         logger.error(err_msg)
         raise PlayerExistsError(err_msg)
     # Let's go
@@ -76,9 +75,18 @@ def create_player(session: Session, name: str, **kwargs) -> Player:
     return player
 
 
-# TODO: delete player
-def delete_player() -> None:
-    raise NotImplementedError
+def delete_player(session: Session, player_name: str) -> None:
+    logger = LOGGER.getChild("delete_player")
+    try:
+        player = get_player_from_name(session=session, player_name=player_name)
+        delete_from_db(player, session=session)
+        logger.log(LOG_LEVEL_NOTIF, f"deleted {player_name} successfully from database")
+    except PlayerNotFoundError:
+        err_msg = f"{player_name} doesn't exist, cannot delete it"
+        logger.error(err_msg)
+        raise PlayerNotFoundError(err_msg)
+    except Exception as exc:
+        logger.exception(exc)
 
 
 ##### Team ######

@@ -1,67 +1,69 @@
-import os
-from typing import Iterable, Literal
+from typing import Iterable
 
 import pandas as pd
 from sqlalchemy.engine.base import Engine
 from sqlmodel import SQLModel, create_engine, Session, select
-from dotenv import load_dotenv
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
-from padel_tracker.utils.conf import get_conf
+from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
+from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 
-DICT_CONF = get_conf()
+
+def get_cloud_db_url(
+    user: str, password: str, host: str, port: str, dbname: str
+) -> str:
+    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}?sslmode=require"
 
 
 def set_db_engine(
-    db_mode: Literal[
-        "LOCAL",
-        "CLOUD",
-        "LOCAL_TEST",
-        "CLOUD_TEST",
-        "local",
-        "cloud",
-        "local_test",
-        "cloud_test",
-    ]
+    db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
+    run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
+    user: str = DICT_CONF["db_credentials"]["user"],
+    password: str = DICT_CONF["db_credentials"]["password"],
+    host: str = DICT_CONF["db_credentials"]["host"],
+    port: str = DICT_CONF["db_credentials"]["port"],
+    dbname: str = DICT_CONF["db_credentials"]["dbname"],
 ) -> Engine:
+    logger = get_logger("database.set_db_engine")
     db_mode = db_mode.lower()
+    run_mode = run_mode.lower()
     if db_mode == "local":
-        db_url = f"sqlite:///{get_absolute_path(__file__, "../../../data/database.db")}"
-    elif db_mode == "local_test":
+        db_name = "database"
+        if run_mode == "test":
+            db_name += "_test"
         db_url = (
-            f"sqlite:///{get_absolute_path(__file__, "../../../data/database_test.db")}"
+            f"sqlite:///{get_absolute_path(__file__, f"../../../data/{db_name}.db")}"
         )
     elif db_mode == "cloud":
-        # Load environment variables from .env
-        load_dotenv()
-        # Fetch variables
-        USER = os.getenv("user")
-        PASSWORD = os.getenv("password")
-        HOST = os.getenv("host")
-        PORT = os.getenv("port")
-        DBNAME = os.getenv("dbname")
-        # Construct the SQLAlchemy connection string
-        db_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
-    elif db_mode == "cloud_test":
-        raise NotImplementedError()
-    else:
-        raise ValueError(
-            f"invalid db_mode got from conf.toml. Got {db_mode=}. Must be 'cloud' or 'local'"
+        db_url = get_cloud_db_url(
+            user=user, password=password, host=host, port=port, dbname=dbname
         )
-    return create_engine(db_url)
+    else:
+        err_msg = f"invalid db_mode got from conf.toml. Got {db_mode=}. Must be 'cloud' or 'local'"
+        logger.error(err_msg)
+        raise ValueError(err_msg)
+    # Create engine
+    try:
+        db_engine = create_engine(db_url)
+        msg = f"initialized db engine succesfully in: {db_mode=}, {run_mode=}"
+        logger.log(LOG_LEVEL_NOTIF, msg)
+    except Exception as exc:
+        logger.exception(exc)
+        raise exc
+    return db_engine
 
 
-DB_ENGINE = set_db_engine(db_mode=DICT_CONF["DB_MODE"])
+DEFAULT_DB_ENGINE = set_db_engine()
 
 
-def init_db_and_tables(db_engine: Engine = DB_ENGINE):
+def init_db_and_tables(db_engine: Engine = DEFAULT_DB_ENGINE):
     """To be called in main at init"""
     SQLModel.metadata.create_all(db_engine)
 
 
-def get_db_session(db_engine: Engine = DB_ENGINE) -> Session:
+def get_db_session(db_engine: Engine = DEFAULT_DB_ENGINE) -> Session:
     return Session(db_engine)
 
 
@@ -209,7 +211,7 @@ def read_from_db(
     )
     # Send read request to session
     if session is None:
-        with Session(DB_ENGINE) as session:
+        with Session(DEFAULT_DB_ENGINE) as session:
             reply = session.exec(statement)
             result = reply.one() if unique else reply.all()
     else:

@@ -4,10 +4,9 @@ Populate db with previous data from my history on PadelID
 
 import logging
 
-from padel_tracker.utils.logs import set_logging_level, DEFAULT_LOG_FORMATTER
+from padel_tracker.utils.logs import DEFAULT_LOG_FORMATTER
 from padel_tracker.database.db import (
     Session,
-    init_db_and_tables,
     get_db_session,
 )
 from padel_tracker.services.player_manager import (
@@ -17,6 +16,7 @@ from padel_tracker.services.player_manager import (
 )
 from padel_tracker.services.match_manager import create_match
 from padel_tracker.utils.datetime_utils import make_datetime
+from padel_tracker.main import init_app
 
 LOG_LEVEL = "INFO"
 LOGGER = logging.getLogger("populate_db_history")
@@ -71,10 +71,7 @@ def create_matches(session: Session, list_match_data):
 
 
 if __name__ == "__main__":
-    set_logging_level("WARNING")
-
-    # Creation
-    init_db_and_tables()
+    init_app()
 
     # Populate players
     with get_db_session() as session:

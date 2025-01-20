@@ -60,7 +60,7 @@ st.markdown(
 _, col_matches_cont, _ = st.columns([1, 4, 1])
 
 with col_matches_cont:
-    matches_cont = st.container(border=True, height=400)
+    matches_cont = st.container(border=True, height=450)
 with matches_cont:
     make_match_cards(limit_last=8)
 

@@ -28,8 +28,8 @@ class PlayerBase(SQLModel, validate_assignment=True):
         description="Date of creation of player in database",
         repr=False,
     )
-    last_match_date: datetime = Field(
-        default_factory=now,
+    last_match_date: datetime | None = Field(
+        default=None,
         description="Latest update date of Elo score",
         repr=False,
     )
