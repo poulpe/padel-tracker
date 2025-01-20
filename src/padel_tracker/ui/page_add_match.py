@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+from pydantic import ValidationError
 
 from padel_tracker.utils.datetime_utils import make_datetime_from_combi
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
@@ -7,8 +9,14 @@ from padel_tracker.database.db import get_db_session
 from padel_tracker.services.player_manager import (
     get_all_players,
     get_team_from_players_name,
+    SamePlayerInOneTeamError,
 )
-from padel_tracker.services.match_manager import create_match, MatchExistsError
+from padel_tracker.services.match_manager import (
+    create_match,
+    MatchExistsError,
+    MatchNotFinishedError,
+    SamePlayerInBothTeamsError,
+)
 
 FONT_SIZE_HEADER = 30
 FONT_SIZE_SUBHEADER = 20
@@ -38,10 +46,11 @@ with form:
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
     with col_team1:
+        team1_word = st.session_state.translator("team1")
         st.markdown(
             f"""
             <div style="text-align: center;">
-                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("team1")} </div>
+                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {team1_word} </div>
                 <br>
             </div>
             """,
@@ -62,10 +71,11 @@ with form:
             label_visibility="hidden",
         )
     with col_team2:
+        team2_word = st.session_state.translator("team2")
         st.markdown(
             f"""
             <div style="text-align: center;">
-                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("team2")} </div>
+                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {team2_word} </div>
                 <br>
             </div>
             """,
@@ -86,6 +96,47 @@ with form:
             label_visibility="hidden",
         )
 
+    # Score input as df
+    score_word = st.session_state.translator("score")
+    team_word = st.session_state.translator("team")
+    df = pd.DataFrame(
+        [
+            {team_word: f"{team_word} 1", "Set 1": None, "Set 2": None, "Set 3": None},
+            {team_word: f"{team_word} 2", "Set 1": None, "Set 2": None, "Set 3": None},
+        ]
+    )
+    df = df.set_index(team_word)
+    # fmt: off
+    column_config = {
+        team_word: st.column_config.TextColumn(pinned=True, required=True, validate=fr"^{team_word} [12]$"),
+        "Set 1": st.column_config.NumberColumn(default=None, format="%i", min_value=0, max_value=7, step=1, required=True),
+        "Set 2": st.column_config.NumberColumn(default=None, format="%i", min_value=0, max_value=7, step=1),
+        "Set 3": st.column_config.NumberColumn(default=None, format="%i", min_value=0, max_value=10, step=1),
+    }
+    # fmt: on
+    _, center_col, _ = st.columns([1, 2.5, 1])
+    with center_col:
+        score_cont = st.container(border=True)
+        with score_cont:
+            st.markdown(
+                f"""
+                <div style="text-align: center;">
+                    <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {score_word} </div>
+                    <br>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            df_score = st.data_editor(
+                df, use_container_width=True, column_config=column_config
+            )
+            games_set1_team1 = df_score.at[f"{team_word} 1", "Set 1"]
+            games_set1_team2 = df_score.at[f"{team_word} 2", "Set 1"]
+            games_set2_team1 = df_score.at[f"{team_word} 1", "Set 2"]
+            games_set2_team2 = df_score.at[f"{team_word} 2", "Set 2"]
+            games_set3_team1 = df_score.at[f"{team_word} 1", "Set 3"]
+            games_set3_team2 = df_score.at[f"{team_word} 2", "Set 3"]
+
     # Date selection
     _, date_col, time_col, _ = st.columns([1, 1, 1, 1])
     with date_col:
@@ -93,132 +144,6 @@ with form:
     with time_col:
         time = st.time_input(st.session_state.translator("time"), value="18:30")
 
-    # Score input
-    _, col_set1_title, col_set2_title, col_set3_title = st.columns(
-        [0.4, 0.2, 0.2, 0.2], vertical_alignment="bottom"
-    )
-    with col_set1_title:
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <br>
-                <div style="font-size: {16}px; margin: 0;">Set 1</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col_set2_title:
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <br>
-                <div style="font-size: {16}px; margin: 0;">Set 2</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col_set3_title:
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <br>
-                <div style="font-size: {16}px; margin: 0;">Set 3</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    col_teams, col_set1, col_set2, col_set3 = st.columns(
-        [0.4, 0.2, 0.2, 0.2], vertical_alignment="top"
-    )
-    with col_teams:
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <br>
-                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("team1")} </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.divider()
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("team2")} </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col_set1:
-        games_set1_team1 = st.number_input(
-            "games_set1_team1",
-            value=None,
-            min_value=0,
-            max_value=7,
-            step=1,
-            format="%i",
-            label_visibility="hidden",
-        )
-        games_set1_team2 = st.number_input(
-            "games_set1_team2",
-            value=None,
-            min_value=0,
-            max_value=7,
-            step=1,
-            format="%i",
-            label_visibility="hidden",
-        )
-    with col_set2:
-        games_set2_team1 = st.number_input(
-            "games_set2_team1",
-            value=None,
-            min_value=0,
-            max_value=7,
-            step=1,
-            format="%i",
-            label_visibility="hidden",
-        )
-        games_set2_team2 = st.number_input(
-            "games_set2_team2",
-            value=None,
-            min_value=0,
-            max_value=7,
-            step=1,
-            format="%i",
-            label_visibility="hidden",
-        )
-    with col_set3:
-        games_set3_team1 = st.number_input(
-            "games_set3_team1",
-            value=None,
-            min_value=0,
-            max_value=10,
-            step=1,
-            format="%i",
-            label_visibility="hidden",
-        )
-        games_set3_team2 = st.number_input(
-            "games_set3_team2",
-            value=None,
-            min_value=0,
-            max_value=10,
-            step=1,
-            format="%i",
-            label_visibility="hidden",
-        )
-
-    # with col_set1:
-    #     games_set1_team1 = st.text_input("games_set1_team1", value=None, label_visibility="hidden")
-    #     games_set1_team2 = st.text_input("games_set1_team2", value=None, label_visibility="hidden")
-    # with col_set2:
-    #     games_set2_team1 = st.text_input("games_set2_team1", value=None, label_visibility="hidden")
-    #     games_set2_team2 = st.text_input("games_set2_team2", value=None, label_visibility="hidden")
-    # with col_set3:
-    #     games_set3_team1 = st.text_input("games_set3_team1", value=None,  label_visibility="hidden")
-    #     games_set3_team2 = st.text_input("games_set3_team2", value=None,  label_visibility="hidden")
-
-    st.write("")
     st.write("")
 
     # Submit button
@@ -228,41 +153,88 @@ with form:
             label=st.session_state.translator("submit"), use_container_width=True
         )
 
-# Create match if submitted
+# Checks Players have been fulfilled
+is_players_all_fulfilled = True
 if submit_button:
+    if (not team1_player1_name) or (not team1_player2_name):
+        st.error(st.session_state.translator("player_not_selected_error"), icon="💢")
+        is_players_all_fulfilled = False
+    elif (not team2_player1_name) or (not team2_player2_name):
+        st.error(st.session_state.translator("player_not_selected_error"), icon="💢")
+        is_players_all_fulfilled = False
+
+# Checks Score have been fulfilled
+is_score_validated = False
+match_score = None
+if submit_button and is_players_all_fulfilled:
+    try:
+        match_score = MatchScore(
+            games_set1_team1=games_set1_team1,
+            games_set1_team2=games_set1_team2,
+            games_set2_team1=games_set2_team1,
+            games_set2_team2=games_set2_team2,
+            games_set3_team1=games_set3_team1,
+            games_set3_team2=games_set3_team2,
+        )
+        is_score_validated = True
+    except ValidationError:
+        st.error(st.session_state.translator("match_not_finished_error"), icon="💢")
+    except Exception as exc:
+        st.error(
+            f"{st.session_state.translator("match_not_finished_error")}: {exc}",
+            icon="💢",
+        )
+
+# Create match if submitted
+if submit_button and is_players_all_fulfilled and is_score_validated:
+    # Go create match
     match_datetime = make_datetime_from_combi(date, time)
-    match_score = MatchScore(
-        games_set1_team1=games_set1_team1,
-        games_set1_team2=games_set1_team2,
-        games_set2_team1=games_set2_team1,
-        games_set2_team2=games_set2_team2,
-        games_set3_team1=games_set3_team1,
-        games_set3_team2=games_set3_team2,
-    )
     with get_db_session() as session:
-        team1 = get_team_from_players_name(
-            session=session,
-            player1_name=team1_player1_name,
-            player2_name=team1_player2_name,
-            create_if_not_found=True,
-        )
-        team2 = get_team_from_players_name(
-            session=session,
-            player1_name=team2_player1_name,
-            player2_name=team2_player2_name,
-            create_if_not_found=True,
-        )
         try:
-            create_match(
+            team1 = get_team_from_players_name(
                 session=session,
-                teams=[team1, team2],
-                date=match_datetime,
-                score=match_score,
+                player1_name=team1_player1_name,
+                player2_name=team1_player2_name,
+                create_if_not_found=True,
             )
-            st.success(st.session_state.translator("match_added_success"), icon="🔥")
-        except MatchExistsError:
-            st.error(st.session_state.translator("match_exists_error"), icon="💢")
+            team2 = get_team_from_players_name(
+                session=session,
+                player1_name=team2_player1_name,
+                player2_name=team2_player2_name,
+                create_if_not_found=True,
+            )
+        except SamePlayerInOneTeamError:
+            st.error(st.session_state.translator("team_same_player_error"), icon="💢")
         except Exception as exc:
             st.error(
                 f"{st.session_state.translator("match_added_error")}: {exc}", icon="💥"
             )
+        else:
+            try:
+                create_match(
+                    session=session,
+                    teams=[team1, team2],
+                    date=match_datetime,
+                    score=match_score,
+                )
+                st.success(
+                    st.session_state.translator("match_added_success"), icon="🔥"
+                )
+            except MatchExistsError:
+                st.error(st.session_state.translator("match_exists_error"), icon="💢")
+            except MatchNotFinishedError:
+                st.error(
+                    st.session_state.translator("match_not_finished_error"), icon="💢"
+                )
+            except SamePlayerInBothTeamsError:
+                st.error(
+                    st.session_state.translator(
+                        "match_same_player_in_both_teams_error"
+                    ),
+                    icon="💢",
+                )
+            except Exception as exc:
+                st.error(
+                    f"{st.session_state.translator("match_added_error")}: {exc}",
+                    icon="💥",
+                )

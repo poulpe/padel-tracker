@@ -21,7 +21,7 @@ with col_button_1:
     )
 with col_button_2:
     button_feature_2 = st.button(
-        st.session_state.translator("next_feature"),
+        st.session_state.translator("add_player"),
         type="primary",
         use_container_width=True,
     )
@@ -29,7 +29,7 @@ with col_button_2:
 if button_add_match:
     st.switch_page("page_add_match.py")
 if button_feature_2:
-    pass
+    st.switch_page("page_add_player.py")
 
 st.write("")
 st.write("")

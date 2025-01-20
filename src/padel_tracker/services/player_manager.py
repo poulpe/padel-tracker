@@ -100,6 +100,10 @@ class TeamNotFoundError(Exception):
     """Tean not found and probably doesn't exist in database"""
 
 
+class SamePlayerInOneTeamError(Exception):
+    """Same player have been selected to create 1 team"""
+
+
 def get_team_from_players_name(
     session: Session,
     player1_name: str,
@@ -122,7 +126,13 @@ def get_team_from_players_name(
     ------
     TeamNotFoundError
         If team doesn't exist in database
+    SamePlayerInOneTeamError:
+        If player1_name == player2_name
     """
+    if player1_name == player2_name:
+        raise SamePlayerInOneTeamError(
+            f"same player in the team. Got {player1_name=} and {player2_name=}"
+        )
     team_name = Team.get_name_from_players_name(player1_name, player2_name)
     try:
         team = read_from_db(

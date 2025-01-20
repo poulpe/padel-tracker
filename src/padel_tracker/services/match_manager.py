@@ -34,6 +34,14 @@ class MatchNotFoundError(Exception):
     """Match not found and probably doesn't exist in database"""
 
 
+class MatchNotFinishedError(Exception):
+    """Match score are not valid to determine winner/loser"""
+
+
+class SamePlayerInBothTeamsError(Exception):
+    """Same player is present in 2 competing teams, cannot duplicate people"""
+
+
 def process_finished_match(session: Session, finished_match: Match) -> None:
     update_players_results_after_finished_match(
         session=session, finished_match=finished_match
@@ -71,6 +79,15 @@ def create_match(
             err_msg = f"a team must have exactly 2 players. Got {nb_player=} in {team=}"
             logger.error(err_msg)
             raise ValueError(err_msg)
+    # Checks if 1 player is in both teams
+    for player in teams[0].players:
+        if player in teams[1].players:
+            err_msg = f"{player.name} is in both teams"
+            raise SamePlayerInBothTeamsError(err_msg)
+    for player in teams[1].players:
+        if player in teams[0].players:
+            err_msg = f"{player.name} is in both teams"
+            raise SamePlayerInBothTeamsError(err_msg)
 
     # Create match
     players = [
@@ -96,7 +113,9 @@ def create_match(
             process_finished_match(session=session, finished_match=match)
         except Exception:
             delete_from_db(match, session=session)
-            logger.error("match is not finished, deleted it from db and won't process")
+            err_msg = "match is not finished, deleted it from db and won't process"
+            logger.error(err_msg)
+            raise MatchNotFinishedError(err_msg)
     return match
 
 

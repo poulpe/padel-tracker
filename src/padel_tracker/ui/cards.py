@@ -14,23 +14,17 @@ def define_cards_css() -> None:
                 border: 2px solid #e6e6e6;
                 border-radius: 10px;
                 padding: 15px;
-                width: 400px;
-                /*background-color: #f9f9f9;*/
+                /*width: 400px;
+                background-color: #f9f9f9;*/
                 box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-                font-family: Arial, sans-serif;
+                /*font-family: Arial, sans-serif;*/
             }
             .match-card-team {
                 display: flex;
                 justify-content: space-between;
-                font-size: 18px;
+                font-size: 16px;
                 font-weight: bold;
                 /*color: #666;*/ 
-            }
-            .match-card-score {
-                display: flex;
-                justify-content: space-between;
-                margin-top: 10px;
-                font-size: 20px;
             }
             .match-card-score-box {
                 width: 35px;
@@ -82,7 +76,7 @@ def display_match_card(
 
     def render_score_box(score: str | int) -> str:
         """Render a framed box for a score (empty if None)"""
-        return f'<div class="match-card-score-box">{score if score is not None else ""}</div>'
+        return f'<div class="match-card-score-box">{score if score is not None else " "}</div>'
 
     def render_team(team_name: str, is_winner: bool) -> str:
         """Render aligned container with or without winner icon"""
