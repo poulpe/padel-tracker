@@ -7,12 +7,13 @@ Small app to keep track of Padel matches
 - Loggings
   - [x] Overall stuff
 - UI
-    - [ ] Basic Streamlit tuto
+    - [x] Basic Streamlit tuto
     - [ ] General layout
     - [ ] Graphs
 - Database
     - [ ] Deletes
     - [ ] Migrations
+    - [ ] Get 'data' online
 - Features
     - [ ] Best teammate
     - [ ] nb_games per Match ?

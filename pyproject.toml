@@ -10,8 +10,9 @@ authors = [
 dependencies = [
     "streamlit", # For UI
     "sqlmodel", # Combines sqlalchemy and pydantic
+    "psycopg2", # For PostgreSQL com on cloud-hosted db
+    "python-dotenv", # Secret management in .env file (cloud-hosted db)
     "pandas",
-    "numpy",
 ]
 [project.optional-dependencies]
 dev = [
@@ -28,8 +29,8 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = {attr = "padel_tracker.__version__"}
 
-#[project.scripts]
-#main = "padel_tracker.__main__:main"
+[project.scripts]
+padel-tracker = "padel_tracker.main:run_streamlit_app"
 
 [project.urls]
 Repository = "https://github.com/poulpe/padel-tracker"

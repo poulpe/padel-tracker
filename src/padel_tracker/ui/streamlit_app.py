@@ -16,6 +16,7 @@ from padel_tracker.main import init_app
 init_app()
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
+
 ##### Utils func #####
 def get_base64_image(image_path: Path) -> str:
     with image_path.open("rb") as img_file:
@@ -25,6 +26,7 @@ def get_base64_image(image_path: Path) -> str:
 
 LOGO_IMG = get_absolute_path(__file__, "./img/padel_logo.jpg")
 LOGO_IMG_BASE64 = get_base64_image(LOGO_IMG)
+
 
 ##### Translation feature in Session state
 if "language" not in st.session_state:

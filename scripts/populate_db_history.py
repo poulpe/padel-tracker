@@ -7,7 +7,7 @@ import logging
 from padel_tracker.utils.logs import set_logging_level, DEFAULT_LOG_FORMATTER
 from padel_tracker.database.db import (
     Session,
-    create_db_and_tables,
+    init_db_and_tables,
     get_db_session,
 )
 from padel_tracker.services.player_manager import (
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     set_logging_level("WARNING")
 
     # Creation
-    create_db_and_tables()
+    init_db_and_tables()
 
     # Populate players
     with get_db_session() as session:

@@ -94,7 +94,7 @@ def create_match(
     if is_finished:
         try:
             process_finished_match(session=session, finished_match=match)
-        except:
+        except Exception:
             delete_from_db(match, session=session)
             logger.error("match is not finished, deleted it from db and won't process")
     return match

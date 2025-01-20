@@ -1,29 +1,72 @@
-from typing import Iterable
+import os
+from typing import Iterable, Literal
 
 import pandas as pd
+from sqlalchemy.engine.base import Engine
 from sqlmodel import SQLModel, create_engine, Session, select
+from dotenv import load_dotenv
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
+from padel_tracker.utils.conf import get_conf
 
-DB_PATH = get_absolute_path(__file__, "../../../data/database.db")
-SQLITE_URL = f"sqlite:///{str(DB_PATH)}"
-
-DB_ENGINE = create_engine(SQLITE_URL, echo=False)
+DICT_CONF = get_conf()
 
 
-def create_db_and_tables():
+def set_db_engine(
+    db_mode: Literal[
+        "LOCAL",
+        "CLOUD",
+        "LOCAL_TEST",
+        "CLOUD_TEST",
+        "local",
+        "cloud",
+        "local_test",
+        "cloud_test",
+    ]
+) -> Engine:
+    db_mode = db_mode.lower()
+    if db_mode == "local":
+        db_url = f"sqlite:///{get_absolute_path(__file__, "../../../data/database.db")}"
+    elif db_mode == "local_test":
+        db_url = (
+            f"sqlite:///{get_absolute_path(__file__, "../../../data/database_test.db")}"
+        )
+    elif db_mode == "cloud":
+        # Load environment variables from .env
+        load_dotenv()
+        # Fetch variables
+        USER = os.getenv("user")
+        PASSWORD = os.getenv("password")
+        HOST = os.getenv("host")
+        PORT = os.getenv("port")
+        DBNAME = os.getenv("dbname")
+        # Construct the SQLAlchemy connection string
+        db_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+    elif db_mode == "cloud_test":
+        raise NotImplementedError()
+    else:
+        raise ValueError(
+            f"invalid db_mode got from conf.toml. Got {db_mode=}. Must be 'cloud' or 'local'"
+        )
+    return create_engine(db_url)
+
+
+DB_ENGINE = set_db_engine(db_mode=DICT_CONF["DB_MODE"])
+
+
+def init_db_and_tables(db_engine: Engine = DB_ENGINE):
     """To be called in main at init"""
-    SQLModel.metadata.create_all(DB_ENGINE)
+    SQLModel.metadata.create_all(db_engine)
 
 
-def get_db_session() -> Session:
-    return Session(DB_ENGINE)
+def get_db_session(db_engine: Engine = DB_ENGINE) -> Session:
+    return Session(db_engine)
 
 
 def commit_to_db_no_session(*objects, refresh: bool = True) -> None:
-    with Session(DB_ENGINE) as session:
+    with get_db_session() as session:
         for object in objects:
             session.add(object)
         session.commit()

@@ -263,4 +263,6 @@ if submit_button:
         except MatchExistsError:
             st.error(st.session_state.translator("match_exists_error"), icon="💢")
         except Exception as exc:
-            st.error(f"{st.session_state.translator("match_added_error")}: {exc}", icon="💥")
+            st.error(
+                f"{st.session_state.translator("match_added_error")}: {exc}", icon="💥"
+            )
