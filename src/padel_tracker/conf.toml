@@ -1,0 +1,3 @@
+log_level_console = "INFO"
+db_mode = "cloud" # "local" or "cloud"
+run_mode = "prod" # "test" or "prod"
