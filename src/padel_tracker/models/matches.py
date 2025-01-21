@@ -2,7 +2,7 @@ from typing import Self
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 from pydantic import BaseModel, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
@@ -177,7 +177,7 @@ class Match(SQLModel, table=True, validate_assignment=True):
     players: list[Player] = Relationship(
         back_populates="matches", link_model=PlayerMatchLink
     )
-    date: datetime = Field(default_factory=now, description="Match execution date")
+    date: datetime = Field(default_factory=now, description="Match execution date", sa_column=Column(DateTime(timezone=True)))
     score: str | None = Field(None, description="string formatted as '6-4, 7-5'")
     team1_won: bool | None = Field(
         None, description="True/False if team1_won. None for no winner"
