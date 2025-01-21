@@ -180,10 +180,8 @@ if submit_button and is_players_all_fulfilled:
     except ValidationError:
         st.error(st.session_state.translator("match_not_finished_error"), icon="💢")
     except Exception as exc:
-        st.error(
-            f"{st.session_state.translator("match_not_finished_error")}: {exc}",
-            icon="💢",
-        )
+        err_msg = f"{st.session_state.translator("match_not_finished_error")}: {exc}"
+        st.error(err_msg, icon="💢")
 
 # Create match if submitted
 if submit_button and is_players_all_fulfilled and is_score_validated:
@@ -206,9 +204,8 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
         except SamePlayerInOneTeamError:
             st.error(st.session_state.translator("team_same_player_error"), icon="💢")
         except Exception as exc:
-            st.error(
-                f"{st.session_state.translator("match_added_error")}: {exc}", icon="💥"
-            )
+            err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
+            st.error(err_msg, icon="💥")
         else:
             try:
                 create_match(
@@ -217,24 +214,16 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                     date=match_datetime,
                     score=match_score,
                 )
-                st.success(
-                    st.session_state.translator("match_added_success"), icon="🔥"
-                )
+                success_msg = st.session_state.translator("match_added_success")
+                st.success(success_msg, icon="🔥")
             except MatchExistsError:
                 st.error(st.session_state.translator("match_exists_error"), icon="💢")
             except MatchNotFinishedError:
-                st.error(
-                    st.session_state.translator("match_not_finished_error"), icon="💢"
-                )
+                err_msg = st.session_state.translator("match_not_finished_error")
+                st.error(err_msg, icon="💢")
             except SamePlayerInBothTeamsError:
-                st.error(
-                    st.session_state.translator(
-                        "match_same_player_in_both_teams_error"
-                    ),
-                    icon="💢",
-                )
+                err_msg = st.session_state.translator("same_player_in_both_teams_error")
+                st.error(err_msg, icon="💢")
             except Exception as exc:
-                st.error(
-                    f"{st.session_state.translator("match_added_error")}: {exc}",
-                    icon="💥",
-                )
+                err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
+                st.error(err_msg,icon="💥")

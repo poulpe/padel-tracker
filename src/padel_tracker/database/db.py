@@ -8,7 +8,7 @@ from sqlmodel import SQLModel, create_engine, Session, select
 from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
-from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.utils.logs import get_logger
 
 
 def get_cloud_db_url(
@@ -33,9 +33,8 @@ def set_db_engine(
         db_name = "database"
         if run_mode == "test":
             db_name += "_test"
-        db_url = (
-            f"sqlite:///{get_absolute_path(__file__, f"../../../data/{db_name}.db")}"
-        )
+        db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
+        db_url = f"sqlite:///{db_file}"
     elif db_mode == "cloud":
         db_url = get_cloud_db_url(
             user=user, password=password, host=host, port=port, dbname=dbname
@@ -48,7 +47,7 @@ def set_db_engine(
     try:
         db_engine = create_engine(db_url)
         msg = f"initialized db engine succesfully in: {db_mode=}, {run_mode=}"
-        logger.log(LOG_LEVEL_NOTIF, msg)
+        logger.info(msg)
     except Exception as exc:
         logger.exception(exc)
         raise exc
