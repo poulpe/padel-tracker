@@ -53,21 +53,55 @@ def set_db_engine(
         raise exc
     return db_engine
 
+class Database:
+    """Utils object for getting database sessions"""
+    def __init__(
+        self,
+        db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
+        run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
+        user: str = DICT_CONF["db_credentials"]["user"],
+        password: str = DICT_CONF["db_credentials"]["password"],
+        host: str = DICT_CONF["db_credentials"]["host"],
+        port: str = DICT_CONF["db_credentials"]["port"],
+        dbname: str = DICT_CONF["db_credentials"]["dbname"]
+    ):
+        self._engine = None
+        self.db_mode = db_mode
+        self.run_mode = run_mode
+        self.user = user
+        self.password = password
+        self.host = host
+        self.port = port
+        self.dbname = dbname
 
-DEFAULT_DB_ENGINE = set_db_engine()
+    @property
+    def engine(self):
+        if not self._engine:
+            self._engine = set_db_engine(
+                db_mode=self.db_mode,
+                run_mode=self.run_mode,
+                user=self.user,
+                password=self.password,
+                host=self.host,
+                port=self.port,
+                dbname=self.dbname,
+            )
+        return self._engine
+
+    def get_session(self):
+        return Session(self.engine)
 
 
-def init_db_and_tables(db_engine: Engine = DEFAULT_DB_ENGINE):
+DB = Database()
+
+def init_db_and_tables():
     """To be called in main at init"""
-    SQLModel.metadata.create_all(db_engine)
-
-
-def get_db_session(db_engine: Engine = DEFAULT_DB_ENGINE) -> Session:
-    return Session(db_engine)
+    #TODO : create logs table
+    SQLModel.metadata.create_all(DB.engine)
 
 
 def commit_to_db_no_session(*objects, refresh: bool = True) -> None:
-    with get_db_session() as session:
+    with DB.get_session() as session:
         for object in objects:
             session.add(object)
         session.commit()
@@ -90,7 +124,7 @@ def commit_to_db(*objects, session: Session = None, refresh: bool = True) -> Non
 
     Examples
     --------
-    >>> with get_db_session() as session:
+    >>> with DB.get_session() as session:
     ...     "Create objects p1, p2 and p3"
     ...     commit_to_db(p1, p2, p3, session=session)
 
@@ -165,7 +199,7 @@ def read_from_db(
 
     >>> # SESSION : already opened a session and want the read to be executed in this context
     >>> match_id_to_retrieve = 12
-    >>> with get_db_session() as session:
+    >>> with DB.get_session() as session:
     ...     # Retrieve Match
     ...     finished_match: Match = read_from_db(
     ...         Match,
@@ -210,7 +244,7 @@ def read_from_db(
     )
     # Send read request to session
     if session is None:
-        with Session(DEFAULT_DB_ENGINE) as session:
+        with DB.get_session() as session:
             reply = session.exec(statement)
             result = reply.one() if unique else reply.all()
     else:

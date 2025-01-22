@@ -1,6 +1,6 @@
 import streamlit as st
 
-from padel_tracker.database.db import get_db_session
+from padel_tracker.database.db import DB
 from padel_tracker.services.match_manager import get_all_matches, get_last_matches
 from padel_tracker.models.matches import MatchScore
 
@@ -83,18 +83,23 @@ def display_match_card(
         icon = ""
         if is_winner:
             icon = "✌️"
-        # Strip team length if too long:
-        max_team_length = 15
-        max_player_length = int(max_team_length/2)
-        if len(team_name) > max_team_length:
-            player1, player2 = team_name.split("/")
-            if len(player1) > max_player_length+1:
-                player1 = player1[:max_player_length]
-                player1 += "."
-            if len(player2) > max_player_length+1:
-                player2 = player2[:max_player_length]
-                player2 += "."
-            team_name = f"{player1}/{player2}"
+        # Strip team length if too long (only on mobile)
+        try:
+            device_type = st.session_state.device_type
+        except Exception:
+            device_type = "pc"
+        if device_type == "mobile":
+            max_team_length = 15
+            max_player_length = int(max_team_length/2)
+            if len(team_name) > max_team_length:
+                player1, player2 = team_name.split("/")
+                if len(player1) > max_player_length+1:
+                    player1 = player1[:max_player_length]
+                    player1 += "."
+                if len(player2) > max_player_length+1:
+                    player2 = player2[:max_player_length]
+                    player2 += "."
+                team_name = f"{player1}/{player2}"
         return f"""
             <div class="match-card-team">
                 <div class="match-card-winner-icon">{icon}</div>
@@ -136,7 +141,7 @@ def display_match_card(
 
 
 def make_match_cards(limit_last: int | None = 10) -> None:
-    with get_db_session() as session:
+    with DB.get_session() as session:
         if not limit_last:
             list_matches = get_all_matches(session=session)
         else:

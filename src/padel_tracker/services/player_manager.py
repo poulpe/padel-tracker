@@ -9,7 +9,6 @@ from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
 from padel_tracker.database.db import (
     Session,
-    get_db_session,
     commit_to_db,
     read_from_db,
     delete_from_db,
@@ -178,11 +177,3 @@ def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
 
 def delete_team() -> None:
     raise NotImplementedError("no real point of deleting a team ?")
-
-
-if __name__ == "__main__":
-    with get_db_session() as session:
-        try:
-            team = get_team_from_players_name(session, "p6", "p2")
-        except sqlalchemy.exc.NoResultFound or sqlalchemy.exc:
-            print("it's OK")

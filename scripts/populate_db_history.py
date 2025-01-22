@@ -7,7 +7,7 @@ import logging
 from padel_tracker.utils.logs import DEFAULT_LOG_FORMATTER
 from padel_tracker.database.db import (
     Session,
-    get_db_session,
+    DB,
 )
 from padel_tracker.services.player_manager import (
     create_player,
@@ -74,11 +74,11 @@ if __name__ == "__main__":
     init_app()
 
     # Populate players
-    with get_db_session() as session:
+    with DB.get_session() as session:
         create_players(session)
 
     # Populates matches
-    with get_db_session() as session:
+    with DB.get_session() as session:
         create_matches(session, list_match_data)
 
     LOGGER.warning("END")
