@@ -61,21 +61,16 @@ st.markdown(html_code_top_header, unsafe_allow_html=True)
 ##### Define CSS #####
 define_cards_css()
 
-##### TOCHECK: Determine if execution on computer or mobile #####
-screen_inner_width = streamlit_js_eval(
-    js_expressions='window.innerWidth', key='WIDTH', want_output=True
-)
-device_type = "pc" # Default
-if screen_inner_width is not None:
-    device_type = "mobile" if screen_inner_width < 662 else "pc"
-st.write(f"{screen_inner_width=}")
-st.write(f"{device_type=}")
-
-st.session_state.device_type = device_type
-st.session_state.screen_inner_width = screen_inner_width
-
-st.write(f"{st.session_state.screen_inner_width=}")
-st.write(f"{st.session_state.device_type=}")
+##### Determine if execution on computer or mobile #####
+if ("screen_inner_width" not in st.session_state) or (st.session_state.screen_inner_width is None):
+    screen_inner_width = streamlit_js_eval(
+        js_expressions='window.innerWidth', key='WIDTH', want_output=True
+    )
+    device_type = "pc" # Default
+    if screen_inner_width is not None:
+        device_type = "mobile" if screen_inner_width < 550 else "pc"
+        st.session_state.screen_inner_width = screen_inner_width
+    st.session_state.device_type = device_type
 
 ##### Pages definition #####
 page_overview = st.Page("page_overview.py", title="Overview", icon="🗺️", default=True)
