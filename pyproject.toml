@@ -9,7 +9,7 @@ authors = [
 ]
 dependencies = [
     "streamlit", # For UI
-    "streamlit_js_eval", # For UI
+    "streamlit-js-eval", # For UI
     "sqlmodel", # Combines sqlalchemy and pydantic
     "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
     "supabase", # For PostgreSQL com on cloud-hosted db
@@ -18,8 +18,6 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
-    "black>=23",
-    "ruff",
     "pytest",
     "coverage",
 ]
