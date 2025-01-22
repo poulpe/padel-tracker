@@ -54,7 +54,8 @@ class EloRatingHistory(SQLModel, table=True, validate_assignment=True):
     player: "Player" = Relationship(back_populates="elo_rating_history")
     # Actual data
     date: datetime = Field(
-        default_factory=now, sa_column=Column(DateTime(timezone=True), index=True),
+        default_factory=now,
+        sa_column=Column(DateTime(timezone=True), index=True),
     )
     elo_rating: NonNegativeInt = Field()
     elo_rating_gain: int = Field()

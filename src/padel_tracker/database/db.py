@@ -53,8 +53,10 @@ def set_db_engine(
         raise exc
     return db_engine
 
+
 class Database:
     """Utils object for getting database sessions"""
+
     def __init__(
         self,
         db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
@@ -63,7 +65,7 @@ class Database:
         password: str = DICT_CONF["db_credentials"]["password"],
         host: str = DICT_CONF["db_credentials"]["host"],
         port: str = DICT_CONF["db_credentials"]["port"],
-        dbname: str = DICT_CONF["db_credentials"]["dbname"]
+        dbname: str = DICT_CONF["db_credentials"]["dbname"],
     ):
         self._engine = None
         self.db_mode = db_mode
@@ -94,9 +96,10 @@ class Database:
 
 DB = Database()
 
+
 def init_db_and_tables():
     """To be called in main at init"""
-    #TODO : create logs table
+    # TODO : create logs table
     SQLModel.metadata.create_all(DB.engine)
 
 

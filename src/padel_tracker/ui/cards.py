@@ -90,13 +90,13 @@ def display_match_card(
             device_type = "pc"
         if device_type == "mobile":
             max_team_length = 15
-            max_player_length = int(max_team_length/2)
+            max_player_length = int(max_team_length / 2)
             if len(team_name) > max_team_length:
                 player1, player2 = team_name.split("/")
-                if len(player1) > max_player_length+1:
+                if len(player1) > max_player_length + 1:
                     player1 = player1[:max_player_length]
                     player1 += "."
-                if len(player2) > max_player_length+1:
+                if len(player2) > max_player_length + 1:
                     player2 = player2[:max_player_length]
                     player2 += "."
                 team_name = f"{player1}/{player2}"

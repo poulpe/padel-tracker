@@ -30,7 +30,8 @@ with form:
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
-            label=st.session_state.translator("submit"), use_container_width=True,
+            label=st.session_state.translator("submit"),
+            use_container_width=True,
         )
 
 if submit_button:

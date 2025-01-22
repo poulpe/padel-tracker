@@ -34,8 +34,10 @@ if "language" not in st.session_state:
     st.session_state.language = DEFAULT_LANGUAGE
     st.session_state.translator = LanguageTranslator(DEFAULT_LANGUAGE)
 
+
 def update_session_state_translator() -> None:
     st.session_state.translator = LanguageTranslator(st.session_state.language)
+
 
 st.sidebar.selectbox(
     st.session_state.translator("language"),
@@ -62,11 +64,13 @@ st.markdown(html_code_top_header, unsafe_allow_html=True)
 define_cards_css()
 
 ##### Determine if execution on computer or mobile #####
-if ("screen_inner_width" not in st.session_state) or (st.session_state.screen_inner_width is None):
+if ("screen_inner_width" not in st.session_state) or (
+    st.session_state.screen_inner_width is None
+):
     screen_inner_width = streamlit_js_eval(
-        js_expressions='window.innerWidth', key='WIDTH', want_output=True
+        js_expressions="window.innerWidth", key="WIDTH", want_output=True
     )
-    device_type = "pc" # Default
+    device_type = "pc"  # Default
     if screen_inner_width is not None:
         device_type = "mobile" if screen_inner_width < 550 else "pc"
         st.session_state.screen_inner_width = screen_inner_width

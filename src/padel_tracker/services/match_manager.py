@@ -3,6 +3,7 @@ CRUD on Matches and repercussions on players/teams
 
 'session' refers as "database session", that can be obtained via call to get_db_session()
 """
+
 import logging
 from uuid import UUID
 from datetime import datetime
@@ -98,7 +99,11 @@ def create_match(
     ]
     ## Check match doesn't exist already
     check_match_not_already_created(
-        session=session, teams=teams, date=date, score=score, logger=logger,
+        session=session,
+        teams=teams,
+        date=date,
+        score=score,
+        logger=logger,
     )
 
     match = Match(teams=teams, players=players, date=date, score=score)
@@ -168,7 +173,7 @@ def check_match_not_already_created(
     # players:list[Player],
     date: datetime,
     score: str | MatchScore | None = None,
-    logger:logging.Logger=LOGGER,
+    logger: logging.Logger = LOGGER,
 ) -> None:
     list_matches_same_date_score = read_from_db(
         Match,

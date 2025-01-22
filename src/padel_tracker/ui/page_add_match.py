@@ -226,4 +226,4 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 st.error(err_msg, icon="💢")
             except Exception as exc:
                 err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
-                st.error(err_msg,icon="💥")
+                st.error(err_msg, icon="💥")

@@ -43,7 +43,7 @@ def get_player_from_name(session: Session, name: str) -> Player:
     """
     try:
         player = read_from_db(
-            Player, where=Player.name==name, unique=True, session=session
+            Player, where=Player.name == name, unique=True, session=session
         )
     except sqlalchemy.exc.NoResultFound:
         raise PlayerNotFoundError(f"player '{name}' not found in database")
