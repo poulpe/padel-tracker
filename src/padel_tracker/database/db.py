@@ -17,7 +17,7 @@ def get_cloud_db_url(
     return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}?sslmode=require"
 
 
-def set_db_engine(
+def get_db_url(
     db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
     run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
     user: str = DICT_CONF["db_credentials"]["user"],
@@ -25,8 +25,7 @@ def set_db_engine(
     host: str = DICT_CONF["db_credentials"]["host"],
     port: str = DICT_CONF["db_credentials"]["port"],
     dbname: str = DICT_CONF["db_credentials"]["dbname"],
-) -> Engine:
-    logger = get_logger("database.set_db_engine")
+) -> str:
     db_mode = db_mode.lower()
     run_mode = run_mode.lower()
     if db_mode == "local":
@@ -40,7 +39,34 @@ def set_db_engine(
             user=user, password=password, host=host, port=port, dbname=dbname
         )
     else:
-        err_msg = f"invalid db_mode got from conf.toml. Got {db_mode=}. Must be 'cloud' or 'local'"
+        err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
+        raise ValueError(err_msg)
+    return db_url
+
+
+def set_db_engine(
+    db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
+    run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
+    user: str = DICT_CONF["db_credentials"]["user"],
+    password: str = DICT_CONF["db_credentials"]["password"],
+    host: str = DICT_CONF["db_credentials"]["host"],
+    port: str = DICT_CONF["db_credentials"]["port"],
+    dbname: str = DICT_CONF["db_credentials"]["dbname"],
+) -> Engine:
+    logger = get_logger("database.set_db_engine")
+    # Create url based on modes
+    try:
+        db_url = get_db_url(
+            db_mode=db_mode,
+            run_mode=run_mode,
+            user=user,
+            password=password,
+            host=host,
+            port=port,
+            dbname=dbname,
+        )
+    except ValueError:
+        err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
         logger.error(err_msg)
         raise ValueError(err_msg)
     # Create engine

@@ -13,6 +13,7 @@ dependencies = [
     "sqlmodel", # Combines sqlalchemy and pydantic
     "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
     "supabase", # For PostgreSQL com on cloud-hosted db
+    "alembic", # For database migrations
     "python-dotenv", # Secret management in .env file (for cloud-hosted db)
     "pandas",
 ]
@@ -35,8 +36,8 @@ padel-tracker = "padel_tracker.main:run_streamlit_app"
 [project.urls]
 Repository = "https://github.com/poulpe/padel-tracker"
 
-[tool.black]
-extend-exclude = "examples"
+#[tool.black]
+#extend-exclude = "src/padel_tracker/database/migrations/versions/.*"
 
 [tool.ruff]
 lint.ignore = [
@@ -44,7 +45,7 @@ lint.ignore = [
     "E501", # Line too long : balek, managed by Black
     "F821", # Must for compatibility with SQLModel Relationship ("name not defined")
 ]
-exclude = ["examples/*"]
+exclude = ["src/padel_tracker/database/migrations/versions/*.py"]
 
 [tool.pytest.ini_options]
 addopts = "--ignore=examples/" # --doctest-modules
