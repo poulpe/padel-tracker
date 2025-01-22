@@ -2,6 +2,7 @@ import base64
 from pathlib import Path
 
 import streamlit as st
+from streamlit_js_eval import streamlit_js_eval
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.ui.languages import (
@@ -17,7 +18,7 @@ init_app()
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
 
-##### Utils func #####
+##### Image utils func #####
 def get_base64_image(image_path: Path) -> str:
     with image_path.open("rb") as img_file:
         encoded = base64.b64encode(img_file.read()).decode()
@@ -33,10 +34,8 @@ if "language" not in st.session_state:
     st.session_state.language = DEFAULT_LANGUAGE
     st.session_state.translator = LanguageTranslator(DEFAULT_LANGUAGE)
 
-
 def update_session_state_translator() -> None:
     st.session_state.translator = LanguageTranslator(st.session_state.language)
-
 
 st.sidebar.selectbox(
     st.session_state.translator("language"),
@@ -62,6 +61,22 @@ st.markdown(html_code_top_header, unsafe_allow_html=True)
 ##### Define CSS #####
 define_cards_css()
 
+##### TOCHECK: Determine if execution on computer or mobile #####
+screen_inner_width = streamlit_js_eval(
+    js_expressions='window.innerWidth', key='WIDTH', want_output=True
+)
+device_type = "pc" # Default
+if screen_inner_width is not None:
+    device_type = "mobile" if screen_inner_width < 662 else "pc"
+st.write(f"{screen_inner_width=}")
+st.write(f"{device_type=}")
+
+st.session_state.device_type = device_type
+st.session_state.screen_inner_width = screen_inner_width
+
+st.write(f"{st.session_state.screen_inner_width=}")
+st.write(f"{st.session_state.device_type=}")
+
 ##### Pages definition #####
 page_overview = st.Page("page_overview.py", title="Overview", icon="🗺️", default=True)
 page_add_match = st.Page(
@@ -70,7 +85,6 @@ page_add_match = st.Page(
 page_add_player = st.Page(
     "page_add_player.py", title=st.session_state.translator("add_player"), icon="👥️"
 )
-
 pg = st.navigation(
     {
         "Padel Tracker": [page_overview],
@@ -79,5 +93,4 @@ pg = st.navigation(
         st.session_state.translator("analytics"): [],
     }
 )
-
 pg.run()

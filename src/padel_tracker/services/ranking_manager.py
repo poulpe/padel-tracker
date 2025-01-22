@@ -15,7 +15,6 @@ from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
-    get_db_session,
 )
 
 LOGGER = get_logger("ranking_manager")
@@ -211,11 +210,3 @@ def get_elo_rating_history(
     return read_from_db(
         EloRatingHistory, session=session, order_by=EloRatingHistory.date, as_df=as_df
     )
-
-
-if __name__ == "__main__":
-    from padel_tracker.database.db import get_db_session
-
-    with get_db_session() as session:
-        yes = get_elo_rating_history(session, as_df=True)
-    print("END")

@@ -9,7 +9,6 @@ from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
 from padel_tracker.database.db import (
     Session,
-    get_db_session,
     commit_to_db,
     read_from_db,
     delete_from_db,
@@ -28,13 +27,13 @@ class PlayerNotFoundError(Exception):
     """Player not found and probably doesn't exist in database"""
 
 
-def get_player_from_name(session: Session, player_name: str) -> Player:
+def get_player_from_name(session: Session, name: str) -> Player:
     """
     Parameters
     ----------
     session:Session
         Database session
-    player_name:str
+    name:str
         Player name
 
     Raises
@@ -44,10 +43,10 @@ def get_player_from_name(session: Session, player_name: str) -> Player:
     """
     try:
         player = read_from_db(
-            Player, where=Player.name == player_name, unique=True, session=session
+            Player, where=Player.name==name, unique=True, session=session
         )
     except sqlalchemy.exc.NoResultFound:
-        raise PlayerNotFoundError(f"player '{player_name}' not found in database")
+        raise PlayerNotFoundError(f"player '{name}' not found in database")
     return player
 
 
@@ -61,7 +60,7 @@ def create_player(session: Session, name: str, **kwargs) -> Player:
     logger = LOGGER.getChild("create_player")
     # Checks player doesn't exist
     try:
-        player = get_player_from_name(session=session, player_name=name)
+        player = get_player_from_name(session=session, name=name)
     except PlayerNotFoundError:
         pass  # It's actually OK, player doesn't exists
     else:
@@ -75,14 +74,14 @@ def create_player(session: Session, name: str, **kwargs) -> Player:
     return player
 
 
-def delete_player(session: Session, player_name: str) -> None:
+def delete_player(session: Session, name: str) -> None:
     logger = LOGGER.getChild("delete_player")
     try:
-        player = get_player_from_name(session=session, player_name=player_name)
+        player = get_player_from_name(session=session, name=name)
         delete_from_db(player, session=session)
-        logger.log(LOG_LEVEL_NOTIF, f"deleted {player_name} successfully from database")
+        logger.log(LOG_LEVEL_NOTIF, f"deleted {name} successfully from database")
     except PlayerNotFoundError:
-        err_msg = f"{player_name} doesn't exist, cannot delete it"
+        err_msg = f"{name} doesn't exist, cannot delete it"
         logger.error(err_msg)
         raise PlayerNotFoundError(err_msg)
     except Exception as exc:
@@ -140,8 +139,8 @@ def get_team_from_players_name(
         )
     except sqlalchemy.exc.NoResultFound:
         if create_if_not_found:
-            player1 = get_player_from_name(session=session, player_name=player1_name)
-            player2 = get_player_from_name(session=session, player_name=player2_name)
+            player1 = get_player_from_name(session=session, name=player1_name)
+            player2 = get_player_from_name(session=session, name=player2_name)
             ## Create team and commit
             team = Team(players=[player1, player2])
             team.post_init()
@@ -166,8 +165,8 @@ def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
         raise TeamExistsError(err_msg)
     # Let's go
     ## Retrieve players
-    player1 = get_player_from_name(session=session, player_name=player1_name)
-    player2 = get_player_from_name(session=session, player_name=player2_name)
+    player1 = get_player_from_name(session=session, name=player1_name)
+    player2 = get_player_from_name(session=session, name=player2_name)
     ## Create team and commit
     team = Team(players=[player1, player2])
     team.post_init()
@@ -178,11 +177,3 @@ def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
 
 def delete_team() -> None:
     raise NotImplementedError("no real point of deleting a team ?")
-
-
-if __name__ == "__main__":
-    with get_db_session() as session:
-        try:
-            team = get_team_from_players_name(session, "p6", "p2")
-        except sqlalchemy.exc.NoResultFound or sqlalchemy.exc:
-            print("it's OK")

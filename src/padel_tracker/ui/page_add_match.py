@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from padel_tracker.utils.datetime_utils import make_datetime_from_combi
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.models.matches import MatchScore
-from padel_tracker.database.db import get_db_session
+from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import (
     get_all_players,
     get_team_from_players_name,
@@ -39,7 +39,7 @@ st.markdown(
 form = st.form("add_match")
 with form:
     # Get players list
-    with get_db_session() as session:
+    with DB.get_session() as session:
         list_players = get_all_players(session=session)
         player_names = [p.name for p in list_players]
 
@@ -180,16 +180,14 @@ if submit_button and is_players_all_fulfilled:
     except ValidationError:
         st.error(st.session_state.translator("match_not_finished_error"), icon="💢")
     except Exception as exc:
-        st.error(
-            f"{st.session_state.translator("match_not_finished_error")}: {exc}",
-            icon="💢",
-        )
+        err_msg = f"{st.session_state.translator("match_not_finished_error")}: {exc}"
+        st.error(err_msg, icon="💢")
 
 # Create match if submitted
 if submit_button and is_players_all_fulfilled and is_score_validated:
     # Go create match
     match_datetime = make_datetime_from_combi(date, time)
-    with get_db_session() as session:
+    with DB.get_session() as session:
         try:
             team1 = get_team_from_players_name(
                 session=session,
@@ -206,9 +204,8 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
         except SamePlayerInOneTeamError:
             st.error(st.session_state.translator("team_same_player_error"), icon="💢")
         except Exception as exc:
-            st.error(
-                f"{st.session_state.translator("match_added_error")}: {exc}", icon="💥"
-            )
+            err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
+            st.error(err_msg, icon="💥")
         else:
             try:
                 create_match(
@@ -217,24 +214,16 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                     date=match_datetime,
                     score=match_score,
                 )
-                st.success(
-                    st.session_state.translator("match_added_success"), icon="🔥"
-                )
+                success_msg = st.session_state.translator("match_added_success")
+                st.success(success_msg, icon="🔥")
             except MatchExistsError:
                 st.error(st.session_state.translator("match_exists_error"), icon="💢")
             except MatchNotFinishedError:
-                st.error(
-                    st.session_state.translator("match_not_finished_error"), icon="💢"
-                )
+                err_msg = st.session_state.translator("match_not_finished_error")
+                st.error(err_msg, icon="💢")
             except SamePlayerInBothTeamsError:
-                st.error(
-                    st.session_state.translator(
-                        "match_same_player_in_both_teams_error"
-                    ),
-                    icon="💢",
-                )
+                err_msg = st.session_state.translator("same_player_in_both_teams_error")
+                st.error(err_msg, icon="💢")
             except Exception as exc:
-                st.error(
-                    f"{st.session_state.translator("match_added_error")}: {exc}",
-                    icon="💥",
-                )
+                err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
+                st.error(err_msg,icon="💥")

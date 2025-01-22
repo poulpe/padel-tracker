@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 from pydantic import PositiveInt, PositiveFloat, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
@@ -27,11 +27,13 @@ class PlayerBase(SQLModel, validate_assignment=True):
         default_factory=now,
         description="Date of creation of player in database",
         repr=False,
+        sa_column=Column(DateTime(timezone=True)),
     )
     last_match_date: datetime | None = Field(
         default=None,
         description="Latest update date of Elo score",
         repr=False,
+        sa_column=Column(DateTime(timezone=True)),
     )
     # History related
     nb_matches: NonNegativeInt = Field(0, description="Total number of played matches")
@@ -51,7 +53,9 @@ class EloRatingHistory(SQLModel, table=True, validate_assignment=True):
     player_name: str = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="elo_rating_history")
     # Actual data
-    date: datetime = Field(default_factory=now, index=True)
+    date: datetime = Field(
+        default_factory=now, sa_column=Column(DateTime(timezone=True), index=True),
+    )
     elo_rating: NonNegativeInt = Field()
     elo_rating_gain: int = Field()
 
@@ -62,7 +66,9 @@ class RankHistory(SQLModel, table=True, validate_assignment=True):
     player_name: str = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="rank_history")
     # Actual data
-    date: datetime = Field(default_factory=now, index=True)
+    date: datetime = Field(
+        default_factory=now, sa_column=Column(DateTime(timezone=True), index=True)
+    )
     rank: PositiveInt = Field()
 
 
@@ -86,7 +92,9 @@ class TeamEloRatingHistory(SQLModel, table=True, validate_assignment=True):
     team_name: str = Field(description="For convenience")
     team: "Team" = Relationship(back_populates="elo_rating_history")
     # Actual data
-    date: datetime = Field(default_factory=now, index=True)
+    date: datetime = Field(
+        default_factory=now, sa_column=Column(DateTime(timezone=True), index=True)
+    )
     elo_rating: NonNegativeInt = Field()
     elo_rating_gain: int = Field()
 
@@ -106,6 +114,7 @@ class Team(SQLModel, table=True):
         default_factory=now,
         description="Latest update date of Elo score",
         repr=False,
+        sa_column=Column(DateTime(timezone=True)),
     )
     nb_matches: NonNegativeInt = Field(0, description="Total number of played matches")
     nb_victories: NonNegativeInt = Field(0, description="Total number of victories")
@@ -120,6 +129,24 @@ class Team(SQLModel, table=True):
         if nb_players != 2:
             raise ValueError(f"a team must have exactly 2 players. Got {nb_players=}")
 
+    @classmethod
+    def get_name_from_players_name(cls, player1_name: str, player2_name: str):
+        sorted_names = sorted([player1_name, player2_name])
+        return f"{sorted_names[0]}/{sorted_names[1]}"
+
+    def _set_team_name(self) -> None:
+        self.validate_players()
+        # sorted_names = sorted([self.players[0].name, self.players[1].name])
+        # self.name = f"{sorted_names[0]}/{sorted_names[1]}"
+        self.name = self.get_name_from_players_name(
+            self.players[0].name, self.players[1].name
+        )
+
+    def __str__(self):
+        if not self.name:
+            self._set_team_name()
+        return self.name
+
     def calc_team_elo_rating(self) -> int:
         self.validate_players()
         self.elo_rating = calc_team_elo_rating(
@@ -127,21 +154,6 @@ class Team(SQLModel, table=True):
             self.players[1].elo_rating,
         )
         return self.elo_rating
-
-    def _set_team_name(self) -> None:
-        self.validate_players()
-        sorted_names = sorted([self.players[0].name, self.players[1].name])
-        self.name = f"{sorted_names[0]}/{sorted_names[1]}"
-
-    def __str__(self):
-        if not self.name:
-            self._set_team_name()
-        return self.name
-
-    @classmethod
-    def get_name_from_players_name(cls, player1_name: str, player2_name: str):
-        sorted_names = sorted([player1_name, player2_name])
-        return f"{sorted_names[0]}/{sorted_names[1]}"
 
     def post_init(self):
         """Define name and elo_rating"""

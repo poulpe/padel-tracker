@@ -1,7 +1,7 @@
 import streamlit as st
 
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
-from padel_tracker.database.db import get_db_session
+from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import create_player, PlayerExistsError
 
 FONT_SIZE_HEADER = 30
@@ -24,15 +24,17 @@ st.markdown(
 
 form = st.form("add_player")
 with form:
-    player_name = st.text_input(st.session_state.translator("name"))
+    _, center_col, _ = st.columns([1, 5, 1])
+    with center_col:
+        player_name = st.text_input(st.session_state.translator("name"))
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
-            label=st.session_state.translator("submit"), use_container_width=True
+            label=st.session_state.translator("submit"), use_container_width=True,
         )
 
 if submit_button:
-    with get_db_session() as session:
+    with DB.get_session() as session:
         try:
             create_player(session=session, name=player_name)
             st.success(

@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from padel_tracker.database.db import get_db_session
+from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import get_all_players
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
@@ -12,7 +12,7 @@ def make_player_overview_table(
 ) -> None:
     # Get data as df in db if not provided
     if df_players is None:
-        with get_db_session() as session:
+        with DB.get_session() as session:
             df_players = get_all_players(session=session, as_df=True).copy()
     # Keep only useful columns
     col_to_keep = [

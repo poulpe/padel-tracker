@@ -7,14 +7,21 @@ Small app to keep track of Padel matches
 - Loggings
   - [x] Overall stuff
 - UI
-    - [x] Basic Streamlit tuto
-    - [ ] General layout
-    - [ ] Graphs
+  - [x] Basic Streamlit tuto
+  - [x] General layout
+  - [ ] Graphs
+  - [ ] **User auth / login/logout ?**
 - Database
-    - [ ] Deletes
-    - [ ] Migrations
-    - [ ] Get 'data' online
+  - [ ] Deletes
+  - [ ] Migrations
+  - [x] Get 'data' online
+- Analytics
+  - [ ] Best teammate
+  - [ ] Best rival ?
+  - [ ] nb_games per Match
+  - [ ] Other stats (V/D ratio)
+Like select player, it shows these analytics
+Otherwise, show in overall : strongest team
+
 - Features
-    - [ ] Best teammate
-    - [ ] nb_games per Match ?
-    - [ ] Other stats (V/D ratio)
+  - [ ] Allow several leagues ?
