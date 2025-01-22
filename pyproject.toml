@@ -9,10 +9,11 @@ authors = [
 ]
 dependencies = [
     "streamlit", # For UI
+    "streamlit_js_eval", # For UI
     "sqlmodel", # Combines sqlalchemy and pydantic
     "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
     "supabase", # For PostgreSQL com on cloud-hosted db
-    "python-dotenv", # Secret management in .env file (cloud-hosted db)
+    "python-dotenv", # Secret management in .env file (for cloud-hosted db)
     "pandas",
 ]
 [project.optional-dependencies]
