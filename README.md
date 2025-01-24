@@ -13,7 +13,7 @@ Small app to keep track of Padel matches
   - [ ] **User auth / login/logout ?**
 - Database
   - [ ] Deletes
-  - [ ] Migrations
+  - [x] Migrations
   - [x] Get 'data' online
 - Analytics
   - [ ] Best teammate
@@ -25,3 +25,23 @@ Otherwise, show in overall : strongest team
 
 - Features
   - [ ] Allow several leagues ?
+
+
+## Database
+### Migrations
+
+Database migration = models changed, how to reflect it on current database "automatically"  
+Migrations has been configured with `Alembic`
+
+#### Use cases
+0) Init 
+```commandline
+alembic revision --autogenerate -m "first revision"
+alembic upgrade head
+```
+
+1) Anything has been changed to models
+```commandline
+alembic revision --autogenerate -m "added new_field to Player"
+alembic upgrade head
+```
