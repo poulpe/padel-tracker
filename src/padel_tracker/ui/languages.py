@@ -48,6 +48,7 @@ _DICT_TO_FR = {
     "team_same_player_error": " Le meme joueur a été sélectionné dans une meme équipe, 1v2 c'est pas fairplay !",
     "same_player_in_both_teams_error": " Un joueur est présent dans les 2 équipes en meme temps, c'est chaud de se dupliquer des 2 cotés du terrain !",
     "next_feature": "BIENTOT",
+    "ranking_evolution": "Évolution du classement",
 }
 
 _DICT_TO_EN = {
@@ -96,6 +97,7 @@ _DICT_TO_EN = {
     "team_same_player_error": " Same player has been selected in one team, 1v2 is not fairplay !",
     "same_player_in_both_teams_error": " A player is in both teams, it's hard to be in 2 places at the same time",
     "next_feature": "SOON",
+    "ranking_evolution": "Ranking evolution",
 }
 
 

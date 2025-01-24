@@ -21,6 +21,8 @@ class MatchScore(BaseModel, validate_assignment=True):
     nb_won_sets_team1: NonNegativeInt = Field(0, le=3)
     nb_won_sets_team2: NonNegativeInt = Field(0, le=3)
     nb_won_sets_diff: NonNegativeInt = Field(0, le=3)
+    nb_won_games_team1: NonNegativeInt = Field(0, le=28)
+    nb_won_games_team2: NonNegativeInt = Field(0, le=28)
     nb_won_games_diff: NonNegativeInt = Field(0, le=16)
     won_sets: tuple[NonNegativeInt, NonNegativeInt] | None = Field(None)
     won_games: tuple[NonNegativeInt, NonNegativeInt] | None = Field(None)
@@ -77,9 +79,8 @@ class MatchScore(BaseModel, validate_assignment=True):
         if self.nb_played_sets >= 3:
             self.check_set_validity(self.games_set3_team1, self.games_set3_team2)
 
-    def calc_won_games(self) -> tuple[int, int]:
+    def _calc_won_games(self) -> tuple[int, int]:
         """Returns as a tuple of (nb_won_games_team1, nb_won_games_team2)"""
-        self.check_final_validity()
         nb_won_games_team1 = 0
         nb_won_games_team2 = 0
         # Team 1
@@ -98,9 +99,10 @@ class MatchScore(BaseModel, validate_assignment=True):
         self.won_games = (nb_won_games_team1, nb_won_games_team2)
         return self.won_games
 
-    def calc_won_sets(self) -> tuple[int, int]:
+    def calc_won_sets_and_games(self) -> tuple[int, int]:
         """Returns as a tuple of (nb_won_sets_team1, nb_won_sets_team2)"""
         self.check_final_validity()
+        self._calc_won_games()
         self.nb_won_sets_team1 = 0
         self.nb_won_sets_team2 = 0
         # Check Set#1
@@ -134,7 +136,7 @@ class MatchScore(BaseModel, validate_assignment=True):
         return score
 
     @classmethod
-    def from_string(cls, score_string: str) -> Self:
+    def from_string(cls, score_string: str, is_finished: bool = True) -> Self:
         """Create a MatchScore object from string "comma-separated" formatted as i.e:
         "6-4, 3-6, 6-2"
 
@@ -156,10 +158,6 @@ class MatchScore(BaseModel, validate_assignment=True):
         while len(list_games) < 6:
             list_games.append(None)
 
-        # if len(list_games) == 4:
-        #     list_games.append(None)
-        #     list_games.append(None)
-
         match_score = MatchScore(
             games_set1_team1=list_games[0],
             games_set1_team2=list_games[1],
@@ -169,6 +167,8 @@ class MatchScore(BaseModel, validate_assignment=True):
             games_set3_team2=list_games[5],
         )
         match_score.check_basic_validity()
+        if is_finished:
+            match_score.calc_won_sets_and_games()
         return match_score
 
 
@@ -186,10 +186,16 @@ class Match(SQLModel, table=True, validate_assignment=True):
     team1_won: bool | None = Field(
         None, description="True/False if team1_won. None for no winner"
     )
+    nb_won_sets_diff: NonNegativeInt | None = Field(None, le=3)
+    nb_won_games_diff: NonNegativeInt | None = Field(None, le=16)
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    creation_date: datetime = Field(default_factory=now, description="Creation in db")
     name: str | None = Field(None, index=True, description="as 'p1/p2 vs p3/p4'")
+    creation_date: datetime = Field(
+        default_factory=now,
+        description="Creation in db",
+        sa_column=Column(DateTime(timezone=True)),
+    )
 
     def _set_match_name(self) -> None:
         self.name = f"{str(self.teams[0])} vs {str(self.teams[1])}"
@@ -213,14 +219,16 @@ class Match(SQLModel, table=True, validate_assignment=True):
         """"""
         self.validate_players()
         match_score = MatchScore.from_string(self.score)
-        match_score.calc_won_sets()
+        match_score.calc_won_sets_and_games()
+        self.nb_won_sets_diff = match_score.nb_won_sets_diff
+        self.nb_won_games_diff = match_score.nb_won_games_diff
         if match_score.nb_won_sets_team1 > match_score.nb_won_sets_team2:
-            winners = self.teams[0]  # [self.players[0], self.players[1]]
-            losers = self.teams[1]  # [self.players[2], self.players[3]]
+            winners = self.teams[0]
+            losers = self.teams[1]
             self.team1_won = True
         elif match_score.nb_won_sets_team1 < match_score.nb_won_sets_team2:
-            losers = self.teams[0]  # [self.players[0], self.players[1]]
-            winners = self.teams[1]  # [self.players[2], self.players[3]]
+            losers = self.teams[0]
+            winners = self.teams[1]
             self.team1_won = False
         else:
             raise ValueError(f"no winner yet ({match_score = })")

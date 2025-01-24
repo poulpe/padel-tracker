@@ -35,19 +35,23 @@ st.write("")
 st.write("")
 
 # Overview chart
+make_overview_elo_history_chart(translator=st.session_state.translator, font_size_header=FONT_SIZE_HEADER, font_size_subheader=FONT_SIZE_SUBHEADER)
+
+# Player data table overview
+#st.write("")
 st.markdown(
     f"""
     <div style="text-align: center;">
-        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> Billboard </div>
-        <div style="font-size: {FONT_SIZE_SUBHEADER}px; margin: 0;"> Top of the pops </div>
+        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("players_table")} </div>
         <br>
     </div>
     """,
     unsafe_allow_html=True,
 )
-make_overview_elo_history_chart(translator=st.session_state.translator)
+make_player_overview_table(translator=st.session_state.translator)
 
 # View last match history
+st.write("")
 st.markdown(
     f"""
     <div style="text-align: center;">
@@ -60,20 +64,8 @@ st.markdown(
 _, col_matches_cont, _ = st.columns([1, 4, 1])
 
 with col_matches_cont:
-    matches_cont = st.container(border=True, height=450)
+    matches_cont = st.container(border=True, height=600)
 with matches_cont:
     make_match_cards(limit_last=8)
 
-# Player data table overview
-st.write("")
-st.markdown(
-    f"""
-    <div style="text-align: center;">
-        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("players_table")} </div>
-        <br>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
-make_player_overview_table(translator=st.session_state.translator)

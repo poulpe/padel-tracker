@@ -5,8 +5,6 @@ Notes
 - Elo "score" (E) is the expected "probability" vs an opponent (so f(self, opponent))
 """
 
-from math import log10
-
 ELO_BASE_RATING = 1000
 ELO_RATIO_RATING = 400
 
@@ -44,11 +42,18 @@ def calc_k_value(nb_matches: int) -> float:
     return ELO_BASE_K / (1 + nb_matches / ELO_RATIO_K)
 
 
-# TODO (prio 3) : adapt point values based on nb_sets or/and nb_games
 def calc_points_factor(diff_nb_sets: int, diff_nb_games: int) -> float:
     """Calc factor for adjusting vs score difference"""
-    # return 1 + (1.5**(2*diff_nb_games)/10)
-    return 2 + log10(1 + abs(diff_nb_sets)) ** 3
+    # Games factor
+    if diff_nb_games <= 1:
+        games_factor_percent = 0
+    elif diff_nb_games >= 12:
+        games_factor_percent = 100
+    else:
+        games_factor_percent = 0.5 * diff_nb_games**2 + 2.5 * diff_nb_games - 6
+    # Sets factor
+    sets_factor_percent = 10 if diff_nb_sets >= 2 else 0
+    return 1 + (games_factor_percent + sets_factor_percent) / 100
 
 
 def calc_player_elo_rating_gain(
@@ -102,5 +107,5 @@ def calc_player_elo_rating_gain(
     point_factor = calc_points_factor(
         diff_nb_games=diff_nb_games, diff_nb_sets=diff_nb_sets
     )
-    elo_rating_gain = int(k * point_factor * (win_factor - team_expected_elo_score))
+    elo_rating_gain = int(2 * k * point_factor * (win_factor - team_expected_elo_score))
     return elo_rating_gain

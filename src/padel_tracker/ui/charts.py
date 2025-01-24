@@ -10,7 +10,22 @@ from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 def make_overview_elo_history_chart(
     df_elo_history: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    font_size_header:int=30,
+    font_size_subheader:int =20,
 ) -> None:
+    # Write header
+    st.markdown(
+        f"""
+        <div style="text-align: center;">
+            <div style="font-size: {font_size_header}px; font-weight: bold; margin: 0;"> Billboard </div>
+            <div style="font-size: {font_size_subheader}px; margin: 0;"> {translator("ranking_evolution")} </div>
+            <br>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Fetch data
     if df_elo_history is None:
         # Get db_data as df
         with DB.get_session() as session:
@@ -39,11 +54,3 @@ def make_overview_elo_history_chart(
 
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
-
-
-# def make_DUMMY_overview_elo_history_chart():
-#     from padel_tracker.utils.paths import get_absolute_path
-#     path_df = get_absolute_path(__file__, "./df_elo_history.csv")
-#     make_overview_elo_history_chart(
-#         pd.read_csv(path_df), translator=st.session_state.translator
-#     )

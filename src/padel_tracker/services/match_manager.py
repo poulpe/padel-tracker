@@ -196,7 +196,7 @@ def check_match_not_already_created(
 
 
 # DELETE
-# TODO (prio 3): delete_match, mucho work to cascade_delete + revert correct Elo
+# TODO (prio 1): delete_match, mucho work to cascade_delete + revert correct Elo
 # (idea: remove history.elo_gain corresponding to this match from players current elo?)
 def delete_match(session: Session, match_id: UUID) -> None:
     # Retrieve match

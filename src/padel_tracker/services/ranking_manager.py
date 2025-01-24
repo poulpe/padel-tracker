@@ -51,6 +51,7 @@ def update_players_results_after_finished_match(
     current_elo_rating_loser_player1 = losers[0].elo_rating
     current_elo_rating_loser_player2 = losers[1].elo_rating
     match_score = MatchScore.from_string(finished_match.score)
+    match_score.calc_won_sets_and_games()
     nb_won_sets_diff = match_score.nb_won_sets_diff
     nb_won_games_diff = match_score.nb_won_games_diff
 
@@ -188,7 +189,7 @@ def update_players_rank(session: Session) -> None:
         # Update rank
         player.rank = rank
         # Update best rank (not at 1st match, so nb_matches not None and not 0)
-        if (player.nb_matches > 1) and (
+        if (player.nb_matches > 3) and (
             (player.best_rank is None) or (player.best_rank > rank)
         ):
             player.best_rank = rank

@@ -124,8 +124,12 @@ DB = Database()
 
 
 def init_db_and_tables():
-    """To be called in main at init"""
-    # TODO : create logs table
+    """To be called in main at init.
+
+    Notes
+    ------
+    For supabase, 'logs' table is assumed to be created already
+    """
     SQLModel.metadata.create_all(DB.engine)
 
 
