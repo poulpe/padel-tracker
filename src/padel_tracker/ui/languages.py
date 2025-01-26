@@ -50,6 +50,12 @@ _DICT_TO_FR = {
     "same_player_in_both_teams_error": " Un joueur est présent dans les 2 équipes en meme temps, c'est chaud de se dupliquer des 2 cotés du terrain !",
     "next_feature": "BIENTOT",
     "ranking_evolution": "Évolution du classement",
+    "result": "Résultat",
+    "victory": "Victoire",
+    "defeat": "Défaite",
+    "nb_won_games_diff": "Différence de jeux gagnés",
+    "metric": "Métrique",
+    "evolution": "Évolution",
 }
 
 _DICT_TO_EN = {
@@ -100,6 +106,12 @@ _DICT_TO_EN = {
     "same_player_in_both_teams_error": " A player is in both teams, it's hard to be in 2 places at the same time",
     "next_feature": "SOON",
     "ranking_evolution": "Ranking evolution",
+    "result": "Result",
+    "victory": "Victory",
+    "defeat": "Defeat",
+    "nb_won_games_diff": "Won games difference",
+    "metric": "Metric",
+    "evolution": "Evolution",
 }
 
 
