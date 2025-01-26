@@ -12,6 +12,7 @@ shelf/
 
 # Custom ignored directories
 tests/debug/
+debug*.py
 
 # Custom ignored files and extensions
 .coverage

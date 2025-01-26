@@ -78,6 +78,7 @@ def display_match_card(
         """Render a framed box for a score (empty if None)"""
         return f'<div class="match-card-score-box">{score if score is not None else " "}</div>'
 
+    # TODO (prio3) : clickable player name to bring to his player page
     def render_team(team_name: str, is_winner: bool) -> str:
         """Render aligned container with or without winner icon"""
         icon = ""
