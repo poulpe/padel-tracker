@@ -13,12 +13,12 @@ dependencies = [
     "sqlmodel", # Combines sqlalchemy and pydantic
     "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
     "supabase", # For PostgreSQL com on cloud-hosted db
-    "alembic", # For database migrations
     "python-dotenv", # Secret management in .env file (for cloud-hosted db)
     "pandas",
 ]
 [project.optional-dependencies]
 dev = [
+    "alembic", # For database migrations
     "pytest",
     "coverage",
 ]

@@ -671,10 +671,8 @@ wheels = [
 
 [[package]]
 name = "padel-tracker"
-version = "0.0.2"
 source = { editable = "." }
 dependencies = [
-    { name = "alembic" },
     { name = "pandas" },
     { name = "psycopg2-binary" },
     { name = "python-dotenv" },
@@ -686,13 +684,14 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "alembic" },
     { name = "coverage" },
     { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "alembic" },
+    { name = "alembic", marker = "extra == 'dev'" },
     { name = "coverage", marker = "extra == 'dev'" },
     { name = "pandas" },
     { name = "psycopg2-binary" },
