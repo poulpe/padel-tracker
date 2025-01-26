@@ -2,11 +2,12 @@ from typing import Self
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
+from sqlmodel import Field, Relationship, Column, DateTime
 from pydantic import BaseModel, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.models.links import PlayerMatchLink, TeamMatchLink
+from padel_tracker.models.base import ValidatedSQLModel
+from padel_tracker.models.links import LinkPlayerMatch, LinkTeamMatch
 from padel_tracker.models.players import Player, Team
 
 
@@ -172,10 +173,10 @@ class MatchScore(BaseModel, validate_assignment=True):
         return match_score
 
 
-class Match(SQLModel, table=True, validate_assignment=True):
-    teams: list[Team] = Relationship(back_populates="matches", link_model=TeamMatchLink)
+class Match(ValidatedSQLModel, table=True):
+    teams: list[Team] = Relationship(back_populates="matches", link_model=LinkTeamMatch)
     players: list[Player] = Relationship(
-        back_populates="matches", link_model=PlayerMatchLink
+        back_populates="matches", link_model=LinkPlayerMatch
     )
     date: datetime = Field(
         default_factory=now,

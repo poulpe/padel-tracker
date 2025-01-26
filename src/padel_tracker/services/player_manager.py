@@ -4,6 +4,7 @@ CRUD on Players and Teams
 
 import sqlalchemy
 import pandas as pd
+import pydantic
 
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
@@ -25,6 +26,10 @@ class PlayerExistsError(Exception):
 
 class PlayerNotFoundError(Exception):
     """Player not found and probably doesn't exist in database"""
+
+
+class InvalidPlayerNameError(Exception):
+    """Player name is not valid : must have at least 2 alphabetical characters"""
 
 
 def get_player_from_name(session: Session, name: str) -> Player:
@@ -57,7 +62,16 @@ def get_all_players(
 
 
 def create_player(session: Session, name: str, **kwargs) -> Player:
+    """
+
+    Raises
+    ------
+    PlayerExistsError
+    InvalidPlayerNameError
+
+    """
     logger = LOGGER.getChild("create_player")
+    name = name[0].upper() + name[1:] if name else name  # Capitalize 1st letter
     # Checks player doesn't exist
     try:
         player = get_player_from_name(session=session, name=name)
@@ -68,7 +82,14 @@ def create_player(session: Session, name: str, **kwargs) -> Player:
         logger.error(err_msg)
         raise PlayerExistsError(err_msg)
     # Let's go
-    player = Player(name=name, **kwargs)
+    try:
+        player = Player(name=name, **kwargs)
+    except pydantic.ValidationError as exc:
+        for error in exc.errors():
+            if "string" in error["type"]:
+                raise InvalidPlayerNameError(error["msg"])
+        raise exc
+    # Commit if successfull
     commit_to_db(player, session=session)
     logger.log(LOG_LEVEL_NOTIF, f"created {player = }")
     return player

@@ -35,10 +35,14 @@ st.write("")
 st.write("")
 
 # Overview chart
-make_overview_elo_history_chart(translator=st.session_state.translator, font_size_header=FONT_SIZE_HEADER, font_size_subheader=FONT_SIZE_SUBHEADER)
+make_overview_elo_history_chart(
+    translator=st.session_state.translator,
+    font_size_header=FONT_SIZE_HEADER,
+    font_size_subheader=FONT_SIZE_SUBHEADER,
+)
 
 # Player data table overview
-#st.write("")
+# st.write("")
 st.markdown(
     f"""
     <div style="text-align: center;">
@@ -67,5 +71,3 @@ with col_matches_cont:
     matches_cont = st.container(border=True, height=600)
 with matches_cont:
     make_match_cards(limit_last=8)
-
-

@@ -10,8 +10,8 @@ from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 def make_overview_elo_history_chart(
     df_elo_history: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
-    font_size_header:int=30,
-    font_size_subheader:int =20,
+    font_size_header: int = 30,
+    font_size_subheader: int = 20,
 ) -> None:
     # Write header
     st.markdown(

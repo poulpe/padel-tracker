@@ -1,8 +1,8 @@
-"""first version
+"""first_version
 
-Revision ID: e64427aa42b7
+Revision ID: 54457e289b87
 Revises: 
-Create Date: 2025-01-22 19:57:29.154746
+Create Date: 2025-01-26 18:14:22.174352
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "e64427aa42b7"
+revision: str = "54457e289b87"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

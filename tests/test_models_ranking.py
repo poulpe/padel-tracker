@@ -38,5 +38,11 @@ def test_calculate_team_expected_score():
 
 
 def test_calc_point_value():
-    print(calc_points_factor(diff_nb_sets=1, diff_nb_games=0))
-    print(calc_points_factor(diff_nb_sets=2, diff_nb_games=0))
+    list_diff_nb_games = [i for i in range(1, 12 + 1)]
+    list_diff_nb_sets = [1, 2]
+    for diff_sets in list_diff_nb_sets:
+        for diff_games in list_diff_nb_games:
+            factor = calc_points_factor(
+                diff_nb_sets=diff_sets, diff_nb_games=diff_games
+            )
+            print(f"{diff_sets=}, {diff_games=} : {factor}")

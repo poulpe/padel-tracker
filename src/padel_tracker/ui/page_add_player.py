@@ -2,7 +2,11 @@ import streamlit as st
 
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.database.db import DB
-from padel_tracker.services.player_manager import create_player, PlayerExistsError
+from padel_tracker.services.player_manager import (
+    create_player,
+    PlayerExistsError,
+    InvalidPlayerNameError,
+)
 
 FONT_SIZE_HEADER = 30
 FONT_SIZE_SUBHEADER = 20
@@ -45,6 +49,11 @@ if submit_button:
         except PlayerExistsError:
             st.error(
                 f"{player_name}{st.session_state.translator("player_exists_error")}",
+                icon="💢",
+            )
+        except InvalidPlayerNameError:
+            st.error(
+                f"{player_name}{st.session_state.translator("player_invalid_name_error")}",
                 icon="💢",
             )
         except Exception as exc:
