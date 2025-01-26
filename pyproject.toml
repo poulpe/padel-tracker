@@ -1,6 +1,6 @@
 [project]
 name = "padel-tracker"
-dynamic = ["version"]
+version = "0.0.2"
 description = "App to keep track of Padel matches"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -27,8 +27,8 @@ dev = [
 requires = ["setuptools>=64.0.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.dynamic]
-version = {attr = "padel_tracker.__version__"}
+#[tool.setuptools.dynamic]
+#version = {attr = "padel_tracker.__version__"}
 
 [project.scripts]
 padel-tracker = "padel_tracker.main:run_streamlit_app"
