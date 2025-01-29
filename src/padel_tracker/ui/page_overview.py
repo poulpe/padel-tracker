@@ -35,10 +35,23 @@ st.write("")
 st.write("")
 
 # Overview chart
+nb_last_matches = 15
+subtitle = st.session_state.translator("ranking_evolution_over_x_last_matches").format(
+    x=nb_last_matches
+)
+st.markdown(
+    f"""
+    <div style="text-align: center;">
+        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> Billboard </div>
+        <div style="font-size: {FONT_SIZE_SUBHEADER}px; margin: 0;"> {subtitle} </div>
+        <br>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 make_overview_elo_history_chart(
     translator=st.session_state.translator,
-    font_size_header=FONT_SIZE_HEADER,
-    font_size_subheader=FONT_SIZE_SUBHEADER,
+    limit_last_matches=nb_last_matches,
 )
 
 # Player data table overview
@@ -70,4 +83,4 @@ _, col_matches_cont, _ = st.columns([1, 4, 1])
 with col_matches_cont:
     matches_cont = st.container(border=True, height=600)
 with matches_cont:
-    make_match_cards(limit_last=8)
+    make_match_cards(limit_last=nb_last_matches)

@@ -26,6 +26,7 @@ def make_player_overview_table(
     ]
     # optional_col = ["last_match_date", "best_elo_rating", "best_rank", "creation_date", "elo_k"]
     df_players = df_players[col_to_keep].copy()
+    df_players = df_players.sort_values(by="rank")
     df_players = df_players.rename(columns=translator.dict_lang)
     column_config = {
         translator.dict_lang["last_match_date"]: st.column_config.DateColumn(

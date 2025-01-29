@@ -3,6 +3,7 @@ import streamlit as st
 from padel_tracker.database.db import DB
 from padel_tracker.services.match_manager import get_all_matches, get_last_matches
 from padel_tracker.models.matches import MatchScore
+from padel_tracker.utils.datetime_utils import TZ_FR
 
 
 def define_cards_css() -> None:
@@ -14,10 +15,10 @@ def define_cards_css() -> None:
                 border: 2px solid #e6e6e6;
                 border-radius: 10px;
                 padding: 15px;
-                /*width: 400px;
-                background-color: #f9f9f9;*/
                 box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-                /*font-family: Arial, sans-serif;*/
+                /*width: 400px;
+                background-color: #f9f9f9;
+                font-family: Arial, sans-serif;*/
             }
             .match-card-team {
                 display: flex;
@@ -41,8 +42,8 @@ def define_cards_css() -> None:
                 height: 16px;
                 margin-right: 7px;
                 display: flex;
-                /*align-items: center;*/
                 justify-content: center;
+                /*align-items: center;*/
             }
             .match-card-date {
                 margin-top: 10px;
@@ -109,10 +110,7 @@ def display_match_card(
         """
 
     def render_date(date) -> str:
-        if date is not None:
-            return f"{date}"
-        else:
-            return " "
+        return f"{date}" if date is not None else " "
 
     st.markdown(
         f"""
@@ -141,7 +139,7 @@ def display_match_card(
     st.write("")
 
 
-def make_match_cards(limit_last: int | None = 10) -> None:
+def make_match_cards(limit_last: int | None = 15) -> None:
     with DB.get_session() as session:
         if not limit_last:
             list_matches = get_all_matches(session=session)
@@ -154,7 +152,7 @@ def make_match_cards(limit_last: int | None = 10) -> None:
                 team1=str(match.teams[0]),
                 team2=str(match.teams[1]),
                 team1_won=match.team1_won,
-                date=match.date.strftime("%d %b %Y %H:%M"),
+                date=match.date.astimezone(TZ_FR).strftime("%d %b %Y %H:%M"),
                 games_set1_team1=match_score.games_set1_team1,
                 games_set1_team2=match_score.games_set1_team2,
                 games_set2_team1=match_score.games_set2_team1,

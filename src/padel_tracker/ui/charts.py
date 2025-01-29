@@ -11,26 +11,16 @@ from padel_tracker.services import player_manager, ranking_manager
 def make_overview_elo_history_chart(
     df_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
-    font_size_header: int = 30,
-    font_size_subheader: int = 20,
+    limit_last_matches: int | None = 15,
 ) -> None:
-    # Write header
-    st.markdown(
-        f"""
-        <div style="text-align: center;">
-            <div style="font-size: {font_size_header}px; font-weight: bold; margin: 0;"> Billboard </div>
-            <div style="font-size: {font_size_subheader}px; margin: 0;"> {translator("ranking_evolution")} </div>
-            <br>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     # Fetch data
     if df_hist is None:
-        # Get db_data as df
+        # Get db_data as df (and manage limit (4 players per match...))
+        limit_last_histories = limit_last_matches * 4 if limit_last_matches else None
         with DB.get_session() as session:
-            df_hist = ranking_manager.get_elo_rating_history(session, as_df=True).copy()
+            df_hist = ranking_manager.get_elo_rating_history(
+                session, as_df=True, limit_last=limit_last_histories
+            ).copy()
     ## Keep only useful columns
     col_to_keep = ["date", "elo_rating", "player_name", "elo_rating_gain"]
     df_hist = df_hist[col_to_keep]

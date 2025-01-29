@@ -122,6 +122,7 @@ def update_players_results_after_finished_match(
             player_name=player.name,
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
+            match_name=finished_match.name,
         )
         elo_history_entries.append(player_elo_history_entry)
     ## Update nb victory/defeat
@@ -149,6 +150,7 @@ def update_players_results_after_finished_match(
             team_name=team.name,
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
+            match_name=finished_match.name,
         )
         team_elo_history_entries.append(team_elo_history_entry)
     # Update Team nb victory/defeats
@@ -206,8 +208,14 @@ def update_players_rank(session: Session) -> None:
 
 
 def get_elo_rating_history(
-    session: Session, as_df: bool = False
+    session: Session,
+    as_df: bool = False,
+    limit_last: int = None,
 ) -> list[EloRatingHistory] | pd.DataFrame:
     return read_from_db(
-        EloRatingHistory, session=session, order_by=EloRatingHistory.date, as_df=as_df
+        EloRatingHistory,
+        session=session,
+        order_by=EloRatingHistory.date,
+        as_df=as_df,
+        limit_last=limit_last,
     )
