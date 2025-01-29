@@ -20,6 +20,7 @@ class EloRatingHistory(ValidatedSQLModel, table=True):
     player_id: UUID | None = Field(default=None, foreign_key="player.id")
     player_name: str = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="elo_rating_history")
+    match_name: str | None = Field(None, description="For convenience")
     # Actual data
     date: datetime = Field(
         default_factory=now,
@@ -91,6 +92,7 @@ class TeamEloRatingHistory(ValidatedSQLModel, table=True):
     team_id: UUID | None = Field(default=None, foreign_key="team.id")
     team_name: str = Field(description="For convenience")
     team: "Team" = Relationship(back_populates="elo_rating_history")
+    match_name: str | None = Field(None, description="For convenience")
     # Actual data
     date: datetime = Field(
         default_factory=now, sa_column=Column(DateTime(timezone=True), index=True)
