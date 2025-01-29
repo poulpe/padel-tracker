@@ -189,13 +189,13 @@ def make_read_statement(
         else:
             for where_statement in where:
                 statement = statement.where(where_statement)
-    if limit_first:
-        statement = statement.limit(limit_first)
     if order_by:
         if order_descending:
             statement = statement.order_by(order_by.desc())
         else:
             statement = statement.order_by(order_by)
+    if limit_first:
+        statement = statement.limit(limit_first)
     return statement
 
 
