@@ -8,6 +8,7 @@ from padel_tracker.utils.paths import get_absolute_path
 
 
 def init_app(log_level_console: str | int = None) -> None:
+    """Init logs + create database tables if they don't exist"""
     init_loggings(log_level_console=log_level_console)
     init_db_and_tables()
 
