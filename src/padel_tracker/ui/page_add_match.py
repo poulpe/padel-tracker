@@ -32,9 +32,6 @@ form = st.form("add_match")
 with form:
     # Get players list
     player_names = list(st.session_state.df_players["name"])
-    # with DB.get_session() as session:
-    #     list_players = get_all_players(session=session)
-    #     player_names = [p.name for p in list_players]
 
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)

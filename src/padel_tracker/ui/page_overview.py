@@ -6,7 +6,6 @@ from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.tables import make_player_overview_table
 
 st.write("")
-st.write("")
 
 # Top quick access buttons
 col_button_1, col_button_2 = st.columns([1, 1])
@@ -58,4 +57,4 @@ _, col_matches_cont, _ = st.columns([1, 4, 1])
 with col_matches_cont:
     matches_cont = st.container(border=True, height=600)
 with matches_cont:
-    make_match_cards(limit_last=nb_last_matches)
+    make_match_cards(df_matches=st.session_state.df_matches, limit_last=nb_last_matches)

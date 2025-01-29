@@ -3,7 +3,6 @@ import pandas as pd
 import altair as alt
 
 from padel_tracker.database.db import DB
-from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 from padel_tracker.services import player_manager, ranking_manager
 
@@ -58,9 +57,10 @@ def make_overview_elo_history_chart(
     st.altair_chart(chart, use_container_width=True)
 
 
-# TODO : plug player history chart
+# TODO (prio2): use cached df for charts
 def make_player_metric_history_chart(
     player_name: str,
+    df_elo_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
 ) -> None:
     metric = st.pills(
@@ -154,22 +154,3 @@ def make_player_metric_history_chart(
 
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
-
-
-def make_player_metric_history_chart_form(
-    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
-) -> None:
-    # Write header
-    write_header("Analytics", translator("evolution"))
-
-    with DB.get_session() as session:
-        list_players = player_manager.get_all_players(session=session)
-        player_names = [p.name for p in list_players]
-
-    player_name = st.selectbox(
-        label=translator("player_name"),
-        options=player_names,
-        placeholder=translator("player"),
-    )
-
-    make_player_metric_history_chart(player_name=player_name, translator=translator)

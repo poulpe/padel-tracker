@@ -1,7 +1,8 @@
+import pandas as pd
 import streamlit as st
 
 from padel_tracker.database.db import DB
-from padel_tracker.services.match_manager import get_all_matches, get_last_matches
+from padel_tracker.services.match_manager import get_all_matches
 from padel_tracker.models.matches import MatchScore
 from padel_tracker.utils.datetime_utils import TZ_FR
 
@@ -139,30 +140,47 @@ def display_match_card(
     st.write("")
 
 
-def make_match_cards(limit_last: int | None = 15) -> None:
-    with DB.get_session() as session:
-        if not limit_last:
-            list_matches = get_all_matches(session=session)
-        else:
-            list_matches = get_last_matches(session=session, limit_last=limit_last)
-        list_matches.reverse()  # From latest to oldest
-        for match in list_matches:
-            try:
-                match_score = MatchScore.from_string(match.score, is_finished=True)
-            except ValueError:
-                match_score = MatchScore.from_string(match.score, is_finished=False)
-            display_match_card(
-                team1=str(match.teams[0]),
-                team2=str(match.teams[1]),
-                team1_won=match.team1_won,
-                date=match.date.astimezone(TZ_FR).strftime("%d %b %Y %H:%M"),
-                games_set1_team1=match_score.games_set1_team1,
-                games_set1_team2=match_score.games_set1_team2,
-                games_set2_team1=match_score.games_set2_team1,
-                games_set2_team2=match_score.games_set2_team2,
-                games_set3_team1=match_score.games_set3_team1,
-                games_set3_team2=match_score.games_set3_team2,
-            )
+def make_match_cards(
+    df_matches: pd.DataFrame = None, limit_last: int | None = 15
+) -> None:
+    if df_matches is None:
+        with DB.get_session() as session:
+            df_matches = get_all_matches(session=session, as_df=True)
+    else:
+        df_matches = df_matches.copy()
+
+    if limit_last:
+        df_matches = df_matches.tail(limit_last)
+
+    df_matches = df_matches.sort_values(by="date", ascending=False)
+
+    for _, row in df_matches.iterrows():
+        # Fetch score
+        try:
+            match_score = MatchScore.from_string(row["score"], is_finished=True)
+        except ValueError:
+            match_score = MatchScore.from_string(row["score"], is_finished=False)
+        # Fetch teams
+        team_names = row["name"].replace(" vs ", "|")
+        teams = team_names.split("|")
+        # Fetch date
+        try:
+            date = row["date"].astimezone(TZ_FR)
+        except TypeError:
+            date = row["date"].tz_localize(TZ_FR).astimezone(TZ_FR)
+        # Go display
+        display_match_card(
+            team1=str(teams[0]),
+            team2=str(teams[1]),
+            team1_won=row["team1_won"],
+            date=date.strftime("%d %b %Y %H:%M"),
+            games_set1_team1=match_score.games_set1_team1,
+            games_set1_team2=match_score.games_set1_team2,
+            games_set2_team1=match_score.games_set2_team1,
+            games_set2_team2=match_score.games_set2_team2,
+            games_set3_team1=match_score.games_set3_team1,
+            games_set3_team2=match_score.games_set3_team2,
+        )
 
 
 # TODO : display player_card

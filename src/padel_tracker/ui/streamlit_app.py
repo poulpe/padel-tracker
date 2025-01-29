@@ -77,7 +77,7 @@ if ("screen_inner_width" not in st.session_state) or (
         st.session_state.screen_inner_width = screen_inner_width
     st.session_state.device_type = device_type
 
-##### Fetch most used data from database and store in cache#####
+##### Fetch most used data from database and store in cache #####
 update_cache()
 
 ##### Pages definition #####
