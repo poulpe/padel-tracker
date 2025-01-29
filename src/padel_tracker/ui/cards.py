@@ -147,7 +147,10 @@ def make_match_cards(limit_last: int | None = 15) -> None:
             list_matches = get_last_matches(session=session, limit_last=limit_last)
         list_matches.reverse()  # From latest to oldest
         for match in list_matches:
-            match_score = MatchScore.from_string(match.score)
+            try:
+                match_score = MatchScore.from_string(match.score, is_finished=True)
+            except ValueError:
+                match_score = MatchScore.from_string(match.score, is_finished=False)
             display_match_card(
                 team1=str(match.teams[0]),
                 team2=str(match.teams[1]),
@@ -165,3 +168,19 @@ def make_match_cards(limit_last: int | None = 15) -> None:
 # TODO : display player_card
 def display_player_card():
     return NotImplementedError
+
+
+def display_elo_rating_gains_metrics(
+    dict_elo_rating_gains: dict[str, int], dict_updated_elo_ratings: dict[str, int]
+) -> None:
+    list_cols = st.columns([2, 2, 2, 2, 2, 2])
+    i = 0
+    for player_name in dict_elo_rating_gains.keys():
+        i += 1
+        with list_cols[i]:
+            st.metric(
+                player_name,
+                value=dict_updated_elo_ratings[player_name],
+                delta=dict_elo_rating_gains[player_name],
+                border=True,
+            )

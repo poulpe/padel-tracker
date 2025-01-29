@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
@@ -22,8 +20,8 @@ LOGGER = get_logger("ranking_manager")
 
 def update_players_results_after_finished_match(
     session: Session,
-    finished_match: Match,
-) -> dict[UUID, int]:
+    match: Match,
+) -> tuple[dict[str, int], dict[str, int]]:
     """Update for each players and each teams:
     - Elo ratings
     - Elo k (for players only)
@@ -33,15 +31,17 @@ def update_players_results_after_finished_match(
 
     Returns
     -------
-    dict_elo_rating_gains:dict[UUID, int]
-        Elo gains for convenience, as dict[player.id, elo_rating_gain]
+    dict_elo_rating_gains: dict[str, dict[str, int]]
+        Elo gains for convenience, as dict[player.name, elo_rating_gain]
+    dict_updated_elo_ratings: dict[str, dict[str, int]]
+        New elo for convenience, as dict[player.name, updated_elo_rating]
     """
     logger = LOGGER
 
     # Retrieve Match
-    finished_match.post_init()  # To write match name + validate players OK
-    match_date = finished_match.date
-    winner_team, loser_team = finished_match.get_winners_losers()
+    match.post_init()  # To write match name + validate players OK
+    match_date = match.date
+    winner_team, loser_team = match.get_winners_losers()
     winners: list[Player] = winner_team.players
     losers: list[Player] = loser_team.players
 
@@ -50,7 +50,7 @@ def update_players_results_after_finished_match(
     current_elo_rating_winner_player2 = winners[1].elo_rating
     current_elo_rating_loser_player1 = losers[0].elo_rating
     current_elo_rating_loser_player2 = losers[1].elo_rating
-    match_score = MatchScore.from_string(finished_match.score)
+    match_score = MatchScore.from_string(match.score)
     match_score.calc_won_sets_and_games()
     nb_won_sets_diff = match_score.nb_won_sets_diff
     nb_won_games_diff = match_score.nb_won_games_diff
@@ -58,7 +58,7 @@ def update_players_results_after_finished_match(
     # Calc all new (careful not updating yet Elo, for not screwing in btw calc)
     dict_elo_rating_gains = {}
 
-    dict_elo_rating_gains[winners[0].id] = calc_player_elo_rating_gain(
+    dict_elo_rating_gains[winners[0].name] = calc_player_elo_rating_gain(
         player_elo_rating=current_elo_rating_winner_player1,
         teammate_elo_rating=current_elo_rating_winner_player2,
         opponent_player1_elo_rating=current_elo_rating_loser_player1,
@@ -68,7 +68,7 @@ def update_players_results_after_finished_match(
         diff_nb_sets=nb_won_sets_diff,
         diff_nb_games=nb_won_games_diff,
     )
-    dict_elo_rating_gains[winners[1].id] = calc_player_elo_rating_gain(
+    dict_elo_rating_gains[winners[1].name] = calc_player_elo_rating_gain(
         player_elo_rating=current_elo_rating_winner_player2,
         teammate_elo_rating=current_elo_rating_winner_player1,
         opponent_player1_elo_rating=current_elo_rating_loser_player1,
@@ -78,7 +78,7 @@ def update_players_results_after_finished_match(
         diff_nb_sets=nb_won_sets_diff,
         diff_nb_games=nb_won_games_diff,
     )
-    dict_elo_rating_gains[losers[0].id] = calc_player_elo_rating_gain(
+    dict_elo_rating_gains[losers[0].name] = calc_player_elo_rating_gain(
         player_elo_rating=current_elo_rating_loser_player1,
         teammate_elo_rating=current_elo_rating_loser_player2,
         opponent_player1_elo_rating=current_elo_rating_winner_player1,
@@ -88,7 +88,7 @@ def update_players_results_after_finished_match(
         diff_nb_sets=nb_won_sets_diff,
         diff_nb_games=nb_won_games_diff,
     )
-    dict_elo_rating_gains[losers[1].id] = calc_player_elo_rating_gain(
+    dict_elo_rating_gains[losers[1].name] = calc_player_elo_rating_gain(
         player_elo_rating=current_elo_rating_loser_player2,
         teammate_elo_rating=current_elo_rating_loser_player1,
         opponent_player1_elo_rating=current_elo_rating_winner_player1,
@@ -101,13 +101,15 @@ def update_players_results_after_finished_match(
 
     # Update players elo ratings, best Elo, nb_matches, elo k
     elo_history_entries = []
+    dict_updated_elo_ratings = {}
     for player in winners + losers:
         # Update player updated_date
         player.last_match_date = match_date
         # Updated Elo
-        elo_rating_gain = dict_elo_rating_gains[player.id]
+        elo_rating_gain = dict_elo_rating_gains[player.name]
         updated_elo_rating = player.elo_rating + elo_rating_gain
         player.elo_rating = updated_elo_rating
+        dict_updated_elo_ratings[player.name] = updated_elo_rating
         # Best Elo
         if updated_elo_rating > player.best_elo_rating:
             player.best_elo_rating = updated_elo_rating
@@ -122,7 +124,7 @@ def update_players_results_after_finished_match(
             player_name=player.name,
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
-            match_name=finished_match.name,
+            match_name=match.name,
         )
         elo_history_entries.append(player_elo_history_entry)
     ## Update nb victory/defeat
@@ -150,7 +152,7 @@ def update_players_results_after_finished_match(
             team_name=team.name,
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
-            match_name=finished_match.name,
+            match_name=match.name,
         )
         team_elo_history_entries.append(team_elo_history_entry)
     # Update Team nb victory/defeats
@@ -165,14 +167,12 @@ def update_players_results_after_finished_match(
         loser_team,
         *elo_history_entries,
         *team_elo_history_entries,
-        finished_match,
+        match,
         session=session,
     )
-    logger.log(
-        LOG_LEVEL_NOTIF, f"updated players results for match id={finished_match.id}"
-    )
+    logger.log(LOG_LEVEL_NOTIF, f"updated players results for match id={match.id}")
 
-    return dict_elo_rating_gains
+    return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
 def update_players_rank(session: Session) -> None:

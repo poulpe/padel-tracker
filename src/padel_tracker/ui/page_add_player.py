@@ -1,5 +1,7 @@
 import streamlit as st
 
+from padel_tracker.ui.cache import refresh_cache
+from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import (
@@ -8,23 +10,12 @@ from padel_tracker.services.player_manager import (
     InvalidPlayerNameError,
 )
 
-FONT_SIZE_HEADER = 30
-FONT_SIZE_SUBHEADER = 20
-
 st.write("")
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
 
-st.markdown(
-    f"""
-    <div style="text-align: center;">
-        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("add_player")} </div>
-        <br>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+write_header(st.session_state.translator("add_player"))
 
 form = st.form("add_player")
 with form:
@@ -60,3 +51,4 @@ if submit_button:
             st.error(
                 f"{st.session_state.translator("player_added_error")}: {exc}", icon="💥"
             )
+    refresh_cache()

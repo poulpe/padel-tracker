@@ -10,6 +10,7 @@ from padel_tracker.ui.languages import (
     SUPPORTED_LANGUAGES,
     LanguageTranslator,
 )
+from padel_tracker.ui.cache import update_cache
 from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.main import init_app
 
@@ -76,20 +77,37 @@ if ("screen_inner_width" not in st.session_state) or (
         st.session_state.screen_inner_width = screen_inner_width
     st.session_state.device_type = device_type
 
+##### Fetch most used data from database and store in cache#####
+update_cache()
+
 ##### Pages definition #####
-page_overview = st.Page("page_overview.py", title="Overview", icon="🗺️", default=True)
+page_overview = st.Page("page_overview.py", title="Overview", icon="🥎", default=True)
 page_add_match = st.Page(
     "page_add_match.py", title=st.session_state.translator("add_match"), icon="➕"
 )
+page_check_player = st.Page(
+    "page_check_player.py",
+    title=st.session_state.translator("check_player"),
+    icon="👤",
+)
+page_check_team = st.Page(
+    "page_check_team.py",
+    title=st.session_state.translator("check_team"),
+    icon="👥️",
+)
 page_add_player = st.Page(
-    "page_add_player.py", title=st.session_state.translator("add_player"), icon="👥️"
+    "page_add_player.py", title=st.session_state.translator("add_player"), icon="🆕"
 )
 pg = st.navigation(
     {
         "Padel Tracker": [page_overview],
         st.session_state.translator("matches"): [page_add_match],
-        st.session_state.translator("players_teams"): [page_add_player],
+        st.session_state.translator("players_teams"): [
+            page_check_player,
+            page_check_team,
+        ],
         st.session_state.translator("analytics"): [],
+        st.session_state.translator("administration"): [page_add_player],
     }
 )
 pg.run()

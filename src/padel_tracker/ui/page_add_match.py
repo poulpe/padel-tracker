@@ -3,11 +3,9 @@ import pandas as pd
 from pydantic import ValidationError
 
 from padel_tracker.utils.datetime_utils import make_datetime_from_combi
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.models.matches import MatchScore
 from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import (
-    get_all_players,
     get_team_from_players_name,
     SamePlayerInOneTeamError,
 )
@@ -16,46 +14,32 @@ from padel_tracker.services.match_manager import (
     MatchExistsError,
     MatchNotFinishedError,
     SamePlayerInBothTeamsError,
+    process_finished_match,
 )
-
-FONT_SIZE_HEADER = 30
-FONT_SIZE_SUBHEADER = 20
+from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.cards import display_elo_rating_gains_metrics
+from padel_tracker.ui.headers import write_header, write_subheader
+from padel_tracker.ui.cache import refresh_cache
 
 st.write("")
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
 
-st.markdown(
-    f"""
-    <div style="text-align: center;">
-        <div style="font-size: {FONT_SIZE_HEADER}px; font-weight: bold; margin: 0;"> {st.session_state.translator("add_match")} </div>
-        <br>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+write_header(st.session_state.translator("add_match"))
 
 form = st.form("add_match")
 with form:
     # Get players list
-    with DB.get_session() as session:
-        list_players = get_all_players(session=session)
-        player_names = [p.name for p in list_players]
+    player_names = list(st.session_state.df_players["name"])
+    # with DB.get_session() as session:
+    #     list_players = get_all_players(session=session)
+    #     player_names = [p.name for p in list_players]
 
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
     with col_team1:
-        team1_word = st.session_state.translator("team1")
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {team1_word} </div>
-                <br>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        write_subheader(st.session_state.translator("team1"), bold=True)
         team1_player1_name = st.selectbox(
             label="team1_player1_name",
             options=player_names,
@@ -71,16 +55,7 @@ with form:
             label_visibility="hidden",
         )
     with col_team2:
-        team2_word = st.session_state.translator("team2")
-        st.markdown(
-            f"""
-            <div style="text-align: center;">
-                <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {team2_word} </div>
-                <br>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        write_subheader(st.session_state.translator("team2"), bold=True)
         team2_player1_name = st.selectbox(
             label="team2_player1_name",
             options=player_names,
@@ -97,7 +72,6 @@ with form:
         )
 
     # Score input as df
-    score_word = st.session_state.translator("score")
     team_word = st.session_state.translator("team")
     df = pd.DataFrame(
         [
@@ -118,15 +92,7 @@ with form:
     with center_col:
         score_cont = st.container(border=True)
         with score_cont:
-            st.markdown(
-                f"""
-                <div style="text-align: center;">
-                    <div style="font-size: {FONT_SIZE_SUBHEADER}px; font-weight: bold; margin: 0;"> {score_word} </div>
-                    <br>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            write_subheader(st.session_state.translator("score"), bold=True)
             df_score = st.data_editor(
                 df, use_container_width=True, column_config=column_config
             )
@@ -208,14 +174,26 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
             st.error(err_msg, icon="💥")
         else:
             try:
-                create_match(
+                match = create_match(
                     session=session,
                     teams=[team1, team2],
                     date=match_datetime,
                     score=match_score,
+                    is_finished=False,
+                )
+                dict_elo_rating_gains, dict_updated_elo_ratings = (
+                    process_finished_match(
+                        session=session, match=match, delete_on_error=True
+                    )
                 )
                 success_msg = st.session_state.translator("match_added_success")
                 st.success(success_msg, icon="🔥")
+                _, center_col, _ = st.columns(3)
+                with center_col:
+                    st.write(st.session_state.translator("see_updated_elo_below"))
+                display_elo_rating_gains_metrics(
+                    dict_elo_rating_gains, dict_updated_elo_ratings
+                )
             except MatchExistsError:
                 st.error(st.session_state.translator("match_exists_error"), icon="💢")
             except MatchNotFinishedError:
@@ -227,3 +205,4 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
             except Exception as exc:
                 err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
                 st.error(err_msg, icon="💥")
+    refresh_cache()

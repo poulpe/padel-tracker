@@ -43,13 +43,24 @@ class SamePlayerInBothTeamsError(Exception):
     """Same player is present in 2 competing teams, cannot duplicate people"""
 
 
-def process_finished_match(session: Session, finished_match: Match) -> None:
-    update_players_results_after_finished_match(
-        session=session, finished_match=finished_match
-    )
-    update_players_rank(session=session)
-    info_msg = f"processed finished_match id={finished_match.id}"
-    LOGGER.log(LOG_LEVEL_NOTIF, info_msg)
+def process_finished_match(
+    session: Session, match: Match, delete_on_error: bool = True
+) -> tuple[dict[str, int], dict[str, int]]:
+    try:
+        dict_elo_rating_gains, dict_updated_elo_ratings = (
+            update_players_results_after_finished_match(session=session, match=match)
+        )
+        update_players_rank(session=session)
+        info_msg = f"processed finished_match id={match.id}"
+        LOGGER.log(LOG_LEVEL_NOTIF, info_msg)
+    except Exception:
+        err_msg = "match is not finished: won't process"
+        if delete_on_error:
+            delete_from_db(match, session=session)
+            err_msg += " and deleted it from db"
+        LOGGER.error(err_msg)
+        raise MatchNotFinishedError(err_msg)
+    return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
 # CREATE
@@ -114,13 +125,7 @@ def create_match(
     logger.log(LOG_LEVEL_NOTIF, f"created new match id={match_id}")
     # Process it if finished
     if is_finished:
-        try:
-            process_finished_match(session=session, finished_match=match)
-        except Exception:
-            delete_from_db(match, session=session)
-            err_msg = "match is not finished, deleted it from db and won't process"
-            logger.error(err_msg)
-            raise MatchNotFinishedError(err_msg)
+        process_finished_match(session=session, match=match)
     return match
 
 
