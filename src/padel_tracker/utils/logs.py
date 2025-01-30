@@ -114,6 +114,12 @@ def init_loggings(
     db_mode: DB_MODE_TYPE = None,
     run_mode: RUN_MODE_TYPE = None,
 ) -> logging.Logger:
+    # Check if loggings have already been init
+    main_logger = logging.getLogger(MAIN_LOG_NAME)
+    if main_logger.hasHandlers():
+        return
+    main_logger.setLevel("DEBUG")
+
     # Get default parameters if None
     if log_level_console is None:
         try:
@@ -135,18 +141,9 @@ def init_loggings(
         except KeyError:
             run_mode = "test"
 
-    main_logger = logging.getLogger(MAIN_LOG_NAME)
-    main_logger.setLevel("DEBUG")
-
     # Convert log levels to take into account custom NOTIF level
     # log_level = logging.getLevelName(log_level)
     # log_level_file = logging.getLevelName(log_level_file)
-
-    # Remove all handlers (allows refreshing if called several times)
-    is_reinit = False
-    if main_logger.hasHandlers():
-        main_logger.handlers = []
-        is_reinit = True
 
     # Add console handler
     log_handler_console = NoTracebackStreamHandler()  # logging.StreamHandler()
@@ -182,12 +179,12 @@ def init_loggings(
 
     # Log starting message logging
     logger_init = main_logger.getChild("init_loggings")
-    if is_reinit:
-        msg = f"re-initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
-        logger_init.debug(msg)
-    else:
-        msg = f"initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
-        logger_init.log(LOG_LEVEL_NOTIF, msg)
+    # if is_reinit:
+    #     msg = f"re-initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
+    #     logger_init.debug(msg)
+    # else:
+    msg = f"initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
+    logger_init.log(LOG_LEVEL_NOTIF, msg)
 
     return main_logger
 

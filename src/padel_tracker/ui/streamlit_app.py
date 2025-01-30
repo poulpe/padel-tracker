@@ -15,11 +15,14 @@ from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.main import init_app
 
 ##### Init #####
-init_app()
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
+if ("is_app_init" not in st.session_state) or (not st.session_state.is_app_init):
+    init_app()
+    st.session_state.is_app_init = True
 
 
 ##### Image utils func #####
+@st.cache_data
 def get_base64_image(image_path: Path) -> str:
     with image_path.open("rb") as img_file:
         encoded = base64.b64encode(img_file.read()).decode()
@@ -28,7 +31,6 @@ def get_base64_image(image_path: Path) -> str:
 
 LOGO_IMG = get_absolute_path(__file__, "./img/padel_logo.jpg")
 LOGO_IMG_BASE64 = get_base64_image(LOGO_IMG)
-
 
 ##### Translation feature in Session state
 if "language" not in st.session_state:
