@@ -26,12 +26,12 @@ def write_header(
 
 
 def write_subheader(
-    subheader: str, font_size_subheader: int = FONT_SIZE_SUBHEADER, bold: bool = True
+    subheader: str, font_size: int = FONT_SIZE_SUBHEADER, bold: bool = True
 ) -> None:
     """Writes centered text to streamlit, subheader/subtitle like, but centered"""
     text = f"""
         <div style="text-align: center;">
-            <div style="font-size: {font_size_subheader}px; 
+            <div style="font-size: {font_size}px; 
     """
     if bold:
         text += "font-weight: bold; "

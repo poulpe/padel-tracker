@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship, Column, DateTime
 from pydantic import BaseModel, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
+from padel_tracker.utils.errors import MatchNotFinishedError
 from padel_tracker.models.base import ValidatedSQLModel
 from padel_tracker.models.links import LinkPlayerMatch, LinkTeamMatch
 from padel_tracker.models.players import Player, Team
@@ -232,5 +233,5 @@ class Match(ValidatedSQLModel, table=True):
             winners = self.teams[1]
             self.team1_won = False
         else:
-            raise ValueError(f"no winner yet ({match_score = })")
+            raise MatchNotFinishedError(f"no winner yet ({match_score = })")
         return winners, losers

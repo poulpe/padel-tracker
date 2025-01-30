@@ -11,6 +11,11 @@ from datetime import datetime
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.utils.errors import (
+    MatchExistsError,
+    MatchNotFinishedError,
+    SamePlayerInBothTeamsError,
+)
 from padel_tracker.models.players import Player, Team
 from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.database.db import (
@@ -25,22 +30,6 @@ from padel_tracker.services.ranking_manager import (
 )
 
 LOGGER = get_logger("match_manager")
-
-
-class MatchExistsError(Exception):
-    """Match already exists in database"""
-
-
-class MatchNotFoundError(Exception):
-    """Match not found and probably doesn't exist in database"""
-
-
-class MatchNotFinishedError(Exception):
-    """Match score are not valid to determine winner/loser"""
-
-
-class SamePlayerInBothTeamsError(Exception):
-    """Same player is present in 2 competing teams, cannot duplicate people"""
 
 
 def process_finished_match(
@@ -175,11 +164,11 @@ def get_last_matches_from_team(team: Player, limit_last: int = 10) -> list[Match
 def check_match_not_already_created(
     session: Session,
     teams: list[Team],
-    # players:list[Player],
     date: datetime,
     score: str | MatchScore | None = None,
     logger: logging.Logger = LOGGER,
 ) -> None:
+    """Raises MatchExistsError if already created, nothing otherwise"""
     list_matches_same_date_score = read_from_db(
         Match,
         session=session,

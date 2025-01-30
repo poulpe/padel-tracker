@@ -114,7 +114,7 @@ def init_loggings(
     db_mode: DB_MODE_TYPE = None,
     run_mode: RUN_MODE_TYPE = None,
 ) -> logging.Logger:
-    # Check if loggings have already been init
+    # Check if loggings have already been init (to return fast if not needed)
     main_logger = logging.getLogger(MAIN_LOG_NAME)
     if main_logger.hasHandlers():
         return
@@ -178,13 +178,8 @@ def init_loggings(
         main_logger.addHandler(log_handler_supabase)
 
     # Log starting message logging
-    logger_init = main_logger.getChild("init_loggings")
-    # if is_reinit:
-    #     msg = f"re-initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
-    #     logger_init.debug(msg)
-    # else:
     msg = f"initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
-    logger_init.log(LOG_LEVEL_NOTIF, msg)
+    main_logger.getChild("init_loggings").log(LOG_LEVEL_NOTIF, msg)
 
     return main_logger
 

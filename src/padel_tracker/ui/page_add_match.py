@@ -3,19 +3,16 @@ import pandas as pd
 from pydantic import ValidationError
 
 from padel_tracker.utils.datetime_utils import make_datetime_from_combi
-from padel_tracker.models.matches import MatchScore
-from padel_tracker.database.db import DB
-from padel_tracker.services.player_manager import (
-    get_team_from_players_name,
-    SamePlayerInOneTeamError,
-)
-from padel_tracker.services.match_manager import (
-    create_match,
+from padel_tracker.utils.errors import (
     MatchExistsError,
     MatchNotFinishedError,
     SamePlayerInBothTeamsError,
-    process_finished_match,
+    SamePlayerInOneTeamError,
 )
+from padel_tracker.models.matches import MatchScore
+from padel_tracker.database.db import DB
+from padel_tracker.services.player_manager import get_team_from_players_name
+from padel_tracker.services.match_manager import create_match, process_finished_match
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
