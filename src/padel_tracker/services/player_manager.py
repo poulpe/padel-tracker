@@ -2,10 +2,20 @@
 CRUD on Players and Teams
 """
 
+from collections import Counter
+
 import sqlalchemy
 import pandas as pd
 import pydantic
 
+from padel_tracker.utils.errors import (
+    PlayerNotFoundError,
+    PlayerExistsError,
+    InvalidPlayerNameError,
+    SamePlayerInOneTeamError,
+    TeamNotFoundError,
+    TeamExistsError,
+)
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player, Team
 from padel_tracker.database.db import (
@@ -20,18 +30,6 @@ LOGGER = get_logger("player_manager")
 
 
 ##### Players #####
-class PlayerExistsError(Exception):
-    """Player already exists in database"""
-
-
-class PlayerNotFoundError(Exception):
-    """Player not found and probably doesn't exist in database"""
-
-
-class InvalidPlayerNameError(Exception):
-    """Player name is not valid : must have at least 2 alphabetical characters"""
-
-
 def get_player_from_name(session: Session, name: str) -> Player:
     """
     Parameters
@@ -110,20 +108,6 @@ def delete_player(session: Session, name: str) -> None:
 
 
 ##### Team ######
-
-
-class TeamExistsError(Exception):
-    """Team already exists in database"""
-
-
-class TeamNotFoundError(Exception):
-    """Tean not found and probably doesn't exist in database"""
-
-
-class SamePlayerInOneTeamError(Exception):
-    """Same player have been selected to create 1 team"""
-
-
 def get_team_from_players_name(
     session: Session,
     player1_name: str,
@@ -171,6 +155,10 @@ def get_team_from_players_name(
     return team
 
 
+def get_all_teams(session: Session, as_df: bool = False) -> list[Team] | pd.DataFrame:
+    return read_from_db(Team, session=session, as_df=as_df)
+
+
 def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
     logger = LOGGER.getChild("create_team")
     # Checks team doesn't exist
@@ -198,3 +186,94 @@ def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
 
 def delete_team() -> None:
     raise NotImplementedError("no real point of deleting a team ?")
+
+
+##### Interactions ######
+def get_best_teammate(player_name: str, df_teams: pd.DataFrame) -> tuple[str, int]:
+    """Returns teammate player with the most common wins and the nb of victories"""
+    df_teams = df_teams[df_teams["name"].str.contains(player_name, na=False)]
+    ## Best teammate (player with the most common wins)
+    idx_best_teammate = df_teams["nb_victories"].idxmax()
+    best_team_name = df_teams.loc[idx_best_teammate, "name"]
+    nb_victories_best = int(df_teams.loc[idx_best_teammate, "nb_victories"])
+    best_teammate_name = None
+    for name in best_team_name.split("/"):
+        if name != player_name:
+            best_teammate_name = name
+    return best_teammate_name, nb_victories_best
+
+
+def get_most_played_teammate(
+    player_name: str, df_teams: pd.DataFrame
+) -> tuple[str, int]:
+    """Returns teammate player with the most common matches and the nb of matches"""
+    df_teams = df_teams[df_teams["name"].str.contains(player_name, na=False)]
+    idx_most_teammate = df_teams["nb_matches"].idxmax()
+    most_team_name = df_teams.loc[idx_most_teammate, "name"]
+    nb_matches_most = int(df_teams.loc[idx_most_teammate, "nb_matches"])
+    most_teammate_name = None
+    for name in most_team_name.split("/"):
+        if name != player_name:
+            most_teammate_name = name
+    return most_teammate_name, nb_matches_most
+
+
+def get_black_beast_and_favorite_victim(
+    player_name: str, df_matches: pd.DataFrame
+) -> tuple[str, int, str, int]:
+    """Returns opponent player against lost the most and won the most.
+    Also returns the nb of defeats against black beast and nb of victories against favorite victim.
+
+    Returns
+    -------
+    black_beast:str
+        Player against lost the most
+    nb_defeats_black_beast:int
+        Nb of defeats against black beast
+    favorite_victim:str
+        Player against won the most
+    nb_victories_favorite_victim:int
+        Nb of victories against favorite victim
+    """
+    df_matches = df_matches[df_matches["name"].str.contains(player_name, na=False)]
+
+    loss_counter = Counter()
+    win_counter = Counter()
+    for _, row in df_matches.iterrows():
+        # Parse team names
+        team1, team2 = row["name"].split(" vs ")
+        team1_players = set(team1.split("/"))
+        team2_players = set(team2.split("/"))
+
+        if player_name in team1_players:
+            if not row["team1_won"]:  # Player was in team1 and lost
+                loss_counter.update(team2_players)
+            else:  # Player was in team1 and won
+                win_counter.update(team2_players)
+        elif player_name in team2_players:
+            if row["team1_won"]:  # Player was in team2 and lost
+                loss_counter.update(team1_players)
+            else:  # Player was in team2 and won
+                win_counter.update(team1_players)
+
+    # Find the opponent with the most losses and wins
+    if loss_counter:
+        black_beast = max(loss_counter, key=loss_counter.get)
+        nb_defeats_black_beast = loss_counter[black_beast]
+    else:
+        black_beast = None
+        nb_defeats_black_beast = 0
+
+    if win_counter:
+        favorite_victim = max(win_counter, key=win_counter.get)
+        nb_victories_favorite_victim = win_counter[favorite_victim]
+    else:
+        favorite_victim = None
+        nb_victories_favorite_victim = 0
+
+    return (
+        black_beast,
+        nb_defeats_black_beast,
+        favorite_victim,
+        nb_victories_favorite_victim,
+    )

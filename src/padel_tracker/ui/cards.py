@@ -1,10 +1,12 @@
 import pandas as pd
 import streamlit as st
 
+from padel_tracker.utils.datetime_utils import TZ_FR
+from padel_tracker.models.matches import MatchScore
 from padel_tracker.database.db import DB
 from padel_tracker.services.match_manager import get_all_matches
-from padel_tracker.models.matches import MatchScore
-from padel_tracker.utils.datetime_utils import TZ_FR
+from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
+from padel_tracker.ui.headers import write_subheader
 
 
 def define_cards_css() -> None:
@@ -58,6 +60,49 @@ def define_cards_css() -> None:
     )
 
 
+def render_score_box(score: str | int) -> str:
+    """Render a framed box for a score (empty if None)"""
+    return (
+        f'<div class="match-card-score-box">{score if score is not None else " "}</div>'
+    )
+
+
+# TODO (prio3) : clickable player name to bring to his player page
+# TODO: Pass "clicked_player_name" when player is clicked from link (before switch_page)
+def render_team(team_name: str, is_winner: bool) -> str:
+    """Render aligned container with or without winner icon"""
+    icon = ""
+    if is_winner:
+        icon = "✌️"
+    # Strip team length if too long (only on mobile)
+    try:
+        device_type = st.session_state.device_type
+    except Exception:
+        device_type = "pc"
+    if device_type == "mobile":
+        max_team_length = 15
+        max_player_length = int(max_team_length / 2)
+        if len(team_name) > max_team_length:
+            player1, player2 = team_name.split("/")
+            if len(player1) > max_player_length + 1:
+                player1 = player1[:max_player_length]
+                player1 += "."
+            if len(player2) > max_player_length + 1:
+                player2 = player2[:max_player_length]
+                player2 += "."
+            team_name = f"{player1}/{player2}"
+    return f"""
+        <div class="match-card-team">
+            <div class="match-card-winner-icon">{icon}</div>
+            <div>{team_name}</div>
+        </div>
+    """
+
+
+def render_date(date) -> str:
+    return f"{date}" if date is not None else " "
+
+
 def display_match_card(
     team1: str,
     team2: str,
@@ -75,44 +120,6 @@ def display_match_card(
         team2_won = None
     else:
         team2_won = not team1_won
-
-    def render_score_box(score: str | int) -> str:
-        """Render a framed box for a score (empty if None)"""
-        return f'<div class="match-card-score-box">{score if score is not None else " "}</div>'
-
-    # TODO (prio3) : clickable player name to bring to his player page
-    def render_team(team_name: str, is_winner: bool) -> str:
-        """Render aligned container with or without winner icon"""
-        icon = ""
-        if is_winner:
-            icon = "✌️"
-        # Strip team length if too long (only on mobile)
-        try:
-            device_type = st.session_state.device_type
-        except Exception:
-            device_type = "pc"
-        if device_type == "mobile":
-            max_team_length = 15
-            max_player_length = int(max_team_length / 2)
-            if len(team_name) > max_team_length:
-                player1, player2 = team_name.split("/")
-                if len(player1) > max_player_length + 1:
-                    player1 = player1[:max_player_length]
-                    player1 += "."
-                if len(player2) > max_player_length + 1:
-                    player2 = player2[:max_player_length]
-                    player2 += "."
-                team_name = f"{player1}/{player2}"
-        return f"""
-            <div class="match-card-team">
-                <div class="match-card-winner-icon">{icon}</div>
-                <div>{team_name}</div>
-            </div>
-        """
-
-    def render_date(date) -> str:
-        return f"{date}" if date is not None else " "
-
     st.markdown(
         f"""
         <div class="match-card">
@@ -202,3 +209,41 @@ def display_elo_rating_gains_metrics(
                 delta=dict_elo_rating_gains[player_name],
                 border=True,
             )
+
+
+def display_player_relationships(
+    best_teammate_name: str,
+    nb_victories_best: int,
+    most_teammate_name: str,
+    nb_matches_most: int,
+    black_beast: str,
+    nb_defeats_black_beast: int,
+    favorite_victim: str,
+    nb_victories_favorite_victim: int,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+) -> None:
+    col1, col2, col3, col4 = st.columns(4, border=True)
+    font_size_name = 22
+    with col1:
+        write_subheader(translator("best_teammate"))
+        write_subheader("⭐")
+        write_subheader(best_teammate_name, bold=False, font_size=font_size_name)
+        st.write(translator("x_victories_together").format(x=nb_victories_best))
+    with col2:
+        write_subheader(translator("most_teammate"))
+        write_subheader("💖")
+        write_subheader(most_teammate_name, bold=False, font_size=font_size_name)
+        st.write(translator("x_matches_together").format(x=nb_matches_most))
+    with col3:
+        write_subheader("‎ ‎ ‎ ‎ ‎ ‎" + translator("black_beast") + " ‎ ‎ ‎ ‎ ‎ ‎ ")
+        # write_subheader("Maudite bête noire")
+        write_subheader("😭")
+        write_subheader(black_beast, bold=False, font_size=font_size_name)
+        st.write(translator("x_defeats_against").format(x=nb_defeats_black_beast))
+    with col4:
+        write_subheader(translator("favorite_victim"))
+        write_subheader("😈")
+        write_subheader(favorite_victim, bold=False, font_size=font_size_name)
+        st.write(
+            translator("x_victories_against").format(x=nb_victories_favorite_victim)
+        )
