@@ -1,13 +1,13 @@
 import logging
 from pathlib import Path
-import sqlite3
 
 import supabase  # Cloud loggings
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
-from padel_tracker.database.db import DB
+from padel_tracker.database.db import commit_to_db_no_session
+from padel_tracker.models.base import Logs
 
 # Define custom log level for notif from main (between INFO and WARNING)
 LOG_LEVEL_NOTIF = 25
@@ -45,20 +45,20 @@ class NoTracebackStreamHandler(logging.StreamHandler):
 
 
 class LocalDatabaseLogHandler(logging.Handler):
+    """Use of custom SQLModel 'Logs' for recording a log in local database"""
+
     def __init__(self):
         super().__init__()
 
     def emit(self, record):
         try:
-            sql_req = f"""
-                INSERT INTO "logs" ("timestamp", "name", "level", "message")
-                VALUES ("{str(now())}", "{record.name}", "{record.levelname}", "{record.getMessage()}");
-            """
-            con = sqlite3.connect(DB.engine.url.database)
-            cur = con.cursor()
-            cur.execute(sql_req)
-            con.commit()
-            con.close()
+            log_record = Logs(
+                timestamp=now(),
+                name=record.name,
+                level=record.levelname,
+                message=record.getMessage(),
+            )
+            commit_to_db_no_session(log_record)
         except Exception as e:
             print(f"Failed to log to local database: {e}")
 
@@ -172,7 +172,7 @@ def init_loggings(
     log_handler_console.setLevel(log_level_console)
     main_logger.addHandler(log_handler_console)
 
-    # Add file handler for local mode
+    # Add localdatabase handler for local mode
     if db_mode.lower() == "local":
         log_handler_local_database = LocalDatabaseLogHandler()
         log_handler_local_database.setFormatter(DEFAULT_LOG_FORMATTER)

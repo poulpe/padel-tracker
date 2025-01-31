@@ -1,3 +1,3 @@
-from padel_tracker.models import players, links, matches
+from padel_tracker.models import base, players, links, matches
 
-__all__ = ["players", "links", "matches"]
+__all__ = ["base", "players", "links", "matches"]
