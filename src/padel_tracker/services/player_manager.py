@@ -277,3 +277,62 @@ def get_black_beast_and_favorite_victim(
         favorite_victim,
         nb_victories_favorite_victim,
     )
+
+
+def get_team_black_beast_and_favorite_victim(
+    team_name: str, df_matches: pd.DataFrame
+) -> tuple[str, int, str, int]:
+    """Returns opponent team against lost the most and won the most.
+    Also returns the nb of defeats against black beast and nb of victories against favorite victim.
+
+    Returns
+    -------
+    black_beast:str
+        Team against lost the most
+    nb_defeats_black_beast:int
+        Nb of defeats against black beast
+    favorite_victim:str
+        Team against won the most
+    nb_victories_favorite_victim:int
+        Nb of victories against favorite victim
+    """
+    df_matches = df_matches[df_matches["name"].str.contains(team_name, na=False)]
+
+    loss_counter = Counter()
+    win_counter = Counter()
+    for _, row in df_matches.iterrows():
+        # Parse team names
+        team1, team2 = row["name"].split(" vs ")
+
+        if team_name == team1:
+            if not row["team1_won"]:
+                loss_counter.update({team2})
+            else:
+                win_counter.update({team2})
+        elif team_name == team2:
+            if row["team1_won"]:
+                loss_counter.update({team1})
+            else:
+                win_counter.update({team1})
+
+    # Find the opponent with the most losses and wins
+    if loss_counter:
+        black_beast = max(loss_counter, key=loss_counter.get)
+        nb_defeats_black_beast = loss_counter[black_beast]
+    else:
+        black_beast = None
+        nb_defeats_black_beast = 0
+
+    if win_counter:
+        favorite_victim = max(win_counter, key=win_counter.get)
+        nb_victories_favorite_victim = win_counter[favorite_victim]
+    else:
+        favorite_victim = None
+        nb_victories_favorite_victim = 0
+
+    return (
+        black_beast,
+        nb_defeats_black_beast,
+        favorite_victim,
+        nb_victories_favorite_victim,
+    )

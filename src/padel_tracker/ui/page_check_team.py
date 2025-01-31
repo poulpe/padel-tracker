@@ -1,24 +1,26 @@
+import sys
+
 import streamlit as st
 
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
-from padel_tracker.ui.headers import write_header  # , write_subheader
-
-from padel_tracker.database.db import DB
+from padel_tracker.models.players import Team
 from padel_tracker.services.player_manager import (
-    get_team_from_players_name,
-    SamePlayerInOneTeamError,
+    get_team_black_beast_and_favorite_victim,
 )
-
-# from padel_tracker.ui.charts import make_player_metric_history_chart
+from padel_tracker.ui.cache import check_not_empty_database_matches
+from padel_tracker.ui.cards import make_match_cards, display_team_relationships
+from padel_tracker.ui.tables import make_team_overview_table
+from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.headers import write_header, write_subheader
 
 st.write("")
+check_not_empty_database_matches()
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
 
 write_header(st.session_state.translator("check_team"))
 
-# Make player selectbox
+# Team selectbox
 form = st.form("check_team")
 with form:
     _, col1, col2, _ = st.columns([1, 2, 2, 1])
@@ -26,7 +28,7 @@ with form:
         player1_name = st.selectbox(
             label=st.session_state.translator("player1"),
             options=st.session_state.player_names,
-            placeholder="",  # st.session_state.translator("player1"),
+            placeholder="",
             index=None,
         )
     with col2:
@@ -42,40 +44,73 @@ with form:
             label=st.session_state.translator("submit"), use_container_width=True
         )
 
-st.write("")
-
 is_players_all_fulfilled = True
 if submit_button:
     if (not player1_name) or (not player2_name):
         st.error(st.session_state.translator("player_not_selected_error"), icon="💢")
         is_players_all_fulfilled = False
 
+# Checks team exist (and fetch all df needed if OK)
+is_team_exists = False
 if submit_button and is_players_all_fulfilled:
-    with DB.get_session() as session:
-        try:
-            team = get_team_from_players_name(
-                session=session,
-                player1_name=player1_name,
-                player2_name=player2_name,
-                create_if_not_found=False,
-            )
-        except SamePlayerInOneTeamError:
-            st.error(st.session_state.translator("team_same_player_error"), icon="💢")
-        except Exception as exc:
-            err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
-            st.error(err_msg, icon="💥")
+    if player1_name == player2_name:
+        st.error(st.session_state.translator("team_same_player_error"), icon="💢")
+    else:
+        team_name = Team.get_name_from_players_name(player1_name, player2_name)
+        df_teams = st.session_state.df_teams.copy()
+        df_team = df_teams.query(f"name == '{team_name}'")
+        if len(df_team) == 0:
+            st.error(st.session_state.translator("team_not_found_error"), icon="💢")
+        else:
+            is_team_exists = True
+            df_matches = st.session_state.df_matches.copy()
+            df_matches = df_matches[df_matches["name"].str.contains(team_name)]
 
-# TODO: Get team from names
-# team = pla
+# Display page
+st.write("")
+if submit_button and is_players_all_fulfilled and is_team_exists:
+    write_header(team_name)
 
-# TODO: Graph
-# write_subheader(st.session_state.translator("evolution"))
-# make_player_metric_history_chart(player_name=player_name, translator=st.session_state.translator)
+    # Checks data not empty
+    if len(df_matches) == 0:
+        st.warning(st.session_state.translator("empty_database_error"), icon="💢")
+        sys.exit()
 
-# TODO: Short table (team elo, nb match, v, d, v/d) OR cool card ?
+    # Overview card TODO (prio3): Cool display card ?
+    write_subheader(st.session_state.translator("overview"))
+    make_team_overview_table(
+        df_teams=df_team,
+        translator=st.session_state.translator,
+        extra_col=True,
+        is_single=True,
+        use_container_width=True,
+    )
 
-# TODO: All matches history cards as team
+    # Relationships related
+    write_subheader(st.session_state.translator("player_relationships"))
+    tuple_opponents = get_team_black_beast_and_favorite_victim(
+        team_name=team_name,
+        df_matches=df_matches,
+    )
+    black_beast = tuple_opponents[0]
+    nb_defeats_black_beast = tuple_opponents[1]
+    favorite_victim = tuple_opponents[2]
+    nb_victories_favorite_victim = tuple_opponents[3]
+    display_team_relationships(
+        black_beast=black_beast,
+        nb_defeats_black_beast=nb_defeats_black_beast,
+        favorite_victim=favorite_victim,
+        nb_victories_favorite_victim=nb_victories_favorite_victim,
+        translator=st.session_state.translator,
+    )
 
-# TODO: Favorite victims
+    # TODO: Team graph (team_elo_history)
+    write_subheader(st.session_state.translator("evolution"))
 
-# TODO: Black beasts (team against lost the most)
+    # Matches history
+    write_subheader(st.session_state.translator("match_history"))
+    _, col_matches_cont, _ = st.columns([1, 4, 1])
+    with col_matches_cont:
+        matches_cont = st.container(border=False, height=900)
+    with matches_cont:
+        make_match_cards(df_matches=df_matches, limit_last=None)

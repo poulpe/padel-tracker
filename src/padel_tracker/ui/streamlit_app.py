@@ -49,6 +49,7 @@ st.sidebar.selectbox(
     index=SUPPORTED_LANGUAGES.index(st.session_state.language),
     on_change=update_session_state_translator,
 )
+translator = st.session_state.translator
 
 ##### Start app def and top header #####
 st.logo(LOGO_IMG, size="large")
@@ -84,32 +85,44 @@ update_cache()
 
 ##### Pages definition #####
 page_overview = st.Page("page_overview.py", title="Overview", icon="🥎", default=True)
-page_add_match = st.Page(
-    "page_add_match.py", title=st.session_state.translator("add_match"), icon="➕"
-)
+page_add_match = st.Page("page_add_match.py", title=translator("add_match"), icon="➕")
 page_check_player = st.Page(
     "page_check_player.py",
-    title=st.session_state.translator("check_player"),
+    title=translator("check_player"),
     icon="👤",
 )
 page_check_team = st.Page(
     "page_check_team.py",
-    title=st.session_state.translator("check_team"),
+    title=translator("check_team"),
     icon="👥️",
 )
 page_add_player = st.Page(
-    "page_add_player.py", title=st.session_state.translator("add_player"), icon="🆕"
+    "page_add_player.py", title=translator("add_player"), icon="🆕"
 )
+page_delete_player = st.Page(
+    "page_delete_player.py",
+    title=translator("delete_player"),
+    icon="🙅",
+)
+page_delete_match = st.Page(
+    "page_delete_match.py", title=translator("delete_match"), icon="❌"
+)
+page_check_logs = st.Page(
+    "page_check_logs.py", title=translator("check_logs"), icon="📋"
+)
+
 pg = st.navigation(
     {
         "Padel Tracker": [page_overview],
-        st.session_state.translator("matches"): [page_add_match],
-        st.session_state.translator("players_teams"): [
-            page_check_player,
-            page_check_team,
+        translator("matches"): [page_add_match],
+        translator("players_teams"): [page_check_player, page_check_team],
+        # translator("analytics"): [],
+        translator("administration"): [
+            page_add_player,
+            page_delete_player,
+            page_delete_match,
+            page_check_logs,
         ],
-        st.session_state.translator("analytics"): [],
-        st.session_state.translator("administration"): [page_add_player],
     }
 )
 pg.run()

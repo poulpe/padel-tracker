@@ -207,13 +207,29 @@ def update_players_rank(session: Session) -> None:
     logger.log(LOG_LEVEL_NOTIF, "updated players ranking")
 
 
-def get_elo_rating_history(
+def get_all_elo_rating_histories(
     session: Session,
     as_df: bool = False,
     limit_last: int = None,
 ) -> list[EloRatingHistory] | pd.DataFrame:
     return read_from_db(
         EloRatingHistory,
+        session=session,
+        order_by=EloRatingHistory.date,
+        as_df=as_df,
+        limit_last=limit_last,
+    )
+
+
+def get_player_elo_rating_histories(
+    session: Session,
+    player_name: str,
+    as_df: bool = False,
+    limit_last: int = None,
+) -> list[EloRatingHistory] | pd.DataFrame:
+    return read_from_db(
+        EloRatingHistory,
+        where=EloRatingHistory.player_name == player_name,
         session=session,
         order_by=EloRatingHistory.date,
         as_df=as_df,

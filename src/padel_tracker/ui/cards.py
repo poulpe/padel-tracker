@@ -190,18 +190,12 @@ def make_match_cards(
         )
 
 
-# TODO : display player_card
-def display_player_card():
-    return NotImplementedError
-
-
 def display_elo_rating_gains_metrics(
     dict_elo_rating_gains: dict[str, int], dict_updated_elo_ratings: dict[str, int]
 ) -> None:
-    list_cols = st.columns([2, 2, 2, 2, 2, 2])
+    list_cols = st.columns(4)
     i = 0
     for player_name in dict_elo_rating_gains.keys():
-        i += 1
         with list_cols[i]:
             st.metric(
                 player_name,
@@ -209,6 +203,7 @@ def display_elo_rating_gains_metrics(
                 delta=dict_elo_rating_gains[player_name],
                 border=True,
             )
+        i += 1
 
 
 def display_player_relationships(
@@ -224,26 +219,76 @@ def display_player_relationships(
 ) -> None:
     col1, col2, col3, col4 = st.columns(4, border=True)
     font_size_name = 22
+    font_size_text = 16
     with col1:
         write_subheader(translator("best_teammate"))
         write_subheader("⭐")
         write_subheader(best_teammate_name, bold=False, font_size=font_size_name)
-        st.write(translator("x_victories_together").format(x=nb_victories_best))
+        write_subheader(
+            translator("x_victories_together").format(x=nb_victories_best),
+            bold=False,
+            font_size=font_size_text,
+            extra_line=False,
+        )
     with col2:
         write_subheader(translator("most_teammate"))
         write_subheader("💖")
         write_subheader(most_teammate_name, bold=False, font_size=font_size_name)
-        st.write(translator("x_matches_together").format(x=nb_matches_most))
+        write_subheader(
+            translator("x_matches_together").format(x=nb_matches_most),
+            bold=False,
+            font_size=font_size_text,
+            extra_line=False,
+        )
     with col3:
         write_subheader("‎ ‎ ‎ ‎ ‎ ‎" + translator("black_beast") + " ‎ ‎ ‎ ‎ ‎ ‎ ")
-        # write_subheader("Maudite bête noire")
         write_subheader("😭")
         write_subheader(black_beast, bold=False, font_size=font_size_name)
-        st.write(translator("x_defeats_against").format(x=nb_defeats_black_beast))
+        write_subheader(
+            translator("x_defeats_against").format(x=nb_defeats_black_beast),
+            bold=False,
+            font_size=font_size_text,
+            extra_line=False,
+        )
     with col4:
         write_subheader(translator("favorite_victim"))
         write_subheader("😈")
         write_subheader(favorite_victim, bold=False, font_size=font_size_name)
-        st.write(
-            translator("x_victories_against").format(x=nb_victories_favorite_victim)
+        write_subheader(
+            translator("x_victories_against").format(x=nb_victories_favorite_victim),
+            bold=False,
+            font_size=font_size_text,
+            extra_line=False,
+        )
+
+
+def display_team_relationships(
+    black_beast: str,
+    nb_defeats_black_beast: int,
+    favorite_victim: str,
+    nb_victories_favorite_victim: int,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+) -> None:
+    col1, col2 = st.columns(2, border=True)
+    font_size_name = 22
+    font_size_text = 16
+    with col1:
+        write_subheader("‎ ‎ ‎ ‎ ‎ ‎" + translator("black_beasts") + " ‎ ‎ ‎ ‎ ‎ ‎ ")
+        write_subheader("😭")
+        write_subheader(black_beast, bold=False, font_size=font_size_name)
+        write_subheader(
+            translator("x_defeats_against").format(x=nb_defeats_black_beast),
+            bold=False,
+            font_size=font_size_text,
+            extra_line=False,
+        )
+    with col2:
+        write_subheader(translator("favorite_victims"))
+        write_subheader("😈")
+        write_subheader(favorite_victim, bold=False, font_size=font_size_name)
+        write_subheader(
+            translator("x_victories_against").format(x=nb_victories_favorite_victim),
+            bold=False,
+            font_size=font_size_text,
+            extra_line=False,
         )

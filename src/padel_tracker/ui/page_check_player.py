@@ -1,3 +1,5 @@
+import sys
+
 import streamlit as st
 
 from padel_tracker.services.player_manager import (
@@ -11,8 +13,10 @@ from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.inputs import make_player_selectbox
 from padel_tracker.ui.charts import make_player_metric_history_chart
 from padel_tracker.ui.tables import make_player_overview_table
+from padel_tracker.ui.cache import check_not_empty_database_matches
 
 st.write("")
+check_not_empty_database_matches()
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
@@ -35,6 +39,15 @@ if player_name:
     df_teams = df_teams[df_teams["name"].str.contains(player_name, na=False)]
     df_matches = st.session_state.df_matches.copy()
     df_matches = df_matches[df_matches["name"].str.contains(player_name, na=False)]
+    df_elo_hist = st.session_state.df_elo_hist.copy()
+    df_elo_hist = df_elo_hist.query(f"player_name == '{player_name}'").copy()
+
+    write_header(player_name)
+
+    # Checks data not empty
+    if (len(df_teams) == 0) or (len(df_matches) == 0):
+        st.warning(st.session_state.translator("empty_database_error"), icon="💢")
+        sys.exit()
 
     # Overview card TODO (prio3): Cool display card ?
     write_subheader(st.session_state.translator("overview"))
@@ -42,8 +55,8 @@ if player_name:
         df_players=df_player,
         translator=st.session_state.translator,
         extra_col=True,
-        single_player=True,
-        use_container_width=False,
+        is_single=True,
+        use_container_width=True,
     )
 
     # Relationships related
@@ -81,7 +94,11 @@ if player_name:
     # Graph
     write_subheader(st.session_state.translator("evolution"))
     make_player_metric_history_chart(
-        player_name=player_name, translator=st.session_state.translator
+        player_name=player_name,
+        df_elo_hist=df_elo_hist,
+        df_matches=df_matches,
+        translator=st.session_state.translator,
+        limit_last_matches=None,
     )
 
     # Matches history

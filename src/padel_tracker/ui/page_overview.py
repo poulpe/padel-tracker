@@ -4,6 +4,7 @@ from padel_tracker.ui.charts import make_overview_elo_history_chart
 from padel_tracker.ui.cards import make_match_cards
 from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.tables import make_player_overview_table
+from padel_tracker.ui.cache import check_not_empty_database_matches
 
 st.write("")
 
@@ -18,7 +19,7 @@ with col_button_1:
     )
 with col_button_2:
     button_feature_2 = st.button(
-        st.session_state.translator("add_player"),
+        st.session_state.translator("check_player"),
         type="primary",
         use_container_width=True,
     )
@@ -26,7 +27,9 @@ with col_button_2:
 if button_add_match:
     st.switch_page("page_add_match.py")
 if button_feature_2:
-    st.switch_page("page_add_player.py")
+    st.switch_page("page_check_player.py")
+
+check_not_empty_database_matches()
 
 st.write("")
 st.write("")

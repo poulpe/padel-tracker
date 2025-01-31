@@ -10,6 +10,7 @@ def write_header(
     bold_subheader: bool = False,
     font_size_header: int = FONT_SIZE_HEADER,
     font_size_subheader: int = FONT_SIZE_SUBHEADER,
+    extra_line: bool = True,
 ) -> None:
     """Writes centered text to streamlit, header/title like, but centered"""
     text = f"""
@@ -21,12 +22,17 @@ def write_header(
         if bold_subheader:
             text += "font-weight: bold;"
         text += f'margin: 0;"> {subheader} </div>'
-    text += "<br></div>"
+    if extra_line:
+        text += "<br>"
+    text += "</div>"
     st.markdown(text, unsafe_allow_html=True)
 
 
 def write_subheader(
-    subheader: str, font_size: int = FONT_SIZE_SUBHEADER, bold: bool = True
+    subheader: str,
+    font_size: int = FONT_SIZE_SUBHEADER,
+    bold: bool = True,
+    extra_line: bool = True,
 ) -> None:
     """Writes centered text to streamlit, subheader/subtitle like, but centered"""
     text = f"""
@@ -35,5 +41,8 @@ def write_subheader(
     """
     if bold:
         text += "font-weight: bold; "
-    text += f'margin: 0;"> {subheader} </div> <br></div>'
+    text += f'margin: 0;"> {subheader} </div>'
+    if extra_line:
+        text += "<br>"
+    text += "</div>"
     st.markdown(text, unsafe_allow_html=True)

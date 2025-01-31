@@ -16,9 +16,10 @@ from padel_tracker.services.match_manager import create_match, process_finished_
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
-from padel_tracker.ui.cache import refresh_cache
+from padel_tracker.ui.cache import refresh_cache, check_not_empty_database_players
 
 st.write("")
+check_not_empty_database_players()
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
