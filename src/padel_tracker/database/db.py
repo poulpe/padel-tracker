@@ -68,10 +68,7 @@ def set_db_engine(
         raise ValueError(err_msg)
     # Create engine
     connect_args = {"options": "-csearch_path=public"} if db_mode == "cloud" else {}
-    db_engine = create_engine(
-        db_url,
-        connect_args=connect_args,
-    )
+    db_engine = create_engine(db_url, connect_args=connect_args)
     return db_engine
 
 
