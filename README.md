@@ -3,7 +3,7 @@
 Small app to keep track of Padel matches
 
 ## Overview
-Padel Tracker is a small app to keep track of Padel matches with my friends and allowing analysis over time.  
+Padel Tracker is a small app to keep track of Padel matches with my friends and enabling analysis of our progresses over time.  
 It provides player rankings using an Elo-based system and maintains a history of matches, teams, and individual performances.
 
 The application is hosted on **Streamlit Community Cloud**  
@@ -11,10 +11,10 @@ The application is hosted on **Streamlit Community Cloud**
 
 ## Features
 - **Player and Team Management**: Add, update, and check player and team statistics.
-- **Match Tracking**: Record match results, including detailed set scores.
+- **Match Tracking**: Record match results (date, teams, scores)
 - **Elo Ranking System**: Calculate player rankings dynamically based on match results.
 - **Match History**: Store and visualize the ranking evolution of players over time.
-- **Data Persistence**: Uses a PostgreSQL database hosted on Supabase.
+- **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need to host database online.
 - **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface.
 - **Multilingual Support**: Users can switch between English and French.
 - **Visualization**: Charts and tables for ranking history and match statistics.
@@ -76,7 +76,12 @@ alembic upgrade head
 To run the application locally, you need to set up environment variables in a .env file for secret management. 
 Below is the required structure:
 ```text
-# Database related
+# Run parameters
+log_level_console=INFO
+db_mode=local # "local" or "cloud"
+run_mode=test # "test" or "prod"
+
+# Cloud database related (not needed if you just run locally)
 user=my_database_user 
 password=my_database_password 
 host=my_database_host 
@@ -84,12 +89,8 @@ port=my_database_port
 dbname=my_dbname
 supabase_api_url=my_api_url
 supabase_api_key=my_api_key
-
-# Run parameters
-log_level_console=INFO
-db_mode=local # "local" or "cloud"
-run_mode=test # "test" or "prod"
 ```
+If you set `db_mode` to `local`, it will just create/read/update a local database in `data/` folder, so you don't need to have a database if you want to only do locally.
 
 Note: secret management for the streamlit hosted app is done via the dedicated
 [streamlit secret management method](https://docs.streamlit.io/develop/concepts/connections/secrets-management).  
