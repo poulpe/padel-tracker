@@ -113,6 +113,7 @@ _DICT_TO_EN = {
     "match_history": "Match history",
     "last_match_history": "Last matches history",
     "billboard": "Billboard",
+    "overview": "Overview",
     "matches": "Matches",
     "analytics": "Analytics",
     "administration": "Administration",

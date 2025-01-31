@@ -8,7 +8,6 @@ from sqlmodel import SQLModel, create_engine, Session, select
 from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
-from padel_tracker.utils.logs import get_logger
 
 
 def get_cloud_db_url(
@@ -53,7 +52,6 @@ def set_db_engine(
     port: str = DICT_CONF["db_credentials"]["port"],
     dbname: str = DICT_CONF["db_credentials"]["dbname"],
 ) -> Engine:
-    logger = get_logger("database.set_db_engine")
     # Create url based on modes
     try:
         db_url = get_db_url(
@@ -67,20 +65,10 @@ def set_db_engine(
         )
     except ValueError:
         err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
-        logger.error(err_msg)
         raise ValueError(err_msg)
     # Create engine
     connect_args = {"options": "-csearch_path=public"} if db_mode == "cloud" else {}
-    try:
-        db_engine = create_engine(
-            db_url,
-            connect_args=connect_args,
-        )
-        msg = f"initialized db engine succesfully in: {db_mode=}, {run_mode=}"
-        logger.info(msg)
-    except Exception as exc:
-        logger.exception(exc)
-        raise exc
+    db_engine = create_engine(db_url, connect_args=connect_args)
     return db_engine
 
 
