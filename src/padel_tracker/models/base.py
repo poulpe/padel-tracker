@@ -12,7 +12,8 @@ class Logs(SQLModel, table=True):
     id: int | None = Field(
         default=None,
         sa_column=Column(
-            primary_key=True, autoincrement=True, server_default="always", type_=BIGINT
+            primary_key=True,
+            type_=BIGINT,  # autoincrement=True,server_default="always"
         ),
     )
     timestamp: datetime | None = Field(

@@ -1,11 +1,13 @@
 import logging
 from pathlib import Path
+import sqlite3
 
 import supabase  # Cloud loggings
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
+from padel_tracker.database.db import DB
 
 # Define custom log level for notif from main (between INFO and WARNING)
 LOG_LEVEL_NOTIF = 25
@@ -40,6 +42,25 @@ class NoTracebackStreamHandler(logging.StreamHandler):
         finally:
             record.exc_info = info
             record.exc_text = cache
+
+
+class LocalDatabaseLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+
+    def emit(self, record):
+        try:
+            sql_req = f"""
+                INSERT INTO "logs" ("timestamp", "name", "level", "message")
+                VALUES ("{str(now())}", "{record.name}", "{record.levelname}", "{record.getMessage()}");
+            """
+            con = sqlite3.connect(DB.engine.url.database)
+            cur = con.cursor()
+            cur.execute(sql_req)
+            con.commit()
+            con.close()
+        except Exception as e:
+            print(f"Failed to log to local database: {e}")
 
 
 def create_supabase_client():
@@ -152,22 +173,11 @@ def init_loggings(
     main_logger.addHandler(log_handler_console)
 
     # Add file handler for local mode
-    if log_file_folder and (db_mode.lower() == "local"):
-        # Ensure log folder exists
-        if not log_file_folder.exists():
-            log_file_folder.mkdir(parents=True)
-        # Add standard log file
-        std_log_file = log_file_folder / "padeltracker.log"
-        log_handler_file = logging.FileHandler(std_log_file)
-        log_handler_file.setFormatter(DEFAULT_LOG_FORMATTER)
-        log_handler_file.setLevel(log_level_file)
-        main_logger.addHandler(log_handler_file)
-        # Add log file for ERRORS and above only
-        err_log_file = log_file_folder / "errors.log"
-        log_handler_file = logging.FileHandler(err_log_file)
-        log_handler_file.setFormatter(DEFAULT_LOG_FORMATTER)
-        log_handler_file.setLevel("ERROR")
-        main_logger.addHandler(log_handler_file)
+    if db_mode.lower() == "local":
+        log_handler_local_database = LocalDatabaseLogHandler()
+        log_handler_local_database.setFormatter(DEFAULT_LOG_FORMATTER)
+        log_handler_local_database.setLevel(log_level_file)
+        main_logger.addHandler(log_handler_local_database)
 
     # Add Cloud Supabase handler for "cloud" mode
     if db_mode.lower() == "cloud":
