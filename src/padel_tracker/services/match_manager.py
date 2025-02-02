@@ -40,11 +40,14 @@ def process_finished_match(
             )
         )
         ranking_manager.update_players_rank(session=session, league=match.league)
+        league_manager.update_league_after_finished_match(
+            session=session, league=match.league, match=match
+        )
         info_msg = f"processed finished_match id={match.id}"
         LOGGER.log(LOG_LEVEL_NOTIF, info_msg)
     except Exception as exc:
         raise exc
-        # TODO : err during process_finished_match
+        # TODO (prio1) : err during process_finished_match
         # err_msg = "match is not finished: won't process"
         # if delete_on_error:
         #    delete_from_db(match, session=session)

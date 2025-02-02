@@ -16,6 +16,7 @@ from padel_tracker.utils.errors import (
 )
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player
+from padel_tracker.models.matches import Match
 from padel_tracker.models.leagues import League
 from padel_tracker.database.db import (
     Session,
@@ -76,7 +77,7 @@ def create_league(session: Session, name: str, **kwargs) -> League:
     return league
 
 
-# TODO
+# TODO (prio1) :check_players_all_in_league
 def check_players_all_in_league(
     session: Session,
     players: list[Player],
@@ -85,3 +86,20 @@ def check_players_all_in_league(
 ) -> None:
     """Raises PlayerNotInLeagueError"""
     pass
+
+
+# TODO (prio2) :assign_league_to_player
+def assign_league_to_player(session: Session, player: Player, league: League) -> Player:
+    pass
+
+
+# TODO: update_league
+def update_league_after_finished_match(
+    session: Session,
+    match: Match,
+    league: League,
+) -> League:
+    league.nb_matches += 1
+    league.last_match_date = match.date
+    commit_to_db(league, session=session)
+    return league
