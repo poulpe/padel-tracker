@@ -6,7 +6,13 @@ from pydantic import PositiveInt, PositiveFloat, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.models.base import ValidatedSQLModel
-from padel_tracker.models.links import LinkPlayerMatch, LinkPlayerTeam, LinkTeamMatch
+from padel_tracker.models.links import (
+    LinkPlayerMatch,
+    LinkPlayerTeam,
+    LinkTeamMatch,
+    LinkPlayerLeague,
+    LinkTeamLeague,
+)
 from padel_tracker.models.ranking import (
     ELO_BASE_RATING,
     ELO_BASE_K,
@@ -20,7 +26,10 @@ class EloRatingHistory(ValidatedSQLModel, table=True):
     player_id: UUID | None = Field(default=None, foreign_key="player.id")
     player_name: str = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="elo_rating_history")
+    match_id: UUID | None = Field(default=None, foreign_key="match.id")
     match_name: str | None = Field(None, description="For convenience")
+    league_id: UUID | None = Field(None, foreign_key="league.id")
+    league_name: str | None = Field(None, description="For convenience")
     # Actual data
     date: datetime = Field(
         default_factory=now,
@@ -33,8 +42,11 @@ class EloRatingHistory(ValidatedSQLModel, table=True):
 class RankHistory(ValidatedSQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     player_id: UUID | None = Field(default=None, foreign_key="player.id")
-    player_name: str = Field(description="For convenience")
+    player_name: str | None = Field(description="For convenience")
     player: "Player" = Relationship(back_populates="rank_history")
+    league_id: UUID | None = Field(default=None, foreign_key="league.id")
+    league_name: str | None = Field(description="For convenience")
+    league: "League" = Relationship(back_populates="rank_history")
     # Actual data
     date: datetime = Field(
         default_factory=now, sa_column=Column(DateTime(timezone=True), index=True)
@@ -52,7 +64,6 @@ class Player(ValidatedSQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     elo_rating: PositiveInt = Field(ELO_BASE_RATING, index=True)
     elo_k: PositiveFloat = Field(ELO_BASE_K, repr=False)
-    rank: PositiveInt | None = Field(None, index=True, description="Rank in the league")
     creation_date: datetime = Field(
         default_factory=now,
         description="Date of creation of player in database",
@@ -72,10 +83,8 @@ class Player(ValidatedSQLModel, table=True):
     best_elo_rating: PositiveInt = Field(
         ELO_BASE_RATING, description="Best achieved Elo rating ever", repr=False
     )
-    best_rank: PositiveInt | None = Field(
-        None, description="Best achieved rank ever", repr=False
-    )
     # Links with other tables
+    league_links: list[LinkPlayerLeague] = Relationship(back_populates="player")
     matches: list["Match"] = Relationship(
         back_populates="players", link_model=LinkPlayerMatch
     )
@@ -93,6 +102,8 @@ class TeamEloRatingHistory(ValidatedSQLModel, table=True):
     team_name: str = Field(description="For convenience")
     team: "Team" = Relationship(back_populates="elo_rating_history")
     match_name: str | None = Field(None, description="For convenience")
+    league_id: UUID | None = Field(None, foreign_key="league.id")
+    league_name: str | None = Field(None, description="For convenience")
     # Actual data
     date: datetime = Field(
         default_factory=now, sa_column=Column(DateTime(timezone=True), index=True)
@@ -126,6 +137,9 @@ class Team(ValidatedSQLModel, table=True):
         back_populates="teams", link_model=LinkTeamMatch
     )
     elo_rating_history: list[TeamEloRatingHistory] = Relationship(back_populates="team")
+    leagues: list["League"] = Relationship(
+        back_populates="teams", link_model=LinkTeamLeague
+    )
 
     def validate_players(self):
         nb_players = len(self.players)

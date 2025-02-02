@@ -1,6 +1,7 @@
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.models.leagues import League
 from padel_tracker.models.players import (
     Player,
     EloRatingHistory,
@@ -9,11 +10,13 @@ from padel_tracker.models.players import (
 )
 from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.models.ranking import calc_player_elo_rating_gain, calc_k_value
+from padel_tracker.models.links import LinkPlayerLeague
 from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
 )
+from padel_tracker.services import player_manager
 
 LOGGER = get_logger("ranking_manager")
 
@@ -124,7 +127,10 @@ def update_players_results_after_finished_match(
             player_name=player.name,
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
+            match_id=match.id,
             match_name=match.name,
+            league_id=match.league.id,
+            league_name=match.league_name,
         )
         elo_history_entries.append(player_elo_history_entry)
     ## Update nb victory/defeat
@@ -153,6 +159,8 @@ def update_players_results_after_finished_match(
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
             match_name=match.name,
+            league_id=match.league.id,
+            league_name=match.league_name,
         )
         team_elo_history_entries.append(team_elo_history_entry)
     # Update Team nb victory/defeats
@@ -175,35 +183,54 @@ def update_players_results_after_finished_match(
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
-def update_players_rank(session: Session) -> None:
+def update_players_rank(session: Session, league: League) -> None:
     """Calc ranks and updated database"""
     # Get all players, sorted by top Elo to bottom Elo (descending order)
     logger = LOGGER
-    sorted_players = read_from_db(
-        Player,
+    sorted_players = player_manager.get_all_players_from_league(
+        session=session,
+        league_name=league.name,
         order_by=Player.elo_rating,
         order_descending=True,
-        session=session,
     )
     # Update players
+    playerleague_links = []
     rank_history_entries = []
-    for rank, player in enumerate(sorted_players, start=1):
-        # Update rank
-        player.rank = rank
-        # Update best rank (not at 1st match, so nb_matches not None and not 0)
+    for new_rank, player in enumerate(sorted_players, start=1):
+        # Fetch and update LinkPlayerLeague
+        link = read_from_db(
+            LinkPlayerLeague,
+            where=(
+                LinkPlayerLeague.player == player,
+                LinkPlayerLeague.league == league,
+            ),
+            session=session,
+            unique=True,
+        )
+        link.rank = new_rank
+        current_best_rank = link.best_rank
         if (player.nb_matches > 3) and (
-            (player.best_rank is None) or (player.best_rank > rank)
+            (current_best_rank is None) or (current_best_rank > new_rank)
         ):
-            player.best_rank = rank
-        # Update RankHistory (date will be auto fulfilled as "now" if not provided)
+            link.best_rank = new_rank
+        playerleague_links.append(link)
+
+        # Update RankHistory with League
         rank_history_entry = RankHistory(
             player_id=player.id,
             player_name=player.name,
-            rank=rank,
+            league_id=league.id,
+            league_name=league.name,
+            rank=new_rank,
         )
         rank_history_entries.append(rank_history_entry)
     # Commit
-    commit_to_db(*sorted_players, *rank_history_entries, session=session)
+    commit_to_db(
+        # *sorted_players,
+        *playerleague_links,
+        *rank_history_entries,
+        session=session,
+    )
     logger.log(LOG_LEVEL_NOTIF, "updated players ranking")
 
 

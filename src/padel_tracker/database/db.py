@@ -164,8 +164,12 @@ def make_read_statement(
     limit_first: int = None,
     order_by=None,
     order_descending: bool = False,
+    join_class=None,
+    join_clause=None,
 ):
     statement = select(class_)
+    if join_class:
+        statement = statement.join(join_class, join_clause)
     if where is not None:
         if not isinstance(where, Iterable):
             statement = statement.where(where)
@@ -190,6 +194,8 @@ def read_from_db(
     limit_last: int = None,
     order_by=None,
     order_descending: bool = False,
+    join_class=None,
+    join_clause=None,
     session: Session = None,
     as_df: bool = False,
 ) -> object | list | pd.DataFrame:
@@ -216,6 +222,10 @@ def read_from_db(
     >>> # Expect only one row
     >>> result_filter = col(Player.name) == "Legendary Patrick"
     >>> my_player = read_from_db(Player, where=result_filter, unique=True)
+
+    >>> # Get list of IDS matching a list (IN_)
+    >>> player_ids = [12, 56]
+    >>> my_player = read_from_db(Player, where=Player.id.in_(player_ids))
 
     >>> # SESSION : already opened a session and want the read to be executed in this context
     >>> match_id_to_retrieve = 12
@@ -261,6 +271,8 @@ def read_from_db(
         limit_first=limit_first,
         order_by=order_by,
         order_descending=order_descending,
+        join_class=join_class,
+        join_clause=join_clause,
     )
     # Send read request to session
     if session is None:
