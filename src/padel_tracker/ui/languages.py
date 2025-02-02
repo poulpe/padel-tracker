@@ -85,6 +85,9 @@ _DICT_TO_FR = {
     "check_logs": "Consulter les logs",
     "delete_player": "Supprimer un joueur",
     "delete_match": "Supprimer un match",
+    "delete": "Supprime",
+    "player_deleted": " a été supprimé. Bye bye 😢",
+    "player_already_deleted": " a déja été supprimé, arrête de t'acharner, c'était suffisant douloureux comme ça 😭",
 }
 
 _DICT_TO_EN = {
@@ -170,6 +173,9 @@ _DICT_TO_EN = {
     "check_logs": "Check logs",
     "delete_player": "Delete player",
     "delete_match": "Delete match",
+    "delete": "Delete",
+    "player_deleted": " has been deleted. Bye bye 😢",
+    "player_already_deleted": " has already been deleted, please stop, it was already painful enough 😭",
 }
 
 
