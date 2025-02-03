@@ -9,18 +9,20 @@ It provides player rankings using an Elo-based system and maintains a history of
 The application is hosted on **Streamlit Community Cloud**  
 ➡ **https://poulpe-padel-tracker.streamlit.app**
 
+<img src="docs/img/screenshot_main_page_en.png" width="55%" height="55%"> 
+
 ## Features
 - **Player and Team Management**: Add, update, and check player and team statistics.
 - **Match Tracking**: Record match results (date, teams, scores)
 - **Elo Ranking System**: Calculate player rankings dynamically based on match results.
 - **Match History**: Store and visualize the ranking evolution of players over time.
 - **League Management**: Ability to group players within a league, to follow/compare only your mates (player can also belong to several leagues)
-- **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need to host database online.
-- **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface.
-- **Multilingual Support**: Users can switch between English and French.
+- **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need of hosting database online.
+- **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface in a web browser.
 - **Visualization**: Charts and tables for ranking history and match statistics.
+- **Multilingual Support**: Users can switch between English and French.
 
-## Technologies Used
+## Technologies used
 - **Backend**: [SQLModel](https://github.com/tiangolo/sqlmodel) (SQLAlchemy + Pydantic)
 - **Frontend**: [Streamlit](https://streamlit.io/) with modular pages and navigation
 - **Database**: PostgreSQL (Hosted on [Supabase](https://supabase.com/))
@@ -51,6 +53,12 @@ The application is hosted on **Streamlit Community Cloud**
   - [x] Allow several leagues
 - Tests
   - [ ] Not the funniest part, but, eh...
+
+## Gallery
+
+| <img src="docs/img/screenshot_check_player_page_en2.png" width="80%" height="80%"> | <img src="docs/img/screenshot_main_page_dark_en.png" width="80%" height="80%"> |
+|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+
 
 ---
 # Some specifities
