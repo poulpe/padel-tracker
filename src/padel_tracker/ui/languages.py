@@ -194,6 +194,7 @@ _DICT_TO_EN = {
     "delete": "Delete",
     "player_deleted": " has been deleted. Bye bye 😢",
     "player_already_deleted": " has already been deleted, please stop, it was already painful enough 😭",
+    "add_league": "Add league",
     "no_league_database_error": "No league for the moment. Register a first league via the page 'New league'",
     "all_players_not_in_league_error": "Some/all players are not part of the league, make sure they are part of the league so you can register a match together",
     "league_added_success": " added successfully !",
