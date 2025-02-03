@@ -3,7 +3,7 @@
 Small app to keep track of Padel matches
 
 ## Overview
-Padel Tracker is a small app to keep track of Padel matches with my friends and to allow analysis of our progresses over time.  
+Padel Tracker is a small app I made to keep track of Padel matches with my friends and to allow analysis of our progresses over time.  
 It provides player rankings using an Elo-based system and maintains a history of matches, teams, and individual performances.
 
 The application is hosted on **Streamlit Community Cloud**  
@@ -14,6 +14,7 @@ The application is hosted on **Streamlit Community Cloud**
 - **Match Tracking**: Record match results (date, teams, scores)
 - **Elo Ranking System**: Calculate player rankings dynamically based on match results.
 - **Match History**: Store and visualize the ranking evolution of players over time.
+- **League Management**: Ability to group players within a league, to follow/compare only your mates (player can also belong to several leagues)
 - **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need to host database online.
 - **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface.
 - **Multilingual Support**: Users can switch between English and French.
@@ -47,7 +48,7 @@ The application is hosted on **Streamlit Community Cloud**
   - [x] Other stats (V/D ratio)
     - [x] Like select player, it shows these analytics
 - Extra features
-  - [ ] Allow several leagues ?
+  - [x] Allow several leagues
 - Tests
   - [ ] Not the funniest part, but, eh...
 
