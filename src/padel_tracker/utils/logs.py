@@ -1,11 +1,10 @@
 import logging
-from pathlib import Path
 
 import supabase  # Cloud loggings
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
+from padel_tracker.utils.conf import DICT_CONF, DBMode, RunMode
 from padel_tracker.database.db import commit_to_db_no_session
 from padel_tracker.models.base import Logs
 
@@ -130,10 +129,10 @@ def get_logger(
 
 def init_loggings(
     log_level_console: str | int = None,
-    log_file_folder: str | Path = None,
     log_level_file: str | int = None,
-    db_mode: DB_MODE_TYPE = None,
-    run_mode: RUN_MODE_TYPE = None,
+    db_mode: DBMode = None,
+    run_mode: RunMode = None,
+    # log_file_folder: str | Path = None,
 ) -> logging.Logger:
     # Check if loggings have already been init (to return fast if not needed)
     main_logger = logging.getLogger(MAIN_LOG_NAME)
@@ -147,20 +146,20 @@ def init_loggings(
             log_level_console = DICT_CONF["general"]["log_level_console"]
         except KeyError:
             log_level_console = DEFAULT_LOG_PARAMETERS["log_level"]
-    if log_file_folder is None:
-        log_file_folder = DEFAULT_LOG_PARAMETERS["log_file_folder"]
+    # if log_file_folder is None:
+    #     log_file_folder = DEFAULT_LOG_PARAMETERS["log_file_folder"]
     if log_level_file is None:
         log_level_file = DEFAULT_LOG_PARAMETERS["log_level_file"]
     if db_mode is None:
         try:
-            db_mode = DICT_CONF["general"]["db_mode"]
-        except KeyError:
-            db_mode = "local"
+            db_mode = DBMode(DICT_CONF["general"]["db_mode"].lower())
+        except (KeyError, ValueError):
+            db_mode = DBMode.LOCAL
     if run_mode is None:
         try:
-            run_mode = DICT_CONF["general"]["run_mode"]
-        except KeyError:
-            run_mode = "test"
+            run_mode = RunMode(DICT_CONF["general"]["run_mode"].lower())
+        except (KeyError, ValueError):
+            run_mode = RunMode.TEST
 
     # Convert log levels to take into account custom NOTIF level
     # log_level = logging.getLevelName(log_level)
@@ -173,14 +172,14 @@ def init_loggings(
     main_logger.addHandler(log_handler_console)
 
     # Add localdatabase handler for local mode
-    if db_mode.lower() == "local":
+    if db_mode.lower() == DBMode.LOCAL:
         log_handler_local_database = LocalDatabaseLogHandler()
         log_handler_local_database.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_local_database.setLevel(log_level_file)
         main_logger.addHandler(log_handler_local_database)
 
     # Add Cloud Supabase handler for "cloud" mode
-    if db_mode.lower() == "cloud":
+    if db_mode.lower() == DBMode.CLOUD:
         supabase_client = create_supabase_client()
         log_handler_supabase = SupabaseLogHandler(supabase_client=supabase_client)
         log_handler_supabase.setFormatter(DEFAULT_LOG_FORMATTER)
@@ -188,8 +187,8 @@ def init_loggings(
         main_logger.addHandler(log_handler_supabase)
 
     # Log starting message logging
-    msg = f"initialized logs with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
-    main_logger.getChild("init_loggings").log(LOG_LEVEL_NOTIF, msg)
+    msg = f"init with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
+    main_logger.log(LOG_LEVEL_NOTIF, msg)  # .getChild("init_loggings")
 
     return main_logger
 

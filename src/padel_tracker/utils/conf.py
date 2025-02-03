@@ -1,11 +1,19 @@
 import os
-from typing import Any, Literal
+from enum import StrEnum
+from typing import Any
 
 from dotenv import load_dotenv
 import streamlit as st
 
-DB_MODE_TYPE = Literal["LOCAL", "CLOUD", "local", "cloud"]
-RUN_MODE_TYPE = Literal["TEST", "PROD", "test", "prod"]
+
+class DBMode(StrEnum):
+    LOCAL = "local"
+    CLOUD = "cloud"
+
+
+class RunMode(StrEnum):
+    TEST = "test"
+    PROD = "prod"
 
 
 def get_conf() -> dict[str, Any]:

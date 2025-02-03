@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, create_engine, Session, select
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
 from padel_tracker.utils.paths import get_absolute_path
-from padel_tracker.utils.conf import DICT_CONF, DB_MODE_TYPE, RUN_MODE_TYPE
+from padel_tracker.utils.conf import DICT_CONF, DBMode, RunMode
 
 
 def get_cloud_db_url(
@@ -17,8 +17,8 @@ def get_cloud_db_url(
 
 
 def get_db_url(
-    db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
-    run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
+    db_mode: DBMode = DICT_CONF["general"]["db_mode"],
+    run_mode: RunMode = DICT_CONF["general"]["run_mode"],
     user: str = DICT_CONF["db_credentials"]["user"],
     password: str = DICT_CONF["db_credentials"]["password"],
     host: str = DICT_CONF["db_credentials"]["host"],
@@ -27,13 +27,13 @@ def get_db_url(
 ) -> str:
     db_mode = db_mode.lower()
     run_mode = run_mode.lower()
-    if db_mode == "local":
+    if db_mode == DBMode.LOCAL:
         db_name = "database"
-        if run_mode == "test":
+        if run_mode == RunMode.TEST:
             db_name += "_test"
         db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
-    elif db_mode == "cloud":
+    elif db_mode == DBMode.CLOUD:
         db_url = get_cloud_db_url(
             user=user, password=password, host=host, port=port, dbname=dbname
         )
@@ -44,8 +44,8 @@ def get_db_url(
 
 
 def set_db_engine(
-    db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
-    run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
+    db_mode: DBMode = DICT_CONF["general"]["db_mode"],
+    run_mode: RunMode = DICT_CONF["general"]["run_mode"],
     user: str = DICT_CONF["db_credentials"]["user"],
     password: str = DICT_CONF["db_credentials"]["password"],
     host: str = DICT_CONF["db_credentials"]["host"],
@@ -77,8 +77,8 @@ class Database:
 
     def __init__(
         self,
-        db_mode: DB_MODE_TYPE = DICT_CONF["general"]["db_mode"],
-        run_mode: RUN_MODE_TYPE = DICT_CONF["general"]["run_mode"],
+        db_mode: DBMode = DICT_CONF["general"]["db_mode"],
+        run_mode: RunMode = DICT_CONF["general"]["run_mode"],
         user: str = DICT_CONF["db_credentials"]["user"],
         password: str = DICT_CONF["db_credentials"]["password"],
         host: str = DICT_CONF["db_credentials"]["host"],
