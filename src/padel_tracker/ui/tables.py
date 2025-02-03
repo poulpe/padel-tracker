@@ -10,7 +10,6 @@ from padel_tracker.services.league_manager import get_linkplayerleague_from_leag
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
-# TODO : adapt make_player_overview_table to league
 def make_player_overview_table(
     df_players: pd.DataFrame = None,
     df_linkplayerleague: pd.DataFrame = None,
