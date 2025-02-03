@@ -1,4 +1,5 @@
 import logging
+from uuid import uuid4
 
 import supabase  # Cloud loggings
 
@@ -78,6 +79,7 @@ class SupabaseLogHandler(logging.Handler):
         try:
             # Make log record
             log_entry = {
+                "id": str(uuid4()),
                 "timestamp": str(now()),
                 "name": record.name,
                 "level": record.levelname,

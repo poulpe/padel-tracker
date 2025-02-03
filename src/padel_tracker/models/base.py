@@ -1,3 +1,4 @@
+from uuid import UUID, uuid4
 from datetime import datetime
 
 from pydantic import ConfigDict
@@ -9,7 +10,7 @@ class ValidatedSQLModel(SQLModel):
 
 
 class Logs(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     timestamp: datetime | None = Field(sa_type=TIMESTAMP(timezone=True))
     name: str | None = Field(sa_type=VARCHAR)
     level: str | None = Field(sa_type=VARCHAR)
