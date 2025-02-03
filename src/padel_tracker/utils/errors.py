@@ -39,3 +39,24 @@ class MatchNotFinishedError(Exception):
 
 class SamePlayerInBothTeamsError(Exception):
     """Same player is present in 2 competing teams, cannot duplicate people"""
+
+
+# League errors
+class LeagueExistsError(Exception):
+    """League already exists in database"""
+
+
+class LeagueNotFoundError(Exception):
+    """League not found and probably doesn't exist in database"""
+
+
+class InvalidLeagueNameError(Exception):
+    """League name is not valid : must have at least 2 alphabetical characters"""
+
+
+class PlayerNotInLeagueError(Exception):
+    """Player is not part of the league"""
+
+
+class PlayerAlreadyInLeagueError(Exception):
+    """Player is already part of the league"""

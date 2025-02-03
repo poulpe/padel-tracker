@@ -8,8 +8,9 @@ from pydantic import BaseModel, NonNegativeInt
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.utils.errors import MatchNotFinishedError
 from padel_tracker.models.base import ValidatedSQLModel
-from padel_tracker.models.links import LinkPlayerMatch, LinkTeamMatch
+from padel_tracker.models.links import LinkPlayerMatch, LinkTeamMatch, LinkLeagueMatch
 from padel_tracker.models.players import Player, Team
+from padel_tracker.models.leagues import League
 
 
 class MatchScore(BaseModel, validate_assignment=True):
@@ -59,7 +60,7 @@ class MatchScore(BaseModel, validate_assignment=True):
             raise ValueError("Games/Points must be given for both teams in Set#3")
 
     @classmethod
-    def check_set_validity(self, games_team1: int, games_team2: int) -> None:
+    def check_set_validity(cls, games_team1: int, games_team2: int) -> None:
         """Checks 2 games diff in a set or arrived to 7"""
         games_diff = abs(games_team2 - games_team1)
         if ((games_team1 == 6) != (games_team2 == 6)) and (games_diff >= 2):
@@ -179,6 +180,9 @@ class Match(ValidatedSQLModel, table=True):
     players: list[Player] = Relationship(
         back_populates="matches", link_model=LinkPlayerMatch
     )
+    league: League | None = Relationship(
+        back_populates="matches", link_model=LinkLeagueMatch
+    )
     date: datetime = Field(
         default_factory=now,
         description="Match execution date",
@@ -193,6 +197,7 @@ class Match(ValidatedSQLModel, table=True):
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str | None = Field(None, index=True, description="as 'p1/p2 vs p3/p4'")
+    league_name: str | None = Field(None, description="League name for convenience")
     creation_date: datetime = Field(
         default_factory=now,
         description="Creation in db",
@@ -201,6 +206,9 @@ class Match(ValidatedSQLModel, table=True):
 
     def _set_match_name(self) -> None:
         self.name = f"{str(self.teams[0])} vs {str(self.teams[1])}"
+
+    def _set_league_name(self) -> None:
+        self.league_name = self.league.name
 
     def validate_players(self):
         nb_players = len(self.players)
@@ -214,6 +222,7 @@ class Match(ValidatedSQLModel, table=True):
         """Validate players nb and set match name"""
         self.validate_players()
         self._set_match_name()
+        self._set_league_name()
 
     def get_winners_losers(
         self,

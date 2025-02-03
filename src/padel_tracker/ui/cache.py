@@ -1,61 +1,162 @@
 import sys
+from enum import StrEnum
 
 import streamlit as st
 
-from padel_tracker.database.db import DB
+from padel_tracker.database.db import DB, Session
 from padel_tracker.utils.logs import get_logger
-from padel_tracker.services import player_manager, match_manager, ranking_manager
+from padel_tracker.services import (
+    player_manager,
+    match_manager,
+    ranking_manager,
+    league_manager,
+)
 
 LOGGER = get_logger("ui.cache")
 
 
-def update_cache(force: bool = False):
-    """Write/Rewrite to st.session_state data from database as dataframe"""
-    # if ("df_players" not in st.session_state) or force or (st.session_state.df_players is None): # fmt: skip
-    if ("df_players" not in st.session_state) or force:
-        with DB.get_session() as session:
-            st.session_state.df_players = player_manager.get_all_players(
-                session=session, as_df=True
-            )
+class CacheKey(StrEnum):
+    df_players = "df_players"
+    df_teams = "df_teams"
+    df_teams_all_leagues = "df_teams_all_leagues"
+    df_matches = "df_matches"
+    df_matches_all_leagues = "df_matches_all_leagues"
+    df_elo_hist = "df_elo_hist"
+    df_leagues = "df_leagues"
+    df_linkplayerleague = "df_linkplayerleague"
+
+
+ALL_CACHE_KEYS = tuple(CacheKey)
+
+
+def update_cache_leagues(session: Session, force: bool = False):
+    key = str(CacheKey.df_leagues)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = league_manager.get_all_leagues(
+            session=session, as_df=True
+        )
         try:
-            st.session_state.player_names = list(st.session_state.df_players["name"])
+            st.session_state.league_names = list(st.session_state[key]["name"])
+        except KeyError:
+            st.session_state.league_names = None
+            st.error(st.session_state.translator("empty_database"), icon="💢")
+            return
+
+
+def update_cache_players(session: Session, force: bool = False):
+    key = str(CacheKey.df_players)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = player_manager.get_all_players_from_league(
+            session=session,
+            as_df=True,
+            league_name=st.session_state.league_name,
+        )
+        try:
+            st.session_state.player_names = list(st.session_state[key]["name"])
         except KeyError:
             st.error(st.session_state.translator("empty_database"), icon="💢")
             return
-    if ("df_teams" not in st.session_state) or force:
-        with DB.get_session() as session:
-            st.session_state.df_teams = player_manager.get_all_teams(
-                session=session, as_df=True
-            )
-    # if ("df_matches" not in st.session_state) or force or (st.session_state.df_matches is None): # fmt: skip
-    if ("df_matches" not in st.session_state) or force:
-        with DB.get_session() as session:
-            st.session_state.df_matches = match_manager.get_all_matches(
-                session=session, as_df=True
-            )
-    # if ("df_elo_hist" not in st.session_state) or force or (st.session_state.df_elo_hist is None): # fmt: skip
-    if ("df_elo_hist" not in st.session_state) or force:
-        with DB.get_session() as session:
-            st.session_state.df_elo_hist = ranking_manager.get_all_elo_rating_histories(
-                session=session, as_df=True
-            )
 
 
-def refresh_cache():
-    update_cache(force=True)
-    LOGGER.info("refreshed cache")
+def update_cache_teams(session: Session, force: bool = False):
+    key = str(CacheKey.df_teams)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = player_manager.get_all_teams_from_league(
+            session=session,
+            as_df=True,
+            league_name=st.session_state.league_name,
+        )
+    key = str(CacheKey.df_teams_all_leagues)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = player_manager.get_all_teams(
+            session=session,
+            as_df=True,
+        )
+
+
+def update_cache_matches(session: Session, force: bool = False):
+    key = str(CacheKey.df_matches)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = match_manager.get_all_matches_from_league(
+            session=session,
+            as_df=True,
+            league_name=st.session_state.league_name,
+        )
+    key = str(CacheKey.df_matches_all_leagues)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = match_manager.get_all_matches(
+            session=session,
+            as_df=True,
+        )
+
+
+def update_cache_elo_hist(session: Session, force: bool = False):
+    key = str(CacheKey.df_elo_hist)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = (
+            ranking_manager.get_all_elo_rating_histories_from_players_in_league(
+                session=session,
+                as_df=True,
+                league_name=st.session_state.league_name,
+            )
+        )
+
+
+def update_cache_linkplayerleague(session: Session, force: bool = False):
+    key = str(CacheKey.df_linkplayerleague)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = league_manager.get_linkplayerleague_from_league(
+            session=session,
+            league_name=st.session_state.league_name,
+            as_df=True,
+        )
+
+
+def update_cache(
+    force: bool = False,
+    only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS,
+):
+    """Write/Rewrite to st.session_state data from database as dataframe"""
+    if isinstance(only, (str, CacheKey)):
+        only = tuple([only])
+
+    with DB.get_session() as session:
+        if CacheKey.df_leagues in only:
+            update_cache_leagues(session=session, force=force)
+
+        if CacheKey.df_players in only:
+            update_cache_players(session=session, force=force)
+
+        if CacheKey.df_teams in only:
+            update_cache_teams(session=session, force=force)
+
+        if CacheKey.df_matches in only:
+            update_cache_matches(session=session, force=force)
+
+        if CacheKey.df_elo_hist in only:
+            update_cache_elo_hist(session=session, force=force)
+
+        if CacheKey.df_linkplayerleague in only:
+            update_cache_linkplayerleague(session=session, force=force)
+
+
+def refresh_cache(only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS):
+    update_cache(force=True, only=only)
+    LOGGER.info(f"refreshed cache for {str(only)}")
 
 
 def check_not_empty_database_matches() -> None:
-    if "df_elo_hist" in st.session_state:
-        if len(st.session_state.df_elo_hist) == 0:
+    key = CacheKey.df_elo_hist
+    if key in st.session_state:
+        if len(st.session_state[key]) == 0:
             st.warning(st.session_state.translator("empty_database_error"), icon="💢")
             sys.exit()
 
 
 def check_not_empty_database_players() -> None:
-    if "df_players" in st.session_state:
-        if len(st.session_state.df_players) < 4:
+    key = str(CacheKey.df_players)
+    if key in st.session_state:
+        if len(st.session_state[key]) < 4:
             st.warning(
                 st.session_state.translator("not_enough_players_database_error"),
                 icon="💢",

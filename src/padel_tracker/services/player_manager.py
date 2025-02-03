@@ -8,16 +8,15 @@ import sqlalchemy
 import pandas as pd
 import pydantic
 
+from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.utils.errors import (
     PlayerNotFoundError,
     PlayerExistsError,
     InvalidPlayerNameError,
     SamePlayerInOneTeamError,
     TeamNotFoundError,
-    TeamExistsError,
+    # TeamExistsError,
 )
-from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
-from padel_tracker.models.players import Player, Team
 from padel_tracker.database.db import (
     Session,
     commit_to_db,
@@ -25,6 +24,10 @@ from padel_tracker.database.db import (
     delete_from_db,
     # delete_from_db,
 )
+from padel_tracker.models.leagues import League
+from padel_tracker.models.links import LinkPlayerLeague, LinkTeamLeague
+from padel_tracker.models.players import Player, Team
+
 
 LOGGER = get_logger("player_manager")
 
@@ -59,7 +62,33 @@ def get_all_players(
     return read_from_db(Player, session=session, as_df=as_df)
 
 
-def create_player(session: Session, name: str, **kwargs) -> Player:
+def get_all_players_from_league(
+    session: Session,
+    league_name: str,
+    as_df: bool = False,
+    order_by=None,
+    order_descending: bool = False,
+) -> list[Player] | pd.DataFrame:
+    # First fetch player IDs from LinkPlayerLeague
+    player_ids = read_from_db(
+        LinkPlayerLeague.player_id,
+        where=LinkPlayerLeague.league_name == league_name,
+        session=session,
+    )
+    # Then get players with corresponding IDs
+    return read_from_db(
+        Player,
+        where=Player.id.in_(player_ids),
+        session=session,
+        as_df=as_df,
+        order_by=order_by,
+        order_descending=order_descending,
+    )
+
+
+def create_player(
+    session: Session, name: str, league: League | list[League] = None, **kwargs
+) -> Player:
     """
 
     Raises
@@ -87,8 +116,22 @@ def create_player(session: Session, name: str, **kwargs) -> Player:
             if "string" in error["type"]:
                 raise InvalidPlayerNameError(error["msg"])
         raise exc
+    # Assign to leagues if provided
+    links = []
+    if league:
+        list_leagues = [league] if isinstance(league, League) else league
+        for league in list_leagues:
+            link = LinkPlayerLeague(
+                player=player,
+                league=league,
+                player_name=player.name,
+                league_name=league.name,
+            )
+            links.append(link)
+            league.nb_players += 1
+            links.append(league)
     # Commit if successfull
-    commit_to_db(player, session=session)
+    commit_to_db(player, *links, session=session)
     logger.log(LOG_LEVEL_NOTIF, f"created {player = }")
     return player
 
@@ -97,6 +140,7 @@ def delete_player(session: Session, name: str) -> None:
     logger = LOGGER.getChild("delete_player")
     try:
         player = get_player_from_name(session=session, name=name)
+        # TODO: update leagues nb_players
         delete_from_db(player, session=session)
         logger.log(LOG_LEVEL_NOTIF, f"deleted {name} successfully from database")
     except PlayerNotFoundError:
@@ -105,6 +149,7 @@ def delete_player(session: Session, name: str) -> None:
         raise PlayerNotFoundError(err_msg)
     except Exception as exc:
         logger.exception(exc)
+        raise (exc)
 
 
 ##### Team ######
@@ -112,6 +157,7 @@ def get_team_from_players_name(
     session: Session,
     player1_name: str,
     player2_name: str,
+    league_name: str = None,
     create_if_not_found: bool = False,
 ) -> Team:
     """
@@ -140,16 +186,25 @@ def get_team_from_players_name(
     team_name = Team.get_name_from_players_name(player1_name, player2_name)
     try:
         team = read_from_db(
-            Team, where=Team.name == team_name, unique=True, session=session
+            Team,
+            # join_class=LinkTeamLeague,
+            # join_clause=Team.id == LinkTeamLeague.team_id,
+            # where=(LinkTeamLeague.league_id == league.id, Team.name == team_name),
+            where=Team.name == team_name,
+            unique=True,
+            session=session,
         )
     except sqlalchemy.exc.NoResultFound:
         if create_if_not_found:
+            league = read_from_db(
+                League, where=League.name == league_name, unique=True, session=session
+            )
             player1 = get_player_from_name(session=session, name=player1_name)
             player2 = get_player_from_name(session=session, name=player2_name)
             ## Create team and commit
-            team = Team(players=[player1, player2])
+            team = Team(players=[player1, player2], leagues=[league])
             team.post_init()
-            commit_to_db(team, session=session)
+            commit_to_db(team, league, session=session)
         else:
             raise TeamNotFoundError(f"team '{team_name}' not found in db")
     return team
@@ -159,29 +214,52 @@ def get_all_teams(session: Session, as_df: bool = False) -> list[Team] | pd.Data
     return read_from_db(Team, session=session, as_df=as_df)
 
 
-def create_team(session: Session, player1_name: str, player2_name: str) -> Team:
-    logger = LOGGER.getChild("create_team")
-    # Checks team doesn't exist
-    try:
-        team = get_team_from_players_name(
-            session=session, player1_name=player1_name, player2_name=player2_name
-        )
-    except TeamNotFoundError:
-        pass  # It's actually OK, team doesn't exists
-    else:
-        err_msg = f"team '{str(team)}' already exists, won't recreate it"
-        logger.error(err_msg)
-        raise TeamExistsError(err_msg)
-    # Let's go
-    ## Retrieve players
-    player1 = get_player_from_name(session=session, name=player1_name)
-    player2 = get_player_from_name(session=session, name=player2_name)
-    ## Create team and commit
-    team = Team(players=[player1, player2])
-    team.post_init()
-    commit_to_db(team, session=session)
-    logger.log(LOG_LEVEL_NOTIF, f"created {team=} (id={team.id})")
-    return team
+# TOCHECK
+def get_all_teams_from_league(
+    session: Session, league_name: str, as_df: bool = False
+) -> list[Team] | pd.DataFrame:
+    # Fecth league
+    league_id = read_from_db(
+        League.id, where=League.name == league_name, unique=True, session=session
+    )
+    # First fetch teams IDs from LinkTeamLeague
+    team_ids = read_from_db(
+        LinkTeamLeague.team_id,
+        where=LinkTeamLeague.league_id == league_id,
+        session=session,
+    )
+    # Then get players with corresponding IDs
+    return read_from_db(
+        Team,
+        where=Team.id.in_(team_ids),
+        session=session,
+        as_df=as_df,
+    )
+
+
+# def create_team(session: Session, player1_name: str, player2_name: str, league_name:str) -> Team:
+#     logger = LOGGER.getChild("create_team")
+#     # Checks team doesn't exist
+#     try:
+#         team = get_team_from_players_name(
+#             session=session, player1_name=player1_name, player2_name=player2_name
+#         )
+#     except TeamNotFoundError:
+#         pass  # It's actually OK, team doesn't exists
+#     else:
+#         err_msg = f"team '{str(team)}' already exists, won't recreate it"
+#         logger.error(err_msg)
+#         raise TeamExistsError(err_msg)
+#     # Let's go
+#     ## Retrieve players
+#     player1 = get_player_from_name(session=session, name=player1_name)
+#     player2 = get_player_from_name(session=session, name=player2_name)
+#     ## Create team and commit
+#     team = Team(players=[player1, player2], leagues=)
+#     team.post_init()
+#     commit_to_db(team, session=session)
+#     logger.log(LOG_LEVEL_NOTIF, f"created {team=} (id={team.id})")
+#     return team
 
 
 def delete_team() -> None:

@@ -11,15 +11,24 @@ def make_overview_elo_history_chart(
     df_elo_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
+    league_name: str = None,
 ) -> None:
     # Fetch data if not given
     if df_elo_hist is None:
+        # Resolve league
+        if not league_name:
+            league_name = st.session_state.league_name
         # Get db_data as df (and manage limit (4 players per match...))
         limit_last_histories = limit_last_matches * 4 if limit_last_matches else None
         with DB.get_session() as session:
-            df_elo_hist = ranking_manager.get_all_elo_rating_histories(
-                session, as_df=True, limit_last=limit_last_histories
-            ).copy()
+            df_elo_hist = (
+                ranking_manager.get_all_elo_rating_histories_from_players_in_league(
+                    session,
+                    league_name=league_name,
+                    as_df=True,
+                    limit_last=limit_last_histories,
+                ).copy()
+            )
     else:
         df_elo_hist = df_elo_hist.copy()
         if limit_last_matches:
@@ -152,6 +161,7 @@ def make_player_metric_history_chart(
     color_param = translator("result")
     tooltip = [x_param, y_param, f"{color_param}:N", translator("match_name")]
     if metric == translator("elo_rating"):
+        # TODO: better elo_rating (ensure no zero + maybe via points ?)
         base_chart = alt.Chart(df_hist).mark_bar()  # mark_rule(size=50)
     elif metric == translator("nb_won_games_diff"):
         base_chart = alt.Chart(df_hist).mark_bar()

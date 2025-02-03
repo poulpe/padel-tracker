@@ -51,6 +51,7 @@ if submit_button:
         is_players_all_fulfilled = False
 
 # Checks team exist (and fetch all df needed if OK)
+# TODO : make df_teams and df_matches from all leagues ?
 is_team_exists = False
 if submit_button and is_players_all_fulfilled:
     if player1_name == player2_name:
