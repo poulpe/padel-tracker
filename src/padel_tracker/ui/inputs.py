@@ -15,3 +15,25 @@ def make_player_selectbox(player_name: str = None):
         index=index,
     )
     return player_name
+
+
+# def scale_max_league_name_length(x:float)->float:
+#     return -2E-05*x**4 + 0.0032*x**3 - 0.2122*x**2 + 6.2259*x + 6
+#
+# def make_league_selectbox():
+#     len_league_name = len(st.session_state.league_name)
+#     max = scale_max_league_name_length(len_league_name)
+#
+#     _, col_center, _ = st.columns(
+#         [(max-len_league_name)/2, len_league_name, (max-len_league_name)/2]
+#     )
+#     with col_center:
+#         st.selectbox(
+#             st.session_state.translator("league"),
+#             st.session_state.league_names,
+#             key="league_name",
+#             label_visibility="hidden",
+#             on_change=update_cache,
+#             kwargs={"force":True},
+#
+#         )

@@ -6,6 +6,7 @@ from padel_tracker.services.player_manager import get_all_players, get_all_teams
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
+# TODO : adapt make_player_overview_table to league
 def make_player_overview_table(
     df_players: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
@@ -65,6 +66,7 @@ def make_player_overview_table(
     )
 
 
+# TODO : adapt make_team_overview_table to league
 def make_team_overview_table(
     df_teams: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,

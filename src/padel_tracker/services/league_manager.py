@@ -4,6 +4,7 @@ CRUD on Leagues
 
 import logging
 
+import pandas as pd
 import sqlalchemy
 import pydantic
 
@@ -27,6 +28,8 @@ from padel_tracker.database.db import (
 
 LOGGER = get_logger("league_manager")
 
+# GET/UPDATE
+
 
 def get_league_from_name(session: Session, name: str) -> League:
     """
@@ -49,6 +52,36 @@ def get_league_from_name(session: Session, name: str) -> League:
     except sqlalchemy.exc.NoResultFound:
         raise LeagueNotFoundError(f"league '{name}' not found in database")
     return league
+
+
+# TODO (prio2) :assign_league_to_player
+def assign_league_to_player(session: Session, player: Player, league: League) -> Player:
+    pass
+
+
+# TOCHECK: update_league
+def update_league_after_finished_match(
+    session: Session,
+    match: Match,
+    league: League,
+) -> League:
+    league.nb_matches += 1
+    league.last_match_date = match.date
+    commit_to_db(league, session=session)
+    return league
+
+
+def get_all_leagues(
+    session: Session, as_df: bool = False
+) -> list[League] | pd.DataFrame:
+    return read_from_db(League, session=session, as_df=as_df)
+
+
+def get_all_league_names(session: Session) -> list[str]:
+    return read_from_db(League.name, session=session)
+
+
+# CREATE
 
 
 def create_league(session: Session, name: str, **kwargs) -> League:
@@ -77,6 +110,9 @@ def create_league(session: Session, name: str, **kwargs) -> League:
     return league
 
 
+# UTILS
+
+
 # TODO (prio1) :check_players_all_in_league
 def check_players_all_in_league(
     session: Session,
@@ -86,20 +122,3 @@ def check_players_all_in_league(
 ) -> None:
     """Raises PlayerNotInLeagueError"""
     pass
-
-
-# TODO (prio2) :assign_league_to_player
-def assign_league_to_player(session: Session, player: Player, league: League) -> Player:
-    pass
-
-
-# TODO: update_league
-def update_league_after_finished_match(
-    session: Session,
-    match: Match,
-    league: League,
-) -> League:
-    league.nb_matches += 1
-    league.last_match_date = match.date
-    commit_to_db(league, session=session)
-    return league

@@ -248,6 +248,56 @@ def get_all_elo_rating_histories(
     )
 
 
+def get_all_elo_rating_histories_from_league(
+    session: Session,
+    league_name: str,
+    as_df: bool = False,
+    limit_last: int = None,
+) -> list[EloRatingHistory] | pd.DataFrame:
+    """
+    Only records from matches inside the league only.
+    Excludes matches from players who played elsewhere than this league
+
+    Notes
+    -----
+    Might have a weird behaviour on graphs if a player gained Elo in another league and comes back to this league ?
+    In this case, use `get_all_elo_rating_histories_from_players_in_league`
+    """
+    return read_from_db(
+        EloRatingHistory,
+        where=EloRatingHistory.league_name == league_name,
+        session=session,
+        order_by=EloRatingHistory.date,
+        as_df=as_df,
+        limit_last=limit_last,
+    )
+
+
+def get_all_elo_rating_histories_from_players_in_league(
+    session: Session,
+    league_name: str,
+    as_df: bool = False,
+    limit_last: int = None,
+):
+    """
+    All match records from players registered in the league.
+    Also includes matches from players resgistered in several leagues.
+    """
+    # Fetch player_ids in league_name
+    league_players = player_manager.get_all_players_from_league(
+        session=session, league_name=league_name, as_df=False
+    )
+    player_ids = [player.id for player in league_players]
+    return read_from_db(
+        EloRatingHistory,
+        where=EloRatingHistory.player_id.in_(player_ids),
+        session=session,
+        order_by=EloRatingHistory.date,
+        as_df=as_df,
+        limit_last=limit_last,
+    )
+
+
 def get_player_elo_rating_histories(
     session: Session,
     player_name: str,
@@ -257,6 +307,26 @@ def get_player_elo_rating_histories(
     return read_from_db(
         EloRatingHistory,
         where=EloRatingHistory.player_name == player_name,
+        session=session,
+        order_by=EloRatingHistory.date,
+        as_df=as_df,
+        limit_last=limit_last,
+    )
+
+
+def get_player_elo_rating_histories_in_league(
+    session: Session,
+    player_name: str,
+    league_name: str,
+    as_df: bool = False,
+    limit_last: int = None,
+) -> list[EloRatingHistory] | pd.DataFrame:
+    return read_from_db(
+        EloRatingHistory,
+        where=(
+            EloRatingHistory.player_name == player_name,
+            EloRatingHistory.league_name == league_name,
+        ),
         session=session,
         order_by=EloRatingHistory.date,
         as_df=as_df,

@@ -19,6 +19,10 @@ _DICT_TO_FR = {
     "last_match_date": "Dernier match",
     "score": "Score",
     "match_name": "Match",
+    "league": "Ligue",
+    "leagues": "Ligues",
+    "league_name": "Ligue",
+    "league_names": "Ligues",
     # UI message
     "language": "Langue",
     "add_match": "Nouveau match",
@@ -80,14 +84,15 @@ _DICT_TO_FR = {
     "x_victories_against": "{x} victoires contre lui/elle",
     "favorite_victims": "Victimes préférées",
     "x_victories_against_them": "{x} victoires contre eux/elles",
-    "empty_database_error": "Il n'y a aucun match pour le moment. Assure toi de rentrer tes premiers joueurs via la page 'Nouveau joueur', puis ton premier match via la page 'Nouveau match'.",
-    "not_enough_players_database_error": "Il n'y a pas encore assez de joueurs enregistrés pour faire un match. Assure toi d'avoir créé au moins 4 joueurs via la page 'Nouveau joueur'.",
+    "empty_database_error": "Il n'y a aucun match dans cette ligue pour le moment. Assure toi de rentrer tes premiers joueurs via la page 'Nouveau joueur', puis ton premier match via la page 'Nouveau match'.",
+    "not_enough_players_database_error": "Il n'y a pas encore assez de joueurs enregistrés dans cette ligue pour faire un match. Assure toi d'avoir créé au moins 4 joueurs via la page 'Nouveau joueur'.",
     "check_logs": "Consulter les logs",
     "delete_player": "Supprimer un joueur",
     "delete_match": "Supprimer un match",
     "delete": "Supprime",
     "player_deleted": " a été supprimé. Bye bye 😢",
     "player_already_deleted": " a déja été supprimé, arrête de t'acharner, c'était suffisant douloureux comme ça 😭",
+    "no_league_database_error": "Il n'y a aucune ligue à afficher pour le moment. Enregistre une ligue via la page 'Nouvelle ligue'",
 }
 
 _DICT_TO_EN = {
@@ -107,6 +112,10 @@ _DICT_TO_EN = {
     "last_match_date": "Last match",
     "score": "Score",
     "match_name": "Match",
+    "league": "League",
+    "leagues": "Leagues",
+    "league_name": "League",
+    "league_names": "Leagues",
     # UI message
     "language": "Language",
     "add_match": "Add match",
@@ -168,14 +177,15 @@ _DICT_TO_EN = {
     "x_victories_against": "{x} victories against",
     "favorite_victims": "Favorite victims",
     "x_victories_against_them": "{x} victories against them",
-    "empty_database_error": "There's no match at the moment. Ensure your players are declared via the page 'New player' and enter your first match via the page 'New match'.",
-    "not_enough_players_database_error": "Not enough players yet registered to make a match. Ensure you've created at least 4 players via the page 'New player'.",
+    "empty_database_error": "There's no match in this league at the moment. Ensure your players are declared via the page 'New player' and enter your first match via the page 'New match'.",
+    "not_enough_players_database_error": "Not enough players yet registered in this league to make a match. Ensure you've created at least 4 players via the page 'New player'.",
     "check_logs": "Check logs",
     "delete_player": "Delete player",
     "delete_match": "Delete match",
     "delete": "Delete",
     "player_deleted": " has been deleted. Bye bye 😢",
     "player_already_deleted": " has already been deleted, please stop, it was already painful enough 😭",
+    "no_league_database_error": "No league for the moment. Register a first league via the page 'New league'",
 }
 
 
