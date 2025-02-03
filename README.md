@@ -7,9 +7,10 @@ Padel Tracker is a small app I made to keep track of Padel matches with my frien
 It provides player rankings using an Elo-based system and maintains a history of matches, teams, and individual performances.
 
 The application is hosted on **Streamlit Community Cloud**  
-➡ **https://poulpe-padel-tracker.streamlit.app**
+➡ **https://poulpe-padel-tracker.streamlit.app**  
 
-<img src="docs/img/screenshot_main_page_en.png" width="55%" height="55%"> 
+      
+<img src="docs/img/screenshot_main_page_en.png" width="66%" height="66%"> 
 
 ## Features
 - **Player and Team Management**: Add, update, and check player and team statistics.
@@ -56,7 +57,7 @@ The application is hosted on **Streamlit Community Cloud**
 
 ## Gallery
 
-| <img src="docs/img/screenshot_check_player_page_en2.png" width="80%" height="80%"> | <img src="docs/img/screenshot_main_page_dark_en.png" width="80%" height="80%"> |
+| <img src="docs/img/screenshot_check_player_page_en2.png" width="90%" height="90%"> | <img src="docs/img/screenshot_main_page_dark_en.png" width="90%" height="90%"> |
 |------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
 
 
