@@ -33,14 +33,17 @@ player_name = make_player_selectbox(player_name)
 st.write("")
 
 if player_name:
-    # Fetch all df needed
+    # Fetch all df needed (from all leagues if applicable)
     df_player = st.session_state.df_players.query(f"name == '{player_name}'").copy()
-    df_teams = st.session_state.df_teams.copy()
+    df_teams = st.session_state.df_teams_all_leagues.copy()
     df_teams = df_teams[df_teams["name"].str.contains(player_name, na=False)]
-    df_matches = st.session_state.df_matches.copy()
+    df_matches = st.session_state.df_matches_all_leagues.copy()
     df_matches = df_matches[df_matches["name"].str.contains(player_name, na=False)]
     df_elo_hist = st.session_state.df_elo_hist.copy()
     df_elo_hist = df_elo_hist.query(f"player_name == '{player_name}'").copy()
+    df_linkplayerleague = st.session_state.df_linkplayerleague.query(
+        f"player_name == '{player_name}'"
+    ).copy()
 
     write_header(player_name)
 
@@ -53,6 +56,7 @@ if player_name:
     write_subheader(st.session_state.translator("overview"))
     make_player_overview_table(
         df_players=df_player,
+        df_linkplayerleague=df_linkplayerleague,
         translator=st.session_state.translator,
         extra_col=True,
         is_single=True,

@@ -60,7 +60,7 @@ class MatchScore(BaseModel, validate_assignment=True):
             raise ValueError("Games/Points must be given for both teams in Set#3")
 
     @classmethod
-    def check_set_validity(self, games_team1: int, games_team2: int) -> None:
+    def check_set_validity(cls, games_team1: int, games_team2: int) -> None:
         """Checks 2 games diff in a set or arrived to 7"""
         games_diff = abs(games_team2 - games_team1)
         if ((games_team1 == 6) != (games_team2 == 6)) and (games_diff >= 2):

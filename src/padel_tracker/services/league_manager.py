@@ -2,18 +2,17 @@
 CRUD on Leagues
 """
 
-import logging
-
 import pandas as pd
 import sqlalchemy
 import pydantic
 
+from padel_tracker.models.links import LinkPlayerLeague
 from padel_tracker.utils.errors import (
     LeagueNotFoundError,
     LeagueExistsError,
     InvalidLeagueNameError,
-    # PlayerNotInLeagueError,
-    # TeamExistsError,
+    PlayerNotInLeagueError,
+    PlayerAlreadyInLeagueError,
 )
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.models.players import Player
@@ -54,12 +53,21 @@ def get_league_from_name(session: Session, name: str) -> League:
     return league
 
 
-# TODO (prio2) :assign_league_to_player
+# TOCHECK: assign_league_to_player
 def assign_league_to_player(session: Session, player: Player, league: League) -> Player:
-    pass
+    """"""
+    # Check player not already in league
+    for link in player.league_links:
+        if link.league == league:
+            raise PlayerAlreadyInLeagueError
+    # Create LinkPlayerLeague
+    link = LinkPlayerLeague(
+        player=player, league=league, player_name=player.name, league_name=league.name
+    )
+    commit_to_db(link, player, league, session=session)
+    LOGGER.log(LOG_LEVEL_NOTIF, f"{player=} has been assigned to {league=}")
 
 
-# TOCHECK: update_league
 def update_league_after_finished_match(
     session: Session,
     match: Match,
@@ -68,6 +76,7 @@ def update_league_after_finished_match(
     league.nb_matches += 1
     league.last_match_date = match.date
     commit_to_db(league, session=session)
+    LOGGER.info(f"league {league.name} has been updated from match id={match.id}")
     return league
 
 
@@ -79,6 +88,18 @@ def get_all_leagues(
 
 def get_all_league_names(session: Session) -> list[str]:
     return read_from_db(League.name, session=session)
+
+
+def get_linkplayerleague_from_league(
+    session: Session, league_name: str, as_df: bool = False
+) -> list[LinkPlayerLeague] | pd.DataFrame:
+    """Table with the rank and best_rank per league per player"""
+    return read_from_db(
+        LinkPlayerLeague,
+        where=LinkPlayerLeague.league_name == league_name,
+        session=session,
+        as_df=as_df,
+    )
 
 
 # CREATE
@@ -113,12 +134,21 @@ def create_league(session: Session, name: str, **kwargs) -> League:
 # UTILS
 
 
-# TODO (prio1) :check_players_all_in_league
+# TOCHECK (prio1) :check_players_all_in_league
 def check_players_all_in_league(
-    session: Session,
+    # session: Session,
     players: list[Player],
     league: League,
-    logger: logging.Logger,
+    # logger: logging.Logger,
 ) -> None:
     """Raises PlayerNotInLeagueError"""
-    pass
+    list_is_in = []
+    for player in players:
+        is_in = False
+        for link in player.league_links:
+            if link.league == league:
+                is_in = True
+                break
+        list_is_in.append(is_in)
+    if not all(list_is_in):
+        raise PlayerNotInLeagueError

@@ -15,7 +15,7 @@ class League(ValidatedSQLModel, table=True):
     name: str = Field(
         index=True,
         min_length=2,
-        max_length=50,
+        max_length=64,
         schema_extra={"pattern": r"^[\p{L}' -]*[\p{L}][\p{L}][\p{L}' -]*$"},
     )
     creation_date: datetime = Field(

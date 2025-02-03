@@ -1,7 +1,7 @@
 import streamlit as st
 
 
-def make_player_selectbox(player_name: str = None):
+def make_player_selectbox(player_name: str = None) -> str:
     index = None
     if player_name:
         try:
@@ -15,6 +15,22 @@ def make_player_selectbox(player_name: str = None):
         index=index,
     )
     return player_name
+
+
+def make_league_selectbox(league_name: str = None) -> str:
+    index = None
+    if league_name:
+        try:
+            index = st.session_state.league_names.index(league_name)
+        except ValueError:
+            index = None
+    league_name = st.selectbox(
+        label=st.session_state.translator("league_name"),
+        options=st.session_state.league_names,
+        placeholder=st.session_state.translator("league"),
+        index=index,
+    )
+    return league_name
 
 
 # def scale_max_league_name_length(x:float)->float:

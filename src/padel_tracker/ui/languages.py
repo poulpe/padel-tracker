@@ -93,6 +93,15 @@ _DICT_TO_FR = {
     "player_deleted": " a été supprimé. Bye bye 😢",
     "player_already_deleted": " a déja été supprimé, arrête de t'acharner, c'était suffisant douloureux comme ça 😭",
     "no_league_database_error": "Il n'y a aucune ligue à afficher pour le moment. Enregistre une ligue via la page 'Nouvelle ligue'",
+    "all_players_not_in_league_error": "Il y a des joueurs qui ne font pas parties de la ligue, assure toi que tous tes champions font bien partie de la meme ligue pour enregistrer un match ensemble.",
+    "add_league": "Nouvelle ligue",
+    "league_added_success": " a été ajouté avec succès !",
+    "league_exists_error": " a déja été enregistré",
+    "league_invalid_name_error": " n'est pas un nom de ligue valide. Assure toi qu'il contient au moins 2 caractères, pas de chiffres et qu'il représente un vrai nom de ligue de batard !",
+    "league_added_error": " Impossible d'ajouter la ligue, erreur inconnue:",
+    "assign_league": "Recrute dans une ligue",
+    "player_already_in_league_error": "  a déja été enregistré dans la ligue ",
+    "assigned_league_to_player_success": " a bien été enregistré dans la ligue ",
 }
 
 _DICT_TO_EN = {
@@ -186,6 +195,14 @@ _DICT_TO_EN = {
     "player_deleted": " has been deleted. Bye bye 😢",
     "player_already_deleted": " has already been deleted, please stop, it was already painful enough 😭",
     "no_league_database_error": "No league for the moment. Register a first league via the page 'New league'",
+    "all_players_not_in_league_error": "Some/all players are not part of the league, make sure they are part of the league so you can register a match together",
+    "league_added_success": " added successfully !",
+    "league_added_error": " Unknown error during league creation:",
+    "league_exists_error": " has already been added",
+    "league_invalid_name_error": " is not a valid league name. Make sure it has at least 2 alphabetical characters, no number and that it represents a valid champion's league name !",
+    "assign_league": "Assign player to league",
+    "player_already_in_league_error": "  has already been assigned to this league",
+    "assigned_league_to_player_success": " has been successfully assigned in the league ",
 }
 
 

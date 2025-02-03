@@ -8,6 +8,7 @@ from padel_tracker.utils.errors import (
     MatchNotFinishedError,
     SamePlayerInBothTeamsError,
     SamePlayerInOneTeamError,
+    PlayerNotInLeagueError,
 )
 from padel_tracker.models.matches import MatchScore
 from padel_tracker.database.db import DB
@@ -29,7 +30,7 @@ write_header(st.session_state.translator("add_match"))
 form = st.form("add_match")
 with form:
     # Get players list
-    player_names = list(st.session_state.df_players["name"])
+    player_names = st.session_state.player_names
 
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
@@ -154,12 +155,14 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 session=session,
                 player1_name=team1_player1_name,
                 player2_name=team1_player2_name,
+                league_name=st.session_state.league_name,
                 create_if_not_found=True,
             )
             team2 = get_team_from_players_name(
                 session=session,
                 player1_name=team2_player1_name,
                 player2_name=team2_player2_name,
+                league_name=st.session_state.league_name,
                 create_if_not_found=True,
             )
         except SamePlayerInOneTeamError:
@@ -172,6 +175,7 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 match = create_match(
                     session=session,
                     teams=[team1, team2],
+                    league_name=st.session_state.league_name,
                     date=match_datetime,
                     score=match_score,
                     is_finished=False,
@@ -196,6 +200,9 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 st.error(err_msg, icon="💢")
             except SamePlayerInBothTeamsError:
                 err_msg = st.session_state.translator("same_player_in_both_teams_error")
+                st.error(err_msg, icon="💢")
+            except PlayerNotInLeagueError:
+                err_msg = st.session_state.translator("all_players_not_in_league_error")
                 st.error(err_msg, icon="💢")
             except Exception as exc:
                 err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"

@@ -14,7 +14,7 @@ from padel_tracker.models.leagues import League
 from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
 from padel_tracker.utils.errors import (
     MatchExistsError,
-    # MatchNotFinishedError,
+    MatchNotFinishedError,
     SamePlayerInBothTeamsError,
 )
 from padel_tracker.models.players import Team
@@ -45,15 +45,14 @@ def process_finished_match(
         )
         info_msg = f"processed finished_match id={match.id}"
         LOGGER.log(LOG_LEVEL_NOTIF, info_msg)
-    except Exception as exc:
-        raise exc
-        # TODO (prio1) : err during process_finished_match
-        # err_msg = "match is not finished: won't process"
-        # if delete_on_error:
-        #    delete_from_db(match, session=session)
-        #    err_msg += " and deleted it from db"
-        # LOGGER.error(err_msg)
-        # raise MatchNotFinishedError(err_msg)
+    except Exception:
+        # TOCHECK (prio1) : err during process_finished_match
+        err_msg = "match is not finished: won't process"
+        if delete_on_error:
+            delete_from_db(match, session=session)
+            err_msg += " and deleted it from db"
+        LOGGER.error(err_msg)
+        raise MatchNotFinishedError(err_msg)
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
@@ -63,7 +62,7 @@ def process_finished_match(
 def create_match(
     session: Session,
     teams: list[Team],
-    league: League,
+    league_name: str,
     date: datetime,
     score: str | MatchScore | None = None,
     is_finished: bool = True,
@@ -96,12 +95,17 @@ def create_match(
             err_msg = f"{player.name} is in both teams"
             raise SamePlayerInBothTeamsError(err_msg)
 
+    # Fetch league
+    league = read_from_db(
+        League, where=League.name == league_name, session=session, unique=True
+    )
+
     # Check match doesn't exist already
     check_match_not_already_created(
         session=session,
         teams=teams,
         date=date,
-        league=league,
+        league_name=league_name,
         score=score,
         logger=logger,
     )
@@ -113,7 +117,7 @@ def create_match(
         teams[1].players[1],
     ]
     league_manager.check_players_all_in_league(
-        session=session, players=players, league=league, logger=logger
+        players=players, league=league  # , session=session, logger=logger
     )
 
     # Create match
@@ -180,7 +184,7 @@ def get_all_matches_from_league(
 def check_match_not_already_created(
     session: Session,
     teams: list[Team],
-    league: League,
+    league_name: str,
     date: datetime,
     score: str | MatchScore | None = None,
     logger: logging.Logger = LOGGER,
@@ -189,7 +193,11 @@ def check_match_not_already_created(
     list_matches_same_date_score = read_from_db(
         Match,
         session=session,
-        where=(Match.date == date, Match.score == score, Match.league == league),
+        where=(
+            Match.date == date,
+            Match.score == score,
+            Match.league_name == league_name,
+        ),
     )
     if list_matches_same_date_score:
         is_team1_in_match = False
@@ -201,7 +209,7 @@ def check_match_not_already_created(
             if teams[1] in match.teams:
                 is_team2_in_match = True
             if is_team1_in_match and is_team2_in_match:
-                err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league.name=} already exists"
+                err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league_name=} already exists"
                 logger.error(err_msg)
                 raise MatchExistsError(err_msg)
 

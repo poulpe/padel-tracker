@@ -7,7 +7,6 @@ from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 from padel_tracker.services import ranking_manager
 
 
-# TOCHECK : adapt make_overview_elo_history_chart to leagues
 def make_overview_elo_history_chart(
     df_elo_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
@@ -66,7 +65,6 @@ def make_overview_elo_history_chart(
     st.altair_chart(chart, use_container_width=True)
 
 
-# TODO: adapat make_player_metric_history_chart to leagues
 def make_player_metric_history_chart(
     player_name: str,
     df_elo_hist: pd.DataFrame = None,
@@ -163,6 +161,7 @@ def make_player_metric_history_chart(
     color_param = translator("result")
     tooltip = [x_param, y_param, f"{color_param}:N", translator("match_name")]
     if metric == translator("elo_rating"):
+        # TODO: better elo_rating (ensure no zero + maybe via points ?)
         base_chart = alt.Chart(df_hist).mark_bar()  # mark_rule(size=50)
     elif metric == translator("nb_won_games_diff"):
         base_chart = alt.Chart(df_hist).mark_bar()

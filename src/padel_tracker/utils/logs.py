@@ -187,8 +187,8 @@ def init_loggings(
         main_logger.addHandler(log_handler_supabase)
 
     # Log starting message logging
-    msg = f"init with conf: {db_mode=}, {run_mode=}, {log_level_console=}, {log_level_file=}"
-    main_logger.log(LOG_LEVEL_NOTIF, msg)  # .getChild("init_loggings")
+    msg = f"init with conf: db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_file=}"
+    main_logger.getChild("init_loggings").log(LOG_LEVEL_NOTIF, msg)  #
 
     return main_logger
 

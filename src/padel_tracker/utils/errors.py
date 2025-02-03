@@ -56,3 +56,7 @@ class InvalidLeagueNameError(Exception):
 
 class PlayerNotInLeagueError(Exception):
     """Player is not part of the league"""
+
+
+class PlayerAlreadyInLeagueError(Exception):
+    """Player is already part of the league"""

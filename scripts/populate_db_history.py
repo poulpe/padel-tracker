@@ -65,7 +65,10 @@ def create_matches(session: Session, list_match_data):
             match_data["hour"],
         )
         match = create_match(
-            session, teams=[t1, t2], date=match_date, score=match_data["score"]
+            session,
+            teams=[t1, t2],
+            date=match_date,
+            score=match_data["score"],
         )
         LOGGER.info(f"create_matches: successfully created match (id = {match.id})")
 

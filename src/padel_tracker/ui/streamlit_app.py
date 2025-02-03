@@ -68,7 +68,9 @@ st.sidebar.selectbox(
     on_change=update_cache,
     kwargs={"force": True},
 )
-write_subheader(st.session_state.league_name, font_size=22, bold=False)
+write_subheader(
+    st.session_state.league_name, font_size=21, bold=False, extra_line=False
+)
 # st.sidebar.divider()
 
 
@@ -115,7 +117,7 @@ page_check_player = st.Page(
 page_check_team = st.Page(
     "page_check_team.py",
     title=translator("check_team"),
-    icon="👥️",
+    icon="🤝",
 )
 page_add_player = st.Page(
     "page_add_player.py", title=translator("add_player"), icon="🆕"
@@ -128,6 +130,14 @@ page_delete_player = st.Page(
 page_delete_match = st.Page(
     "page_delete_match.py", title=translator("delete_match"), icon="❌"
 )
+page_add_league = st.Page(
+    "page_add_league.py", title=translator("add_league"), icon="🏆"
+)
+page_assign_league = st.Page(
+    "page_assign_league.py",
+    title=translator("assign_league"),
+    icon="👥️",
+)
 page_check_logs = st.Page(
     "page_check_logs.py", title=translator("check_logs"), icon="📋"
 )
@@ -137,12 +147,14 @@ pg = st.navigation(
         "Padel Tracker": [page_overview],
         translator("matches"): [page_add_match],
         translator("players_teams"): [page_check_player, page_check_team],
-        # TODO: translator("leagues"): [page_assign_league_to_player],
+        # TODO: translator("leagues"): [page_check_leagues],
         # translator("analytics"): [],
         translator("administration"): [
             page_add_player,
             page_delete_player,
             page_delete_match,
+            page_add_league,
+            page_assign_league,
             page_check_logs,
         ],
     }

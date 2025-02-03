@@ -1,24 +1,26 @@
 import streamlit as st
 
-from padel_tracker.utils.errors import PlayerExistsError, InvalidPlayerNameError
+from padel_tracker.utils.errors import PlayerAlreadyInLeagueError
 from padel_tracker.database.db import DB
 from padel_tracker.services import player_manager, league_manager
 from padel_tracker.ui.cache import refresh_cache
 from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.inputs import make_player_selectbox, make_league_selectbox
 
 st.write("")
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
 
-write_header(st.session_state.translator("add_player"))
+write_header(st.session_state.translator("assign_league"))
 
-form = st.form("add_player")
+form = st.form("assign_league")
 with form:
     _, center_col, _ = st.columns([1, 5, 1])
     with center_col:
-        player_name = st.text_input(st.session_state.translator("name"))
+        league_name = make_league_selectbox()
+        player_name = make_player_selectbox()
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
@@ -29,25 +31,22 @@ with form:
 if submit_button:
     with DB.get_session() as session:
         try:
-            # Fetch league
-            league = league_manager.get_league_from_name(
-                session=session, name=st.session_state.league_name
+            player = player_manager.get_player_from_name(
+                session=session, name=player_name
             )
-            player_manager.create_player(
-                session=session, name=player_name, league=league
+            league = league_manager.get_league_from_name(
+                session=session, name=league_name
+            )
+            league_manager.assign_league_to_player(
+                session=session, player=player, league=league
             )
             st.success(
-                f"{player_name}{st.session_state.translator("player_added_success")}",
+                f"{player_name}{st.session_state.translator("assigned_league_to_player_success")}{league_name}",
                 icon="🔥",
             )
-        except PlayerExistsError:
+        except PlayerAlreadyInLeagueError:
             st.error(
-                f"{player_name}{st.session_state.translator("player_exists_error")}",
-                icon="💢",
-            )
-        except InvalidPlayerNameError:
-            st.error(
-                f"{player_name}{st.session_state.translator("player_invalid_name_error")}",
+                f"{player_name}{st.session_state.translator("player_already_in_league_error")}{league_name}",
                 icon="💢",
             )
         except Exception as exc:
