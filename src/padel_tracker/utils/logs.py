@@ -165,7 +165,6 @@ def init_loggings(
     # Add localdatabase handler for local mode
     if db_mode.lower() == DBMode.LOCAL:
         log_handler_local_database = LocalDatabaseLogHandler()
-        # log_handler_local_database.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_local_database.setLevel(log_level_file)
         main_logger.addHandler(log_handler_local_database)
 
@@ -173,7 +172,6 @@ def init_loggings(
     if db_mode.lower() == DBMode.CLOUD:
         supabase_client = create_supabase_client()
         log_handler_supabase = SupabaseLogHandler(supabase_client=supabase_client)
-        # log_handler_supabase.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_supabase.setLevel(log_level_file)
         main_logger.addHandler(log_handler_supabase)
 

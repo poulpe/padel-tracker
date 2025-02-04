@@ -58,6 +58,7 @@ def create_players(session: Session):
         except PlayerExistsError:
             LOGGER.info(f"Player {player_name} already exists, skip creation")
 
+
 def create_matches(session: Session, list_match_data, league_name: str):
     for match_data in list_match_data:
         t1_names = match_data["t1_names"]
@@ -83,6 +84,7 @@ def create_matches(session: Session, list_match_data, league_name: str):
             score=match_data["score"],
         )
         LOGGER.info(f"create_matches: successfully created match (id = {match.id})")
+
 
 # def assign_leagues(session: Session):
 #     # Assign someone to LEAGUE_ALT

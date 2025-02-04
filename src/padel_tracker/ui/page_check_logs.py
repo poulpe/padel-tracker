@@ -13,5 +13,5 @@ with DB.get_session() as session:
         Logs, as_df=True, order_by=Logs.timestamp, order_descending=True
     )
 
-# col = ["timestamp", "name", "level", "message"]
-st.dataframe(df_logs, use_container_width=True, height=700)
+col = ["timestamp", "name", "level", "message"]
+st.dataframe(df_logs[col], hide_index=True, use_container_width=True, height=700)
