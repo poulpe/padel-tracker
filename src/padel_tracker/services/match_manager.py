@@ -17,7 +17,7 @@ from padel_tracker.utils.errors import (
     MatchNotFinishedError,
     SamePlayerInBothTeamsError,
 )
-from padel_tracker.models.players import Team
+from padel_tracker.models.players import Team, EloRatingHistory, TeamEloRatingHistory
 from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.database.db import (
     Session,
@@ -215,13 +215,60 @@ def check_match_not_already_created(
 
 
 # DELETE
-# TODO (prio 1): delete_match, mucho work to cascade_delete + revert correct Elo
-# (idea: remove history.elo_gain corresponding to this match from players current elo?)
-def delete_match(session: Session, match_id: UUID) -> None:
+def delete_match(session: Session, match_id: UUID | str) -> None:
+    """Delete match after removing history.elo_gain corresponding to this match from players/team current elo
+    Also updates league nb_matches.
+    """
+    if isinstance(match_id, str):
+        match_id = UUID(match_id)
+
     # Retrieve match
     match = get_match_from_id(match_id=match_id, session=session)
+    league = match.league
 
-    # Revert Elo gain from players from this match
+    # Update players and teams
+    ## Manage players (Revert Elo gain from players from this match)
+    match_elo_rating_history = read_from_db(
+        EloRatingHistory, where=EloRatingHistory.match_id == match_id, session=session
+    )
+    list_players = []
+    for row in match_elo_rating_history:
+        player = row.player
+        elo_rating_gain = row.elo_rating_gain
+        player.elo_rating -= elo_rating_gain
+        player.nb_matches -= 1
+        if elo_rating_gain >= 0:
+            player.nb_victories -= 1
+        else:
+            player.nb_defeats -= 1
+        list_players.append(player)
+    ## Manage teams (Revert Elo gain from players from this match)
+    match_team_elo_rating_history = read_from_db(
+        TeamEloRatingHistory,
+        where=TeamEloRatingHistory.match_id == match_id,
+        session=session,
+    )
+    list_teams = []
+    for row in match_team_elo_rating_history:
+        team = row.team
+        elo_rating_gain = row.elo_rating_gain
+        team.elo_rating -= elo_rating_gain
+        team.nb_matches -= 1
+        if elo_rating_gain > 0:
+            team.nb_victories -= 1
+        else:
+            team.nb_defeats -= 1
+        list_teams.append(team)
+    ## Manage league
+    league.nb_matches -= 1
+    ## Commit updates
+    commit_to_db(*list_players, *list_teams, league, session=session)
+    ranking_manager.update_players_rank(session=session, league=league)
+    ## Delete history rows
+    delete_from_db(
+        *match_elo_rating_history, *match_team_elo_rating_history, session=session
+    )
 
     # Finally delete
     delete_from_db(match, session=session)
+    LOGGER.notif(f"deleted {match_id=} successfully")

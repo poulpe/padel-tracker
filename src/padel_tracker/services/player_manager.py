@@ -138,11 +138,9 @@ def create_player(
 
 def delete_player(session: Session, name: str) -> None:
     logger = LOGGER  # .getChild("delete_player")
+    # Fetch player
     try:
         player = get_player_from_name(session=session, name=name)
-        # TODO: update leagues nb_players
-        delete_from_db(player, session=session)
-        logger.notif(f"deleted {name} successfully from database")
     except PlayerNotFoundError:
         err_msg = f"{name} doesn't exist, cannot delete it"
         logger.error(err_msg)
@@ -150,6 +148,25 @@ def delete_player(session: Session, name: str) -> None:
     except Exception as exc:
         logger.exception(exc)
         raise (exc)
+
+    # Delete linkplayerleague first
+    try:
+        links = player.league_links
+        for link in links:
+            link.league.nb_players -= 1
+            delete_from_db(link, session=session)
+        # Delete rank and elo_rating histories
+        for row in player.elo_rating_history:
+            delete_from_db(row, session=session)
+        for row in player.rank_history:
+            delete_from_db(row, session=session)
+    except Exception as exc:
+        logger.exception(exc)
+        raise (exc)
+
+    # Finally delete player
+    delete_from_db(player, session=session)
+    logger.notif(f"deleted '{name}' successfully from database")
 
 
 ##### Team ######

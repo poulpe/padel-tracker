@@ -292,6 +292,7 @@ def read_from_db(
     return result
 
 
-def delete_from_db(object_, session: Session) -> None:
-    session.delete(object_)
+def delete_from_db(*objects, session: Session) -> None:
+    for object in objects:
+        session.delete(object)
     session.commit()

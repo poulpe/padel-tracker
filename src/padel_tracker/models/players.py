@@ -101,6 +101,7 @@ class TeamEloRatingHistory(ValidatedSQLModel, table=True):
     team_id: UUID | None = Field(default=None, foreign_key="team.id")
     team_name: str = Field(description="For convenience")
     team: "Team" = Relationship(back_populates="elo_rating_history")
+    match_id: UUID | None = Field(default=None, foreign_key="match.id")
     match_name: str | None = Field(None, description="For convenience")
     league_id: UUID | None = Field(None, foreign_key="league.id")
     league_name: str | None = Field(None, description="For convenience")

@@ -158,6 +158,7 @@ def update_players_results_after_finished_match(
             team_name=team.name,
             elo_rating=updated_elo_rating,
             elo_rating_gain=elo_rating_gain,
+            match_id=match.id,
             match_name=match.name,
             league_id=match.league.id,
             league_name=match.league_name,
