@@ -1,6 +1,6 @@
 import pandas as pd
 
-from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.models.leagues import League
 from padel_tracker.models.players import (
     Player,
@@ -178,7 +178,7 @@ def update_players_results_after_finished_match(
         match,
         session=session,
     )
-    logger.log(LOG_LEVEL_NOTIF, f"updated players results for match id={match.id}")
+    logger.notif(f"updated players results for match id={match.id}")
 
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
@@ -231,7 +231,7 @@ def update_players_rank(session: Session, league: League) -> None:
         *rank_history_entries,
         session=session,
     )
-    logger.log(LOG_LEVEL_NOTIF, "updated players ranking")
+    logger.notif("updated players ranking")
 
 
 def get_all_elo_rating_histories(

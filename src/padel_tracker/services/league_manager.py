@@ -14,7 +14,7 @@ from padel_tracker.utils.errors import (
     PlayerNotInLeagueError,
     PlayerAlreadyInLeagueError,
 )
-from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.models.players import Player
 from padel_tracker.models.matches import Match
 from padel_tracker.models.leagues import League
@@ -65,7 +65,7 @@ def assign_league_to_player(session: Session, player: Player, league: League) ->
         player=player, league=league, player_name=player.name, league_name=league.name
     )
     commit_to_db(link, player, league, session=session)
-    LOGGER.log(LOG_LEVEL_NOTIF, f"{player=} has been assigned to {league=}")
+    LOGGER.notif(f"{player=} has been assigned to {league=}")
 
 
 def update_league_after_finished_match(
@@ -76,7 +76,7 @@ def update_league_after_finished_match(
     league.nb_matches += 1
     league.last_match_date = match.date
     commit_to_db(league, session=session)
-    LOGGER.info(f"league {league.name} has been updated from match id={match.id}")
+    LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
     return league
 
 
@@ -106,7 +106,7 @@ def get_linkplayerleague_from_league(
 
 
 def create_league(session: Session, name: str, **kwargs) -> League:
-    logger = LOGGER.getChild("create_league")
+    logger = LOGGER  # .getChild("create_league")
     name = name[0].upper() + name[1:] if name else name  # Capitalize 1st letter
     # Checks league doesn't exist
     try:
@@ -127,7 +127,7 @@ def create_league(session: Session, name: str, **kwargs) -> League:
         raise exc
     # Commit if successfull
     commit_to_db(league, session=session)
-    logger.log(LOG_LEVEL_NOTIF, f"created {league = }")
+    logger.notif(f"created {league = }")
     return league
 
 

@@ -9,7 +9,9 @@ st.write("")
 write_header(st.session_state.translator("check_logs"))
 
 with DB.get_session() as session:
-    df_logs = read_from_db(Logs, as_df=True, order_by=Logs.timestamp, order_descending=True)
+    df_logs = read_from_db(
+        Logs, as_df=True, order_by=Logs.timestamp, order_descending=True
+    )
 
-col = ["timestamp", "name", "level", "message"]
-st.dataframe(df_logs[col], use_container_width=True, hide_index=True, height=700)
+# col = ["timestamp", "name", "level", "message"]
+st.dataframe(df_logs, use_container_width=True, height=700)

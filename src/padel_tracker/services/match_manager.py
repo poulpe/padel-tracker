@@ -11,7 +11,7 @@ from datetime import datetime
 import pandas as pd
 
 from padel_tracker.models.leagues import League
-from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import (
     MatchExistsError,
     MatchNotFinishedError,
@@ -44,7 +44,7 @@ def process_finished_match(
             session=session, league=match.league, match=match
         )
         info_msg = f"processed finished_match id={match.id}"
-        LOGGER.log(LOG_LEVEL_NOTIF, info_msg)
+        LOGGER.notif(info_msg)
     except Exception:
         # TOCHECK (prio1) : err during process_finished_match
         err_msg = "match is not finished: won't process"
@@ -68,7 +68,7 @@ def create_match(
     is_finished: bool = True,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
-    logger = LOGGER.getChild("create_match")
+    logger = LOGGER  # .getChild("create_match")
 
     # Normalize score as str for creation
     if isinstance(score, MatchScore):
@@ -125,7 +125,7 @@ def create_match(
     match.post_init()
     ## Commit
     commit_to_db(match, league, session=session)
-    logger.log(LOG_LEVEL_NOTIF, f"created new match id={match.id}")
+    logger.notif(f"created new match id={match.id}")
     # Process it if finished
     if is_finished:
         process_finished_match(session=session, match=match)

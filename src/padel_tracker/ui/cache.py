@@ -142,7 +142,11 @@ def update_cache(
 
 def refresh_cache(only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS):
     update_cache(force=True, only=only)
-    LOGGER.info(f"refreshed cache for {str(only)}")
+    if isinstance(only, tuple):
+        str_only = f"{[str(key) for key in only]}"
+    else:
+        str_only = str(only)
+    LOGGER.info(f"refreshed cache for keys={str_only}")
 
 
 def check_not_empty_database_matches() -> None:

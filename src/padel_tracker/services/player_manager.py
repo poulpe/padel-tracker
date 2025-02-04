@@ -8,7 +8,7 @@ import sqlalchemy
 import pandas as pd
 import pydantic
 
-from padel_tracker.utils.logs import get_logger, LOG_LEVEL_NOTIF
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import (
     PlayerNotFoundError,
     PlayerExistsError,
@@ -97,7 +97,7 @@ def create_player(
     InvalidPlayerNameError
 
     """
-    logger = LOGGER.getChild("create_player")
+    logger = LOGGER  # .getChild("create_player")
     name = name[0].upper() + name[1:] if name else name  # Capitalize 1st letter
     # Checks player doesn't exist
     try:
@@ -132,17 +132,17 @@ def create_player(
             links.append(league)
     # Commit if successfull
     commit_to_db(player, *links, session=session)
-    logger.log(LOG_LEVEL_NOTIF, f"created {player = }")
+    logger.notif(f"created {player = }")
     return player
 
 
 def delete_player(session: Session, name: str) -> None:
-    logger = LOGGER.getChild("delete_player")
+    logger = LOGGER  # .getChild("delete_player")
     try:
         player = get_player_from_name(session=session, name=name)
         # TODO: update leagues nb_players
         delete_from_db(player, session=session)
-        logger.log(LOG_LEVEL_NOTIF, f"deleted {name} successfully from database")
+        logger.notif(f"deleted {name} successfully from database")
     except PlayerNotFoundError:
         err_msg = f"{name} doesn't exist, cannot delete it"
         logger.error(err_msg)

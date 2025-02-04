@@ -1,7 +1,6 @@
 import logging
-from uuid import uuid4
 
-import supabase  # Cloud loggings
+import supabase  # Log in cloud database
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
@@ -19,7 +18,7 @@ DEFAULT_LOG_LEVEL_CONSOLE = logging.INFO
 DEFAULT_LOG_LEVEL_FILE = LOG_LEVEL_NOTIF
 DEFAULT_LOG_FOLDER = get_absolute_path(__file__, "../../../data/logs/")
 DEFAULT_LOG_FORMATTER = logging.Formatter(
-    fmt="%(asctime)s - %(name)-41s - %(levelname)-6s - %(message)s",
+    fmt="%(asctime)s - %(name)-30s - %(levelname)-6s - %(message)s",
     datefmt="%d/%m/%Y %H:%M:%S",
 )
 logging.Formatter.converter = lambda *args: now().timetuple()
@@ -79,7 +78,6 @@ class SupabaseLogHandler(logging.Handler):
         try:
             # Make log record
             log_entry = {
-                "id": str(uuid4()),
                 "timestamp": str(now()),
                 "name": record.name,
                 "level": record.levelname,
@@ -91,42 +89,33 @@ class SupabaseLogHandler(logging.Handler):
             print(f"Failed to log to Supabase: {e}")
 
 
-def get_logger(
-    log_name: str = "",
-    log_level: str | int = None,
-) -> logging.Logger:
-    """
-    Returns a dedicated logger, allowing to display a custom name of location in the log messages
-    If log_level is given, the returned logger will be set to the requested level.
-    Else it will use current log level of root logger.
+class LoggerWithNotif(logging.Logger):
+    """Standard logger but allowing logging "notif" with the custom LOG_NOTIF_LEVEL"""
 
-    Parameters
-    ----------
-    log_name:str, optional
-        Logger name
-    log_level:str, optional
-        Logger level
+    def __init__(self, name: str, level: int | str = 0):
+        super().__init__(name=name, level=level)
 
-    Examples
-    --------
-    >>> logger = get_logger('my_function')
-    >>> logger.warning('This is a local warning from blabla')
-    ## Will output to MAIN_LOG_NAME.my_function logger
+    def notif(
+        self,
+        msg: object,
+        *args: object,
+        exc_info=None,
+        stack_info: bool = False,
+        stacklevel: int = 1,
+        extra=None,
+    ) -> None:
+        self.log(
+            LOG_LEVEL_NOTIF,
+            msg,
+            *args,
+            exc_info=exc_info,
+            stack_info=stack_info,
+            stacklevel=stacklevel,
+            extra=extra,
+        )
 
-    >>> logger = get_logger('my_object_to_debug', log_level='DEBUG')
-    """
-    # If loggings have not been init, init them
-    if not logging.getLogger(MAIN_LOG_NAME).hasHandlers():
-        init_loggings()
-    # Create logger
-    if log_name:
-        logger_name = f"{MAIN_LOG_NAME}.{log_name}"
-    else:
-        logger_name = MAIN_LOG_NAME
-    logger = logging.getLogger(logger_name)
-    if log_level is not None and log_name:
-        logger.setLevel(log_level)
-    return logger
+
+logging.setLoggerClass(LoggerWithNotif)  # Important to register as default, must keep
 
 
 def init_loggings(
@@ -135,7 +124,7 @@ def init_loggings(
     db_mode: DBMode = None,
     run_mode: RunMode = None,
     # log_file_folder: str | Path = None,
-) -> logging.Logger:
+) -> LoggerWithNotif:
     # Check if loggings have already been init (to return fast if not needed)
     main_logger = logging.getLogger(MAIN_LOG_NAME)
     if main_logger.hasHandlers():
@@ -176,7 +165,7 @@ def init_loggings(
     # Add localdatabase handler for local mode
     if db_mode.lower() == DBMode.LOCAL:
         log_handler_local_database = LocalDatabaseLogHandler()
-        log_handler_local_database.setFormatter(DEFAULT_LOG_FORMATTER)
+        # log_handler_local_database.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_local_database.setLevel(log_level_file)
         main_logger.addHandler(log_handler_local_database)
 
@@ -184,15 +173,53 @@ def init_loggings(
     if db_mode.lower() == DBMode.CLOUD:
         supabase_client = create_supabase_client()
         log_handler_supabase = SupabaseLogHandler(supabase_client=supabase_client)
-        log_handler_supabase.setFormatter(DEFAULT_LOG_FORMATTER)
+        # log_handler_supabase.setFormatter(DEFAULT_LOG_FORMATTER)
         log_handler_supabase.setLevel(log_level_file)
         main_logger.addHandler(log_handler_supabase)
 
     # Log starting message logging
     msg = f"init with conf: db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_file=}"
-    main_logger.getChild("init_loggings").log(LOG_LEVEL_NOTIF, msg)  #
+    main_logger.getChild("init_loggings").log(LOG_LEVEL_NOTIF, msg)
 
     return main_logger
+
+
+def get_logger(
+    log_name: str = "",
+    log_level: str | int = None,
+) -> LoggerWithNotif:
+    """
+    Returns a dedicated logger, allowing to display a custom name of location in the log messages
+    If log_level is given, the returned logger will be set to the requested level.
+    Else it will use current log level of root logger.
+
+    Parameters
+    ----------
+    log_name:str, optional
+        Logger name
+    log_level:str, optional
+        Logger level
+
+    Examples
+    --------
+    >>> logger = get_logger('my_function')
+    >>> logger.warning('This is a local warning from blabla')
+    ## Will output to MAIN_LOG_NAME.my_function logger
+
+    >>> logger = get_logger('my_object_to_debug', log_level='DEBUG')
+    """
+    # If loggings have not been init, init them
+    if not logging.getLogger(MAIN_LOG_NAME).hasHandlers():
+        init_loggings()
+    # Create logger
+    if log_name:
+        logger_name = f"{MAIN_LOG_NAME}.{log_name}"
+    else:
+        logger_name = MAIN_LOG_NAME
+    logger = logging.getLogger(logger_name)
+    if log_level is not None and log_name:
+        logger.setLevel(log_level)
+    return logger
 
 
 def set_logging_level(log_level: str | int) -> None:
