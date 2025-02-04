@@ -77,9 +77,9 @@ class Player(ValidatedSQLModel, table=True):
         sa_column=Column(DateTime(timezone=True)),
     )
     # History related
-    nb_matches: NonNegativeInt = Field(0, description="Total number of played matches")
-    nb_victories: NonNegativeInt = Field(0, description="Total number of victories")
-    nb_defeats: NonNegativeInt = Field(0, description="Total number of defeats")
+    nb_matches: NonNegativeInt = Field(0, repr=False)
+    nb_victories: NonNegativeInt = Field(0, repr=False)
+    nb_defeats: NonNegativeInt = Field(0, repr=False)
     best_elo_rating: PositiveInt = Field(
         ELO_BASE_RATING, description="Best achieved Elo rating ever", repr=False
     )

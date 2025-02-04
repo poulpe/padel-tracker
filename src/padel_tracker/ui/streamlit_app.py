@@ -1,5 +1,5 @@
 import base64
-import sys
+import sys  # TODO: st.stop() instead of sys.exit() ?
 from pathlib import Path
 
 import streamlit as st
@@ -141,6 +141,8 @@ page_assign_league = st.Page(
 page_check_logs = st.Page(
     "page_check_logs.py", title=translator("check_logs"), icon="📋"
 )
+
+# TODO: user features (+ see as guest = no show add/edit pages), so different navigations dict based on context
 
 pg = st.navigation(
     {
