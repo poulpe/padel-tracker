@@ -28,20 +28,15 @@ with form:
         )
 
 if submit_button:
-    with DB.get_session() as session:
-        try:
+    try:
+        with DB.get_session() as session:
             league_manager.create_league(session=session, name=league_name)
-            st.success(
-                f"{league_name}{translator("league_added_success")}",
-                icon="🔥",
-            )
-        except LeagueExistsError:
-            st.error(f"{league_name}{translator("league_exists_error")}", icon="💢")
-        except InvalidLeagueNameError:
-            st.error(
-                f"{league_name}{translator("league_invalid_name_error")}",
-                icon="💢",
-            )
-        except Exception as exc:
-            st.error(f"{translator("league_added_error")}: {exc}", icon="💥")
-    refresh_cache()
+        st.success(f"{league_name}{translator("league_added_success")}", icon="🔥")
+    except LeagueExistsError:
+        st.error(f"{league_name}{translator("league_exists_error")}", icon="💢")
+    except InvalidLeagueNameError:
+        st.error(f"{league_name}{translator("league_invalid_name_error")}", icon="💢")
+    except Exception as exc:
+        st.error(f"{translator("league_added_error")}: {exc}", icon="💥")
+    else:
+        refresh_cache()

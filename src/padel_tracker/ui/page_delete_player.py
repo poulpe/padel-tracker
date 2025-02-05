@@ -8,7 +8,6 @@ from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.inputs import make_player_selectbox
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 
-
 st.write("")
 
 if "translator" not in st.session_state.keys():
@@ -27,13 +26,13 @@ with form:
         )
 
 if submit_button and player_name:
-    with DB.get_session() as session:
-        try:
+    try:
+        with DB.get_session() as session:
             delete_player(session=session, name=player_name)
-            msg = f"{player_name} {translator("player_deleted")}"
-            st.success(msg, icon="☠️")
-        except PlayerNotFoundError:
-            st.error(f"{translator("player_already_deleted")}", icon="💥")
-        except Exception as exc:
-            st.error(f"{translator("player_deletion_error")}: {exc}", icon="💥")
-    refresh_cache()
+            st.success(f"{player_name} {translator("player_deleted")}", icon="☠️")
+    except PlayerNotFoundError:
+        st.error(f"{translator("player_already_deleted")}", icon="💥")
+    except Exception as exc:
+        st.error(f"{translator("player_deletion_error")}: {exc}", icon="💥")
+    else:
+        refresh_cache()

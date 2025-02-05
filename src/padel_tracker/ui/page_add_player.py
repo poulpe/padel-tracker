@@ -28,8 +28,8 @@ with form:
         )
 
 if submit_button:
-    with DB.get_session() as session:
-        try:
+    try:
+        with DB.get_session() as session:
             # Fetch league
             league = league_manager.get_league_from_name(
                 session=session, name=st.session_state.league_name
@@ -38,16 +38,11 @@ if submit_button:
                 session=session, name=player_name, league=league
             )
             st.success(f"{player_name}{translator("player_added_success")}", icon="🔥")
-        except PlayerExistsError:
-            st.error(
-                f"{player_name}{translator("player_exists_error")}",
-                icon="💢",
-            )
-        except InvalidPlayerNameError:
-            st.error(
-                f"{player_name}{translator("player_invalid_name_error")}",
-                icon="💢",
-            )
-        except Exception as exc:
-            st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
-    refresh_cache()
+    except PlayerExistsError:
+        st.error(f"{player_name}{translator("player_exists_error")}", icon="💢")
+    except InvalidPlayerNameError:
+        st.error(f"{player_name}{translator("player_invalid_name_error")}", icon="💢")
+    except Exception as exc:
+        st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
+    else:
+        refresh_cache()
