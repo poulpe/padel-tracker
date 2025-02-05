@@ -1,11 +1,10 @@
 import base64
-from concurrent.futures.thread import ThreadPoolExecutor
-
-# import sys  # TODO: st.stop() instead of sys.exit() ?
 from pathlib import Path
 
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
+
+st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.ui.languages import (
@@ -16,18 +15,10 @@ from padel_tracker.ui.languages import (
 from padel_tracker.ui.cache import update_cache, refresh_cache, CacheKey
 from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.ui.headers import write_subheader
+from padel_tracker.ui.threads import THREAD_POOL
 from padel_tracker.main import init_app
 
 ##### Init #####
-st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
-
-
-@st.cache_resource
-def get_thread_pool():
-    return ThreadPoolExecutor(max_workers=8)
-
-
-THREAD_POOL = get_thread_pool()
 if ("is_app_init" not in st.session_state) or (not st.session_state.is_app_init):
     init_app(threaded_logs=True, thread_pool=THREAD_POOL)
     st.session_state.is_app_init = True
