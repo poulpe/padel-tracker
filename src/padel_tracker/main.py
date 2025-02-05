@@ -1,4 +1,5 @@
 import subprocess
+from concurrent.futures.thread import ThreadPoolExecutor
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
@@ -7,9 +8,11 @@ from padel_tracker.database.db import init_db_and_tables
 from padel_tracker.utils.paths import get_absolute_path
 
 
-def init_app(log_level_console: str | int = None) -> None:
+def init_app(
+    log_level_console: str | int = None, thread_pool: ThreadPoolExecutor = None
+) -> None:
     """Init logs + create database tables if they don't exist"""
-    init_loggings(log_level_console=log_level_console)
+    init_loggings(log_level_console=log_level_console, thread_pool=thread_pool)
     init_db_and_tables()
 
 

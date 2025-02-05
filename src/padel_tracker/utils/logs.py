@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import supabase  # Log in cloud database
 
@@ -46,8 +47,19 @@ class NoTracebackStreamHandler(logging.StreamHandler):
 class LocalDatabaseLogHandler(logging.Handler):
     """Use of custom SQLModel 'Logs' for recording a log in local database"""
 
-    def __init__(self):
+    def __init__(
+        self,
+        is_threaded: bool = False,
+        thread_pool: ThreadPoolExecutor = None,
+        thread_workers: int = 4,
+    ):
         super().__init__()
+        self.is_threaded = is_threaded
+        if is_threaded:
+            if thread_pool:
+                self.thread_pool = thread_pool
+            else:
+                self.thread_pool = ThreadPoolExecutor(max_workers=thread_workers)
 
     def emit(self, record):
         try:
@@ -57,9 +69,17 @@ class LocalDatabaseLogHandler(logging.Handler):
                 level=record.levelname,
                 message=record.getMessage(),
             )
-            commit_to_db_no_session(log_record)
+            if self.is_threaded:
+                self.thread_pool.submit(commit_to_db_no_session, log_record)
+            else:
+                commit_to_db_no_session(log_record)
         except Exception as e:
             print(f"Failed to log to local database: {e}")
+
+    def close(self):
+        """Close properly the ThreadPoolExecutor"""
+        self.thread_pool.shutdown(wait=True)
+        super().close()
 
 
 def create_supabase_client():
@@ -70,9 +90,24 @@ def create_supabase_client():
 
 
 class SupabaseLogHandler(logging.Handler):
-    def __init__(self, supabase_client: supabase.Client):
+    def __init__(
+        self,
+        supabase_client: supabase.Client,
+        thread_pool: ThreadPoolExecutor = None,
+        is_threaded: bool = False,
+        thread_workers: int = 4,
+    ):
         super().__init__()
         self.supabase_client = supabase_client
+        self.is_threaded = is_threaded
+        if is_threaded:
+            if thread_pool:
+                self.thread_pool = thread_pool
+            else:
+                self.thread_pool = ThreadPoolExecutor(max_workers=thread_workers)
+
+    def _send_log_to_db(self, log_entry):
+        self.supabase_client.table("logs").insert(log_entry).execute()
 
     def emit(self, record):
         try:
@@ -84,9 +119,17 @@ class SupabaseLogHandler(logging.Handler):
                 "message": record.getMessage(),
             }
             # Insert in Supabase logs table
-            self.supabase_client.table("logs").insert(log_entry).execute()
+            if self.is_threaded:
+                self.thread_pool.submit(self._send_log_to_db, log_entry)
+            else:
+                self._send_log_to_db(log_entry)
         except Exception as e:
             print(f"Failed to log to Supabase: {e}")
+
+    def close(self):
+        """Close properly the ThreadPoolExecutor"""
+        self.thread_pool.shutdown(wait=True)
+        super().close()
 
 
 class LoggerWithNotif(logging.Logger):
@@ -123,7 +166,7 @@ def init_loggings(
     log_level_file: str | int = None,
     db_mode: DBMode = None,
     run_mode: RunMode = None,
-    # log_file_folder: str | Path = None,
+    thread_pool: ThreadPoolExecutor = None,
 ) -> LoggerWithNotif:
     # Check if loggings have already been init (to return fast if not needed)
     main_logger = logging.getLogger(MAIN_LOG_NAME)
@@ -164,14 +207,18 @@ def init_loggings(
 
     # Add localdatabase handler for local mode
     if db_mode.lower() == DBMode.LOCAL:
-        log_handler_local_database = LocalDatabaseLogHandler()
+        log_handler_local_database = LocalDatabaseLogHandler(
+            is_threaded=True, thread_pool=thread_pool
+        )
         log_handler_local_database.setLevel(log_level_file)
         main_logger.addHandler(log_handler_local_database)
 
     # Add Cloud Supabase handler for "cloud" mode
     if db_mode.lower() == DBMode.CLOUD:
         supabase_client = create_supabase_client()
-        log_handler_supabase = SupabaseLogHandler(supabase_client=supabase_client)
+        log_handler_supabase = SupabaseLogHandler(
+            supabase_client=supabase_client, is_threaded=True, thread_pool=thread_pool
+        )
         log_handler_supabase.setLevel(log_level_file)
         main_logger.addHandler(log_handler_supabase)
 

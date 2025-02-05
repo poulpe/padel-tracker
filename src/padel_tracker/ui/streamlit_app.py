@@ -1,5 +1,7 @@
 import base64
-import sys  # TODO: st.stop() instead of sys.exit() ?
+from concurrent.futures.thread import ThreadPoolExecutor
+
+# import sys  # TODO: st.stop() instead of sys.exit() ?
 from pathlib import Path
 
 import streamlit as st
@@ -18,8 +20,10 @@ from padel_tracker.main import init_app
 
 ##### Init #####
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
+if "thread_pool" not in st.session_state:
+    st.session_state.thread_pool = ThreadPoolExecutor(max_workers=5)
 if ("is_app_init" not in st.session_state) or (not st.session_state.is_app_init):
-    init_app()
+    init_app(thread_pool=st.session_state.thread_pool)
     st.session_state.is_app_init = True
 
 
@@ -57,10 +61,10 @@ update_cache(only=CacheKey.df_leagues, force=True)
 if "league_name" not in st.session_state:
     try:
         st.session_state.league_name = st.session_state.league_names[0]
-    except KeyError:
-        st.warning(translator("no_league_database_error"), icon="💢")
+    except (KeyError, TypeError):
+        # Warning already st.warning(translator("no_league_database_error"), icon="💢")
         # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
-        sys.exit()
+        st.stop()
 st.sidebar.selectbox(
     translator("league"),
     st.session_state.league_names,
