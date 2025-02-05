@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from pydantic import ValidationError
 
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.datetime_utils import make_datetime_from_combi
 from padel_tracker.utils.errors import (
     MatchExistsError,
@@ -18,6 +19,8 @@ from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.cache import refresh_cache, check_not_empty_database_players
+
+LOGGER = get_logger("ui.page_add_match")
 
 st.write("")
 check_not_empty_database_players()
@@ -104,7 +107,9 @@ with form:
     with date_col:
         date = st.date_input(st.session_state.translator("date"), format="DD/MM/YYYY")
     with time_col:
-        time = st.time_input(st.session_state.translator("time"), value="18:30")
+        time = st.time_input(
+            st.session_state.translator("time"), value="18:30", step=1800
+        )
 
     st.write("")
 
@@ -147,10 +152,13 @@ if submit_button and is_players_all_fulfilled:
 
 # Create match if submitted
 if submit_button and is_players_all_fulfilled and is_score_validated:
+    # TODO: show waiting screen/animations (loading bar, anecdoctes padel, phrases à la con)
+    LOGGER.debug("launching match creation")
     # Go create match
     match_datetime = make_datetime_from_combi(date, time)
     with DB.get_session() as session:
         try:
+            LOGGER.debug("fetching teams")
             team1 = get_team_from_players_name(
                 session=session,
                 player1_name=team1_player1_name,
@@ -172,6 +180,7 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
             st.error(err_msg, icon="💥")
         else:
             try:
+                LOGGER.debug("creating new match")
                 match = create_match(
                     session=session,
                     teams=[team1, team2],
@@ -180,13 +189,16 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                     score=match_score,
                     is_finished=False,
                 )
+                success_msg = st.session_state.translator("match_added_success")
+                st.success(success_msg, icon="🔥")
+                LOGGER.debug("created match, starting processing")
+                # Processing and showing results
                 dict_elo_rating_gains, dict_updated_elo_ratings = (
                     process_finished_match(
                         session=session, match=match, delete_on_error=True
                     )
                 )
-                success_msg = st.session_state.translator("match_added_success")
-                st.success(success_msg, icon="🔥")
+                LOGGER.debug("finished processing")
                 _, center_col, _ = st.columns(3)
                 with center_col:
                     st.write(st.session_state.translator("see_updated_elo_below"))

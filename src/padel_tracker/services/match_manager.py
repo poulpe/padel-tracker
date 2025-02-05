@@ -39,6 +39,7 @@ def process_finished_match(
                 session=session, match=match
             )
         )
+        # TODO: update_players_rank in a thread ? (must put at the end probably)
         ranking_manager.update_players_rank(session=session, league=match.league)
         league_manager.update_league_after_finished_match(
             session=session, league=match.league, match=match
@@ -68,12 +69,14 @@ def create_match(
     is_finished: bool = True,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
-    logger = LOGGER  # .getChild("create_match")
+    logger = LOGGER
+    logger_debug = logger.getChild("create_match")
 
     # Normalize score as str for creation
     if isinstance(score, MatchScore):
         score = str(score)
     # Basic check nb teams
+    logger_debug.debug("performing basic checks")
     nb_teams = len(teams)
     if nb_teams != 2:
         err_msg = f"a match must have exactly 2 teams. Got {nb_teams=}"
@@ -96,11 +99,13 @@ def create_match(
             raise SamePlayerInBothTeamsError(err_msg)
 
     # Fetch league
+    logger_debug.debug("fetching league")
     league = read_from_db(
         League, where=League.name == league_name, session=session, unique=True
     )
 
     # Check match doesn't exist already
+    logger_debug.debug("checking match doesn't exist")
     check_match_not_already_created(
         session=session,
         teams=teams,
@@ -116,14 +121,17 @@ def create_match(
         teams[1].players[0],
         teams[1].players[1],
     ]
+    logger_debug.debug("checking all players in league")
     league_manager.check_players_all_in_league(
         players=players, league=league  # , session=session, logger=logger
     )
 
     # Create match
+    logger_debug.debug("creating match")
     match = Match(teams=teams, players=players, date=date, score=score, league=league)
     match.post_init()
     ## Commit
+    logger_debug.debug("committing to db")
     commit_to_db(match, league, session=session)
     logger.notif(f"created new match id={match.id}")
     # Process it if finished

@@ -40,6 +40,8 @@ def update_players_results_after_finished_match(
         New elo for convenience, as dict[player.name, updated_elo_rating]
     """
     logger = LOGGER
+    logger_debug = logger.getChild("update_players_results")
+    logger_debug.debug("starting update")
 
     # Retrieve Match
     match.post_init()  # To write match name + validate players OK
@@ -47,6 +49,7 @@ def update_players_results_after_finished_match(
     winner_team, loser_team = match.get_winners_losers()
     winners: list[Player] = winner_team.players
     losers: list[Player] = loser_team.players
+    logger_debug.debug("determined winners/losers")
 
     # Get once all current Elo
     current_elo_rating_winner_player1 = winners[0].elo_rating
@@ -57,6 +60,7 @@ def update_players_results_after_finished_match(
     match_score.calc_won_sets_and_games()
     nb_won_sets_diff = match_score.nb_won_sets_diff
     nb_won_games_diff = match_score.nb_won_games_diff
+    logger_debug.debug("determined winners/losers")
 
     # Calc all new (careful not updating yet Elo, for not screwing in btw calc)
     dict_elo_rating_gains = {}
@@ -101,10 +105,12 @@ def update_players_results_after_finished_match(
         diff_nb_sets=nb_won_sets_diff,
         diff_nb_games=nb_won_games_diff,
     )
+    logger_debug.debug("calculated player elo_rating gains")
 
     # Update players elo ratings, best Elo, nb_matches, elo k
     elo_history_entries = []
     dict_updated_elo_ratings = {}
+    logger_debug.debug("starting update of player objects")
     for player in winners + losers:
         # Update player updated_date
         player.last_match_date = match_date
@@ -133,6 +139,7 @@ def update_players_results_after_finished_match(
             league_name=match.league_name,
         )
         elo_history_entries.append(player_elo_history_entry)
+        logger_debug.debug(f"created elo_history_entry for '{player.name}'")
     ## Update nb victory/defeat
     for player in winners:
         player.nb_victories += 1
@@ -141,6 +148,7 @@ def update_players_results_after_finished_match(
 
     # Update Team related results
     team_elo_history_entries = []
+    logger_debug.debug("starting update of team objects")
     for team in [winner_team, loser_team]:
         team.last_match_date = match_date
         # Update Team elo (will trigger comput of self.elo_rating)
@@ -164,11 +172,13 @@ def update_players_results_after_finished_match(
             league_name=match.league_name,
         )
         team_elo_history_entries.append(team_elo_history_entry)
+        logger_debug.debug(f"created elo_history_entry for '{team.name}'")
     # Update Team nb victory/defeats
     winner_team.nb_victories += 1
     loser_team.nb_defeats += 1
 
     # Update db
+    logger_debug.debug("committing to db")
     commit_to_db(
         *winners,
         *losers,
@@ -184,10 +194,13 @@ def update_players_results_after_finished_match(
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
+# TODO : update_players_rank could be async ? (or ran once a day ?)
 def update_players_rank(session: Session, league: League) -> None:
     """Calc ranks and updated database"""
     # Get all players, sorted by top Elo to bottom Elo (descending order)
     logger = LOGGER
+    logger_debug = logger.getChild("update_players_rank")
+    logger_debug.debug("starting rank update, fetching sorted_players")
     sorted_players = player_manager.get_all_players_from_league(
         session=session,
         league_name=league.name,
@@ -199,11 +212,12 @@ def update_players_rank(session: Session, league: League) -> None:
     rank_history_entries = []
     for new_rank, player in enumerate(sorted_players, start=1):
         # Fetch and update LinkPlayerLeague
+        logger_debug.debug(f"reading link for {player.name=}")
         link = read_from_db(
             LinkPlayerLeague,
             where=(
-                LinkPlayerLeague.player == player,
-                LinkPlayerLeague.league == league,
+                LinkPlayerLeague.player_id == player.id,
+                LinkPlayerLeague.league_id == league.id,
             ),
             session=session,
             unique=True,
@@ -225,6 +239,7 @@ def update_players_rank(session: Session, league: League) -> None:
             rank=new_rank,
         )
         rank_history_entries.append(rank_history_entry)
+        logger_debug.debug(f"created rank_history_entry for {player.name=}")
     # Commit
     commit_to_db(
         # *sorted_players,

@@ -73,6 +73,7 @@ def update_league_after_finished_match(
     match: Match,
     league: League,
 ) -> League:
+    LOGGER.debug("starting update of league")
     league.nb_matches += 1
     league.last_match_date = match.date
     commit_to_db(league, session=session)
