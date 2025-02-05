@@ -218,4 +218,4 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
     # TODO: Update ranks (in thread)
     # TODO: Refresh cache (in thread)
-    refresh_cache()  # thread_pool=st.session_state.thread_pool
+    refresh_cache()  # thread_pool=st.session_state.thread_pool TODO: refresh only if OK

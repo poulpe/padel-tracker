@@ -54,7 +54,7 @@ def get_league_from_name(session: Session, name: str) -> League:
 
 
 # TOCHECK: assign_league_to_player
-def assign_league_to_player(session: Session, player: Player, league: League) -> Player:
+def assign_league_to_player(session: Session, player: Player, league: League) -> None:
     """"""
     # Check player not already in league
     for link in player.league_links:

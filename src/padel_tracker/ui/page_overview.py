@@ -50,7 +50,6 @@ make_overview_elo_history_chart(
 )
 
 # Player data table overview
-# st.write("")
 write_header(translator("players_table"))
 make_player_overview_table(
     df_players=st.session_state.df_players,

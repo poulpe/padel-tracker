@@ -111,6 +111,6 @@ if submit_button and is_players_all_fulfilled and is_team_exists:
     write_subheader(translator("match_history"))
     _, col_matches_cont, _ = st.columns([1, 4, 1])
     with col_matches_cont:
-        matches_cont = st.container(border=False, height=900)
+        matches_cont = st.container(border=True, height=900)
     with matches_cont:
         make_match_cards(df_matches=df_matches, limit_last=None)
