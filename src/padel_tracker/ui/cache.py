@@ -1,6 +1,5 @@
-# import sys
-from concurrent.futures.thread import ThreadPoolExecutor
 from enum import StrEnum
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import streamlit as st
 

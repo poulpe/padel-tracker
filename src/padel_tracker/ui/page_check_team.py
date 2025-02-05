@@ -1,5 +1,3 @@
-import sys
-
 import streamlit as st
 
 from padel_tracker.models.players import Team
@@ -17,8 +15,9 @@ check_not_empty_database_matches()
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
+translator = st.session_state.translator
 
-write_header(st.session_state.translator("check_team"))
+write_header(translator("check_team"))
 
 # Team selectbox
 form = st.form("check_team")
@@ -26,14 +25,14 @@ with form:
     _, col1, col2, _ = st.columns([1, 2, 2, 1])
     with col1:
         player1_name = st.selectbox(
-            label=st.session_state.translator("player1"),
+            label=translator("player1"),
             options=st.session_state.player_names,
             placeholder="",
             index=None,
         )
     with col2:
         player2_name = st.selectbox(
-            label=st.session_state.translator("player2"),
+            label=translator("player2"),
             options=st.session_state.player_names,
             placeholder="",
             index=None,
@@ -41,13 +40,13 @@ with form:
     _, col_center, _ = st.columns([1, 3, 1])
     with col_center:
         submit_button = st.form_submit_button(
-            label=st.session_state.translator("submit"), use_container_width=True
+            label=translator("submit"), use_container_width=True
         )
 
 is_players_all_fulfilled = True
 if submit_button:
     if (not player1_name) or (not player2_name):
-        st.error(st.session_state.translator("player_not_selected_error"), icon="💢")
+        st.error(translator("player_not_selected_error"), icon="💢")
         is_players_all_fulfilled = False
 
 # Checks team exist (and fetch all df needed if OK)
@@ -55,13 +54,13 @@ if submit_button:
 is_team_exists = False
 if submit_button and is_players_all_fulfilled:
     if player1_name == player2_name:
-        st.error(st.session_state.translator("team_same_player_error"), icon="💢")
+        st.error(translator("team_same_player_error"), icon="💢")
     else:
         team_name = Team.get_name_from_players_name(player1_name, player2_name)
         df_teams = st.session_state.df_teams.copy()
         df_team = df_teams.query(f"name == '{team_name}'")
         if len(df_team) == 0:
-            st.error(st.session_state.translator("team_not_found_error"), icon="💢")
+            st.error(translator("team_not_found_error"), icon="💢")
         else:
             is_team_exists = True
             df_matches = st.session_state.df_matches.copy()
@@ -74,21 +73,21 @@ if submit_button and is_players_all_fulfilled and is_team_exists:
 
     # Checks data not empty
     if len(df_matches) == 0:
-        st.warning(st.session_state.translator("empty_database_error"), icon="💢")
-        sys.exit()
+        st.warning(translator("no_match_database_error"), icon="💢")
+        st.stop()
 
     # Overview card TODO (prio3): Cool display card ?
-    write_subheader(st.session_state.translator("overview"))
+    write_subheader(translator("overview"))
     make_team_overview_table(
         df_teams=df_team,
-        translator=st.session_state.translator,
+        translator=translator,
         extra_col=True,
         is_single=True,
         use_container_width=True,
     )
 
     # Relationships related
-    write_subheader(st.session_state.translator("player_relationships"))
+    write_subheader(translator("player_relationships"))
     tuple_opponents = get_team_black_beast_and_favorite_victim(
         team_name=team_name,
         df_matches=df_matches,
@@ -102,14 +101,14 @@ if submit_button and is_players_all_fulfilled and is_team_exists:
         nb_defeats_black_beast=nb_defeats_black_beast,
         favorite_victim=favorite_victim,
         nb_victories_favorite_victim=nb_victories_favorite_victim,
-        translator=st.session_state.translator,
+        translator=translator,
     )
 
     # TODO: Team graph (team_elo_history)
-    write_subheader(st.session_state.translator("evolution"))
+    write_subheader(translator("evolution"))
 
     # Matches history
-    write_subheader(st.session_state.translator("match_history"))
+    write_subheader(translator("match_history"))
     _, col_matches_cont, _ = st.columns([1, 4, 1])
     with col_matches_cont:
         matches_cont = st.container(border=False, height=900)

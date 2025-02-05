@@ -27,8 +27,9 @@ check_not_empty_database_players()
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
+translator = st.session_state.translator
 
-write_header(st.session_state.translator("add_match"))
+write_header(translator("add_match"))
 
 form = st.form("add_match")
 with form:
@@ -38,40 +39,40 @@ with form:
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
     with col_team1:
-        write_subheader(st.session_state.translator("team1"), bold=True)
+        write_subheader(translator("team1"), bold=True)
         team1_player1_name = st.selectbox(
             label="team1_player1_name",
             options=player_names,
-            placeholder=st.session_state.translator("player1"),
+            placeholder=translator("player1"),
             index=None,
             label_visibility="hidden",
         )
         team1_player2_name = st.selectbox(
             label="team1_player2_name",
             options=player_names,
-            placeholder=st.session_state.translator("player2"),
+            placeholder=translator("player2"),
             index=None,
             label_visibility="hidden",
         )
     with col_team2:
-        write_subheader(st.session_state.translator("team2"), bold=True)
+        write_subheader(translator("team2"), bold=True)
         team2_player1_name = st.selectbox(
             label="team2_player1_name",
             options=player_names,
-            placeholder=st.session_state.translator("player1"),
+            placeholder=translator("player1"),
             index=None,
             label_visibility="hidden",
         )
         team2_player2_name = st.selectbox(
             label="team2_player2_name",
             options=player_names,
-            placeholder=st.session_state.translator("player2"),
+            placeholder=translator("player2"),
             index=None,
             label_visibility="hidden",
         )
 
     # Score input as df
-    team_word = st.session_state.translator("team")
+    team_word = translator("team")
     df = pd.DataFrame(
         [
             {team_word: f"{team_word}1", "Set1": None, "Set2": None, "Set3": None},
@@ -91,7 +92,7 @@ with form:
     with center_col:
         score_cont = st.container(border=True)
         with score_cont:
-            write_subheader(st.session_state.translator("score"), bold=True)
+            write_subheader(translator("score"), bold=True)
             df_score = st.data_editor(
                 df, use_container_width=True, column_config=column_config
             )
@@ -105,11 +106,9 @@ with form:
     # Date selection
     _, date_col, time_col, _ = st.columns([1, 1, 1, 1])
     with date_col:
-        date = st.date_input(st.session_state.translator("date"), format="DD/MM/YYYY")
+        date = st.date_input(translator("date"), format="DD/MM/YYYY")
     with time_col:
-        time = st.time_input(
-            st.session_state.translator("time"), value="18:30", step=1800
-        )
+        time = st.time_input(translator("time"), value="18:30", step=1800)
 
     st.write("")
 
@@ -117,17 +116,17 @@ with form:
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
-            label=st.session_state.translator("submit"), use_container_width=True
+            label=translator("submit"), use_container_width=True
         )
 
 # Checks Players have been fulfilled
 is_players_all_fulfilled = True
 if submit_button:
     if (not team1_player1_name) or (not team1_player2_name):
-        st.error(st.session_state.translator("player_not_selected_error"), icon="💢")
+        st.error(translator("player_not_selected_error"), icon="💢")
         is_players_all_fulfilled = False
     elif (not team2_player1_name) or (not team2_player2_name):
-        st.error(st.session_state.translator("player_not_selected_error"), icon="💢")
+        st.error(translator("player_not_selected_error"), icon="💢")
         is_players_all_fulfilled = False
 
 # Checks Score have been fulfilled
@@ -145,9 +144,9 @@ if submit_button and is_players_all_fulfilled:
         )
         is_score_validated = True
     except ValidationError:
-        st.error(st.session_state.translator("match_not_finished_error"), icon="💢")
+        st.error(translator("match_not_finished_error"), icon="💢")
     except Exception as exc:
-        err_msg = f"{st.session_state.translator("match_not_finished_error")}: {exc}"
+        err_msg = f"{translator("match_not_finished_error")}: {exc}"
         st.error(err_msg, icon="💢")
 
 # Create match if submitted
@@ -174,9 +173,9 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 create_if_not_found=True,
             )
         except SamePlayerInOneTeamError:
-            st.error(st.session_state.translator("team_same_player_error"), icon="💢")
+            st.error(translator("team_same_player_error"), icon="💢")
         except Exception as exc:
-            err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
+            err_msg = f"{translator("match_added_error")}: {exc}"
             st.error(err_msg, icon="💥")
         else:
             try:
@@ -189,8 +188,7 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                     score=match_score,
                     is_finished=False,
                 )
-                success_msg = st.session_state.translator("match_added_success")
-                st.success(success_msg, icon="🔥")
+                st.success(translator("match_added_success"), icon="🔥")
                 LOGGER.debug("created match, starting processing")
                 # Processing and showing results
                 dict_elo_rating_gains, dict_updated_elo_ratings = (
@@ -204,24 +202,20 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 LOGGER.debug("finished processing")
                 _, center_col, _ = st.columns(3)
                 with center_col:
-                    st.write(st.session_state.translator("see_updated_elo_below"))
+                    st.write(translator("see_updated_elo_below"))
                 display_elo_rating_gains_metrics(
                     dict_elo_rating_gains, dict_updated_elo_ratings
                 )
             except MatchExistsError:
-                st.error(st.session_state.translator("match_exists_error"), icon="💢")
+                st.error(translator("match_exists_error"), icon="💢")
             except MatchNotFinishedError:
-                err_msg = st.session_state.translator("match_not_finished_error")
-                st.error(err_msg, icon="💢")
+                st.error(translator("match_not_finished_error"), icon="💢")
             except SamePlayerInBothTeamsError:
-                err_msg = st.session_state.translator("same_player_in_both_teams_error")
-                st.error(err_msg, icon="💢")
+                st.error(translator("same_player_in_both_teams_error"), icon="💢")
             except PlayerNotInLeagueError:
-                err_msg = st.session_state.translator("all_players_not_in_league_error")
-                st.error(err_msg, icon="💢")
+                st.error(translator("all_players_not_in_league_error"), icon="💢")
             except Exception as exc:
-                err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
-                st.error(err_msg, icon="💥")
-    # Update ranks (in thread)
-    # Refresh cache (in thread)
+                st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
+    # TODO: Update ranks (in thread)
+    # TODO: Refresh cache (in thread)
     refresh_cache()  # thread_pool=st.session_state.thread_pool

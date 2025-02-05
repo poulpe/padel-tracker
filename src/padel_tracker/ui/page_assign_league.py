@@ -12,8 +12,9 @@ st.write("")
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
+translator = st.session_state.translator
 
-write_header(st.session_state.translator("assign_league"))
+write_header(translator("assign_league"))
 
 form = st.form("assign_league")
 with form:
@@ -24,7 +25,7 @@ with form:
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
-            label=st.session_state.translator("submit"),
+            label=translator("submit"),
             use_container_width=True,
         )
 
@@ -41,16 +42,14 @@ if submit_button:
                 session=session, player=player, league=league
             )
             st.success(
-                f"{player_name}{st.session_state.translator("assigned_league_to_player_success")}{league_name}",
+                f"{player_name}{translator("assigned_league_to_player_success")}{league_name}",
                 icon="🔥",
             )
         except PlayerAlreadyInLeagueError:
             st.error(
-                f"{player_name}{st.session_state.translator("player_already_in_league_error")}{league_name}",
+                f"{player_name}{translator("player_already_in_league_error")}{league_name}",
                 icon="💢",
             )
         except Exception as exc:
-            st.error(
-                f"{st.session_state.translator("player_added_error")}: {exc}", icon="💥"
-            )
+            st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
     refresh_cache()

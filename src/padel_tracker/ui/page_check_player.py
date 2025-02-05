@@ -1,5 +1,3 @@
-import sys
-
 import streamlit as st
 
 from padel_tracker.services.player_manager import (
@@ -20,8 +18,9 @@ check_not_empty_database_matches()
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
+translator = st.session_state.translator
 
-write_header(st.session_state.translator("check_player"))
+write_header(translator("check_player"))
 
 # Player select box
 # TODO : pass "clicked_player_name" when player is clicked from link (before switch_page)
@@ -49,22 +48,22 @@ if player_name:
 
     # Checks data not empty
     if (len(df_teams) == 0) or (len(df_matches) == 0):
-        st.warning(st.session_state.translator("empty_database_error"), icon="💢")
-        sys.exit()
+        st.warning(translator("no_match_database_error"), icon="💢")
+        st.stop()
 
     # Overview card TODO (prio3): Cool display card ?
-    write_subheader(st.session_state.translator("overview"))
+    write_subheader(translator("overview"))
     make_player_overview_table(
         df_players=df_player,
         df_linkplayerleague=df_linkplayerleague,
-        translator=st.session_state.translator,
+        translator=translator,
         extra_col=True,
         is_single=True,
         use_container_width=True,
     )
 
     # Relationships related
-    write_subheader(st.session_state.translator("player_relationships"))
+    write_subheader(translator("player_relationships"))
     ## Best teammate
     best_teammate_name, nb_victories_best = get_best_teammate(
         df_teams=df_teams, player_name=player_name
@@ -91,22 +90,22 @@ if player_name:
         nb_defeats_black_beast=nb_defeats_black_beast,
         favorite_victim=favorite_victim,
         nb_victories_favorite_victim=nb_victories_favorite_victim,
-        translator=st.session_state.translator,
+        translator=translator,
     )
     st.write("")
 
     # Graph
-    write_subheader(st.session_state.translator("evolution"))
+    write_subheader(translator("evolution"))
     make_player_metric_history_chart(
         player_name=player_name,
         df_elo_hist=df_elo_hist,
         df_matches=df_matches,
-        translator=st.session_state.translator,
+        translator=translator,
         limit_last_matches=None,
     )
 
     # Matches history
-    write_subheader(st.session_state.translator("match_history"))
+    write_subheader(translator("match_history"))
     _, col_matches_cont, _ = st.columns([1, 4, 1])
     with col_matches_cont:
         matches_cont = st.container(border=False, height=900)
