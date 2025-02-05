@@ -126,9 +126,7 @@ def create_match(
         teams[1].players[1],
     ]
     logger_debug.debug("checking all players in league")
-    league_manager.check_players_all_in_league(
-        players=players, league=league  # , session=session, logger=logger
-    )
+    league_manager.check_players_all_in_league(players=players, league=league)
 
     # Create match
     logger_debug.debug("creating match")
@@ -227,6 +225,9 @@ def check_match_not_already_created(
 
 
 # DELETE
+
+
+# TODO (prio3) : update player last_match_date if applicable
 def delete_match(session: Session, match_id: UUID | str) -> None:
     """Delete match after removing history.elo_gain corresponding to this match from players/team current elo
     Also updates league nb_matches.

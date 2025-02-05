@@ -220,9 +220,10 @@ def display_player_relationships(
     col1, col2, col3, col4 = st.columns(4, border=True)
     font_size_name = 22
     font_size_text = 16
+    font_size_emoji = 24
     with col1:
         write_subheader(translator("best_teammate"))
-        write_subheader("⭐")
+        write_subheader("⭐", font_size=font_size_emoji)
         write_subheader(best_teammate_name, bold=False, font_size=font_size_name)
         write_subheader(
             translator("x_victories_together").format(x=nb_victories_best),
@@ -232,7 +233,7 @@ def display_player_relationships(
         )
     with col2:
         write_subheader(translator("most_teammate"))
-        write_subheader("💖")
+        write_subheader("💖", font_size=font_size_emoji)
         write_subheader(most_teammate_name, bold=False, font_size=font_size_name)
         write_subheader(
             translator("x_matches_together").format(x=nb_matches_most),
@@ -242,7 +243,7 @@ def display_player_relationships(
         )
     with col3:
         write_subheader("‎ ‎ ‎ ‎ ‎ ‎" + translator("black_beast") + " ‎ ‎ ‎ ‎ ‎ ‎ ")
-        write_subheader("😭")
+        write_subheader("😭", font_size=font_size_emoji)
         write_subheader(black_beast, bold=False, font_size=font_size_name)
         write_subheader(
             translator("x_defeats_against").format(x=nb_defeats_black_beast),
@@ -252,7 +253,7 @@ def display_player_relationships(
         )
     with col4:
         write_subheader(translator("favorite_victim"))
-        write_subheader("😈")
+        write_subheader("😈", font_size=font_size_emoji)
         write_subheader(favorite_victim, bold=False, font_size=font_size_name)
         write_subheader(
             translator("x_victories_against").format(x=nb_victories_favorite_victim),
@@ -272,9 +273,10 @@ def display_team_relationships(
     col1, col2 = st.columns(2, border=True)
     font_size_name = 22
     font_size_text = 16
+    font_size_emoji = 24
     with col1:
         write_subheader("‎ ‎ ‎ ‎ ‎ ‎" + translator("black_beasts") + " ‎ ‎ ‎ ‎ ‎ ‎ ")
-        write_subheader("😭")
+        write_subheader("😭", font_size=font_size_emoji)
         write_subheader(black_beast, bold=False, font_size=font_size_name)
         write_subheader(
             translator("x_defeats_against").format(x=nb_defeats_black_beast),
@@ -284,7 +286,7 @@ def display_team_relationships(
         )
     with col2:
         write_subheader(translator("favorite_victims"))
-        write_subheader("😈")
+        write_subheader("😈", font_size=font_size_emoji)
         write_subheader(favorite_victim, bold=False, font_size=font_size_name)
         write_subheader(
             translator("x_victories_against").format(x=nb_victories_favorite_victim),
