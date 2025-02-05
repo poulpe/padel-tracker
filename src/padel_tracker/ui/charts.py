@@ -80,20 +80,36 @@ def make_overview_elo_history_chart(
     st.altair_chart(chart, use_container_width=True)
 
 
+def _apply_determine_match_result(
+    row: pd.Series, player_name: str, translator: LanguageTranslator
+) -> pd.Series:
+    """To apply on df_matches for a player"""
+    team1, team2 = row["name"].replace(" vs ", "|").split("|")
+    team1_players = set(team1.split("/"))
+    team2_players = set(team2.split("/"))
+    if player_name in team1_players:
+        if row["team1_won"]:
+            row["result"] = translator("victory")
+        else:
+            row["result"] = translator("defeat")
+    elif player_name in team2_players:
+        if row["team1_won"]:
+            row["result"] = translator("defeat")
+        else:
+            row["result"] = translator("victory")
+    return row
+
+
 @st.cache_data(max_entries=16)
 def _generate_player_metric_history_chart(
     player_name: str,
-    df_elo_hist: pd.DataFrame = None,
-    df_matches: pd.DataFrame = None,
+    df_matches: pd.DataFrame,
+    df_elo_hist: pd.DataFrame,
+    metric: str = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
 ) -> alt.Chart:
     # Metric selection
-    metric = st.pills(
-        label=translator("metric"),
-        options=[translator("elo_rating"), translator("nb_won_games_diff")],
-        default=translator("nb_won_games_diff"),
-    )
     if metric is None:
         metric = translator("nb_won_games_diff")
 
@@ -101,20 +117,9 @@ def _generate_player_metric_history_chart(
     col_to_keep = ["date", "match_name", "result"]
     extra_tooltip = []
     if metric == translator("elo_rating"):
-        # Fetch data if not given
-        if df_elo_hist is None:
-            # Get db_data as df
-            with DB.get_session() as session:
-                df_hist = ranking_manager.get_player_elo_rating_histories(
-                    session=session,
-                    player_name=player_name,
-                    as_df=True,
-                    limit_last=limit_last_matches,
-                )
-        else:
-            df_hist = df_elo_hist.query(f"player_name == '{player_name}'").copy()
-            if limit_last_matches:
-                df_hist = df_hist.tail(limit_last_matches)
+        df_hist = df_elo_hist.query(f"player_name == '{player_name}'").copy()
+        if limit_last_matches:
+            df_hist = df_hist.tail(limit_last_matches)
         ## Determine result
         df_hist["result"] = df_hist["elo_rating_gain"].apply(
             lambda x: translator("victory") if x > 0 else translator("defeat")
@@ -123,41 +128,16 @@ def _generate_player_metric_history_chart(
         col_to_keep += ["elo_rating", "elo_rating_gain"]
         extra_tooltip += [translator("elo_rating_gain")]
     elif metric == translator("nb_won_games_diff"):
-        # Fetch data if not given
-        if df_matches is None:
-            # TODO (prio 4): fetch df_matches from db...
-            raise NotImplementedError()
-            # Get db_data as df
-            # with DB.get_session() as session:
-            #     read_from_db(Pla)
-            # player = player_manager.get_player_from_name(
-            #     session=session, name=player_name
-            # )
-            # if limit_last_matches:
-            #     player.matches
-        else:
-            df_hist = df_matches[df_matches["name"].str.contains(player_name)].copy()
-            if limit_last_matches:
-                df_hist = df_hist.tail(limit_last_matches)
-
+        df_hist = df_matches[df_matches["name"].str.contains(player_name)].copy()
+        if limit_last_matches:
+            df_hist = df_hist.tail(limit_last_matches)
         ## Determine result
-        def apply_determine_result(row, player_name):
-            team1, team2 = row["name"].replace(" vs ", "|").split("|")
-            team1_players = set(team1.split("/"))
-            team2_players = set(team2.split("/"))
-            if player_name in team1_players:
-                if row["team1_won"]:
-                    row["result"] = translator("victory")
-                else:
-                    row["result"] = translator("defeat")
-            elif player_name in team2_players:
-                if row["team1_won"]:
-                    row["result"] = translator("defeat")
-                else:
-                    row["result"] = translator("victory")
-            return row
-
-        df_hist = df_hist.apply(apply_determine_result, player_name=player_name, axis=1)
+        df_hist = df_hist.apply(
+            _apply_determine_match_result,
+            player_name=player_name,
+            translator=translator,
+            axis=1,
+        )
         ## Keep only useful
         df_hist = df_hist.rename(columns={"name": "match_name"})
         col_to_keep += ["nb_won_games_diff", "score"]
@@ -204,13 +184,21 @@ def _generate_player_metric_history_chart(
 
 def make_player_metric_history_chart(
     player_name: str,
-    df_elo_hist: pd.DataFrame = None,
-    df_matches: pd.DataFrame = None,
+    df_elo_hist: pd.DataFrame,
+    df_matches: pd.DataFrame,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
 ) -> None:
+    # Metric selection
+    metric = st.pills(
+        label=translator("metric"),
+        options=[translator("elo_rating"), translator("nb_won_games_diff")],
+        default=translator("nb_won_games_diff"),
+    )
+    # Gen chart
     chart = _generate_player_metric_history_chart(
         player_name=player_name,
+        metric=metric,
         df_elo_hist=df_elo_hist,
         df_matches=df_matches,
         translator=translator,
