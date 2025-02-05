@@ -9,10 +9,16 @@ from padel_tracker.utils.paths import get_absolute_path
 
 
 def init_app(
-    log_level_console: str | int = None, thread_pool: ThreadPoolExecutor = None
+    log_level_console: str | int = None,
+    threaded_logs: bool = True,
+    thread_pool: ThreadPoolExecutor = None,
 ) -> None:
     """Init logs + create database tables if they don't exist"""
-    init_loggings(log_level_console=log_level_console, thread_pool=thread_pool)
+    init_loggings(
+        log_level_console=log_level_console,
+        is_threaded=threaded_logs,
+        thread_pool=thread_pool,
+    )
     init_db_and_tables()
 
 

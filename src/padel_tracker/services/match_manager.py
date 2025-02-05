@@ -7,6 +7,7 @@ CRUD on Matches and repercussions on players/teams
 import logging
 from uuid import UUID
 from datetime import datetime
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import pandas as pd
 
@@ -31,7 +32,10 @@ LOGGER = get_logger("match_manager")
 
 
 def process_finished_match(
-    session: Session, match: Match, delete_on_error: bool = True
+    session: Session,
+    match: Match,
+    delete_on_error: bool = True,
+    thread_pool: ThreadPoolExecutor = None,
 ) -> tuple[dict[str, int], dict[str, int]]:
     try:
         dict_elo_rating_gains, dict_updated_elo_ratings = (

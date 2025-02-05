@@ -166,6 +166,7 @@ def init_loggings(
     log_level_file: str | int = None,
     db_mode: DBMode = None,
     run_mode: RunMode = None,
+    is_threaded: bool = True,
     thread_pool: ThreadPoolExecutor = None,
 ) -> LoggerWithNotif:
     # Check if loggings have already been init (to return fast if not needed)
@@ -208,7 +209,7 @@ def init_loggings(
     # Add localdatabase handler for local mode
     if db_mode.lower() == DBMode.LOCAL:
         log_handler_local_database = LocalDatabaseLogHandler(
-            is_threaded=True, thread_pool=thread_pool
+            is_threaded=is_threaded, thread_pool=thread_pool
         )
         log_handler_local_database.setLevel(log_level_file)
         main_logger.addHandler(log_handler_local_database)
@@ -217,7 +218,9 @@ def init_loggings(
     if db_mode.lower() == DBMode.CLOUD:
         supabase_client = create_supabase_client()
         log_handler_supabase = SupabaseLogHandler(
-            supabase_client=supabase_client, is_threaded=True, thread_pool=thread_pool
+            supabase_client=supabase_client,
+            is_threaded=is_threaded,
+            thread_pool=thread_pool,
         )
         log_handler_supabase.setLevel(log_level_file)
         main_logger.addHandler(log_handler_supabase)

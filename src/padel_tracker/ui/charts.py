@@ -7,12 +7,13 @@ from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 from padel_tracker.services import ranking_manager
 
 
-def make_overview_elo_history_chart(
+@st.cache_data(max_entries=16)
+def _generate_overview_elo_history_chart(
     df_elo_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
     league_name: str = None,
-) -> None:
+) -> alt.Chart:
     # Fetch data if not given
     if df_elo_hist is None:
         # Resolve league
@@ -60,18 +61,33 @@ def make_overview_elo_history_chart(
         )
         .interactive()
     )
+    return chart
 
+
+def make_overview_elo_history_chart(
+    df_elo_hist: pd.DataFrame = None,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    limit_last_matches: int | None = 15,
+    league_name: str = None,
+) -> None:
+    chart = _generate_overview_elo_history_chart(
+        df_elo_hist=df_elo_hist,
+        translator=translator,
+        limit_last_matches=limit_last_matches,
+        league_name=league_name,
+    )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
 
 
-def make_player_metric_history_chart(
+@st.cache_data(max_entries=16)
+def _generate_player_metric_history_chart(
     player_name: str,
     df_elo_hist: pd.DataFrame = None,
     df_matches: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
-) -> None:
+) -> alt.Chart:
     # Metric selection
     metric = st.pills(
         label=translator("metric"),
@@ -183,6 +199,22 @@ def make_player_metric_history_chart(
         # shape=alt.Shape(color_param),
         tooltip=list(set(tooltip + extra_tooltip)),
     ).interactive()
+    return chart
 
+
+def make_player_metric_history_chart(
+    player_name: str,
+    df_elo_hist: pd.DataFrame = None,
+    df_matches: pd.DataFrame = None,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    limit_last_matches: int | None = 15,
+) -> None:
+    chart = _generate_player_metric_history_chart(
+        player_name=player_name,
+        df_elo_hist=df_elo_hist,
+        df_matches=df_matches,
+        translator=translator,
+        limit_last_matches=limit_last_matches,
+    )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)

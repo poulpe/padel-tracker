@@ -13,30 +13,37 @@ from padel_tracker.ui.languages import (
     SUPPORTED_LANGUAGES,
     LanguageTranslator,
 )
-from padel_tracker.ui.cache import update_cache, CacheKey
+from padel_tracker.ui.cache import update_cache, refresh_cache, CacheKey
 from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.ui.headers import write_subheader
 from padel_tracker.main import init_app
 
 ##### Init #####
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
-if "thread_pool" not in st.session_state:
-    st.session_state.thread_pool = ThreadPoolExecutor(max_workers=5)
+
+
+@st.cache_resource
+def get_thread_pool():
+    return ThreadPoolExecutor(max_workers=8)
+
+
+THREAD_POOL = get_thread_pool()
 if ("is_app_init" not in st.session_state) or (not st.session_state.is_app_init):
-    init_app(thread_pool=st.session_state.thread_pool)
+    init_app(threaded_logs=True, thread_pool=THREAD_POOL)
     st.session_state.is_app_init = True
 
 
 ##### Image utils func #####
-@st.cache_data
-def get_base64_image(image_path: Path) -> str:
+@st.cache_data  # image_path as str to make it 100% hashable safe
+def get_base64_image(image_path_str: str) -> str:
+    image_path = Path(image_path_str)
     with image_path.open("rb") as img_file:
         encoded = base64.b64encode(img_file.read()).decode()
     return encoded
 
 
 LOGO_IMG = get_absolute_path(__file__, "./img/padel_logo.jpg")
-LOGO_IMG_BASE64 = get_base64_image(LOGO_IMG)
+LOGO_IMG_BASE64 = get_base64_image(str(LOGO_IMG))
 
 ##### Translation feature in Session state
 if "language" not in st.session_state:
@@ -69,13 +76,11 @@ st.sidebar.selectbox(
     translator("league"),
     st.session_state.league_names,
     key="league_name",
-    on_change=update_cache,
-    kwargs={"force": True},
+    on_change=refresh_cache,
 )
 write_subheader(
     st.session_state.league_name, font_size=21, bold=False, extra_line=False
 )
-# st.sidebar.divider()
 
 
 # Language selector in sidebar

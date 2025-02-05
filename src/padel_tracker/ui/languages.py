@@ -1,4 +1,5 @@
 from enum import StrEnum
+from dataclasses import dataclass
 
 from padel_tracker.utils.logs import get_logger
 
@@ -218,14 +219,16 @@ _DICT_LANGUAGES = {
 }
 
 
+@dataclass  # For hashable compatibility with streamlit st.cache_data
 class LanguageTranslator:
-    def __init__(self, lang: str | Language):
-        self.lang = lang
-        self.dict_lang = _DICT_LANGUAGES[lang]
+    lang: str | Language
+
+    def __post_init__(self):
+        self.dict_lang = _DICT_LANGUAGES[self.lang]
 
     def __call__(self, key: str):
         try:
-            result = _DICT_LANGUAGES[self.lang][key]
+            result = self.dict_lang[key]
         except KeyError:
             result = key
             logger = get_logger("ui.language")

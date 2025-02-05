@@ -1,4 +1,5 @@
 # import sys
+from concurrent.futures.thread import ThreadPoolExecutor
 from enum import StrEnum
 
 import streamlit as st
@@ -27,6 +28,8 @@ class CacheKey(StrEnum):
 
 
 ALL_CACHE_KEYS = tuple(CacheKey)
+
+# TODO: big mucho : have df_players_all_leagues, df_teams_all_leagues, df_matches_all_leagues, df_leagues
 
 
 def update_cache_leagues(session: Session, force: bool = False):
@@ -117,6 +120,7 @@ def update_cache_linkplayerleague(session: Session, force: bool = False):
         )
 
 
+# TODO : try threaded update_cache (i.e : this func becomes apply_update_cache and be called in "new_update_cache" below)
 def update_cache(
     force: bool = False,
     only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS,
@@ -145,8 +149,22 @@ def update_cache(
             update_cache_linkplayerleague(session=session, force=force)
 
 
-def refresh_cache(only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS):
-    update_cache(force=True, only=only)
+# def new_update_cache(
+#     force: bool = False,
+#     only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS,
+#     thread_pool:ThreadPoolExecutor=None,
+# ):
+#     if thread_pool:
+#         thread_pool.submit(apply_update_cache, force=force, only=only)
+#     else:
+#         apply_update_cache(force=force, only=only)
+
+
+def refresh_cache(
+    only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS,
+    thread_pool: ThreadPoolExecutor = None,
+):
+    update_cache(force=True, only=only)  # thread_pool=thread_pool
     if isinstance(only, tuple):
         str_only = f"{[str(key) for key in only]}"
     else:

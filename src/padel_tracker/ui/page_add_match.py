@@ -195,7 +195,10 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 # Processing and showing results
                 dict_elo_rating_gains, dict_updated_elo_ratings = (
                     process_finished_match(
-                        session=session, match=match, delete_on_error=True
+                        session=session,
+                        match=match,
+                        delete_on_error=True,
+                        thread_pool=st.session_state.thread_pool,
                     )
                 )
                 LOGGER.debug("finished processing")
@@ -219,4 +222,6 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
             except Exception as exc:
                 err_msg = f"{st.session_state.translator("match_added_error")}: {exc}"
                 st.error(err_msg, icon="💥")
-    refresh_cache()
+    # Update ranks (in thread)
+    # Refresh cache (in thread)
+    refresh_cache()  # thread_pool=st.session_state.thread_pool

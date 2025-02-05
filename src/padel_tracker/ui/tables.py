@@ -10,15 +10,15 @@ from padel_tracker.services.league_manager import get_linkplayerleague_from_leag
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
-def make_player_overview_table(
+@st.cache_data(max_entries=32)
+def _generate_player_overview_table(
     df_players: pd.DataFrame = None,
     df_linkplayerleague: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     extra_col: bool | list[str] = False,
     is_single: bool = False,
-    use_container_width: bool = True,
     league_name: str = None,
-) -> None:
+) -> pd.DataFrame:
     """
     Parameters
     ----------
@@ -73,6 +73,38 @@ def make_player_overview_table(
     df_players = df_players[col_to_keep].copy()
     df_players = df_players.sort_values(by="rank")
     df_players = df_players.rename(columns=translator.dict_lang)
+    return df_players
+
+
+def make_player_overview_table(
+    df_players: pd.DataFrame = None,
+    df_linkplayerleague: pd.DataFrame = None,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    extra_col: bool | list[str] = False,
+    is_single: bool = False,
+    league_name: str = None,
+    use_container_width: bool = True,
+) -> None:
+    """
+    Parameters
+    ----------
+    df_players
+    df_linkplayerleague
+    translator
+    extra_col:bool|list[str]
+        If True, will add default extra columns ["best_elo_rating", "best_rank", "creation_date"].
+        If list[str], will use the ones provided.
+    is_single
+    use_container_width
+    """
+    df_players = _generate_player_overview_table(
+        df_players=df_players,
+        df_linkplayerleague=df_linkplayerleague,
+        translator=translator,
+        extra_col=extra_col,
+        is_single=is_single,
+        league_name=league_name,
+    )
     column_config = {
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
@@ -85,15 +117,14 @@ def make_player_overview_table(
     )
 
 
-# TOCHECK : adapt make_team_overview_table to league
-def make_team_overview_table(
+@st.cache_data(max_entries=32)
+def _generate_team_overview_table(
     df_teams: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     extra_col: bool | list[str] = False,
     is_single: bool = False,
-    use_container_width: bool = True,
     league_name: str = None,
-) -> None:
+) -> pd.DataFrame:
     """
     Parameters
     ----------
@@ -136,6 +167,36 @@ def make_team_overview_table(
     df_teams = df_teams[col_to_keep].copy()
     df_teams = df_teams.sort_values(by="elo_rating")
     df_teams = df_teams.rename(columns=translator.dict_lang)
+    return df_teams
+
+
+# TOCHECK : adapt make_team_overview_table to league
+def make_team_overview_table(
+    df_teams: pd.DataFrame = None,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    extra_col: bool | list[str] = False,
+    is_single: bool = False,
+    league_name: str = None,
+    use_container_width: bool = True,
+) -> None:
+    """
+    Parameters
+    ----------
+    df_teams
+    translator
+    extra_col:bool|list[str]
+        If True, will add default extra columns ["best_elo_rating", "best_rank", "creation_date"].
+        If list[str], will use the ones provided.
+    is_single
+    use_container_width
+    """
+    df_teams = _generate_team_overview_table(
+        df_teams=df_teams,
+        translator=translator,
+        extra_col=extra_col,
+        is_single=is_single,
+        league_name=league_name,
+    )
     column_config = {
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
