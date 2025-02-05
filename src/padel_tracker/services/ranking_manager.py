@@ -194,6 +194,10 @@ def update_players_results_after_finished_match(
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
+# Case1: not threaded, can use session as arg
+# Case2: threaded, (thread_pool=thread_pool, session=None)
+
+
 # TODO : update_players_rank could be async ? (or ran once a day ?)
 def update_players_rank(session: Session, league: League) -> None:
     """Calc ranks and updated database"""

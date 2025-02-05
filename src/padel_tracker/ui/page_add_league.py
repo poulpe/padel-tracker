@@ -11,18 +11,19 @@ st.write("")
 
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
+translator = st.session_state.translator
 
-write_header(st.session_state.translator("add_league"))
+write_header(translator("add_league"))
 
 form = st.form("add_league")
 with form:
     _, center_col, _ = st.columns([1, 5, 1])
     with center_col:
-        league_name = st.text_input(st.session_state.translator("name"))
+        league_name = st.text_input(translator("name"))
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
-            label=st.session_state.translator("submit"),
+            label=translator("submit"),
             use_container_width=True,
         )
 
@@ -31,21 +32,16 @@ if submit_button:
         try:
             league_manager.create_league(session=session, name=league_name)
             st.success(
-                f"{league_name}{st.session_state.translator("league_added_success")}",
+                f"{league_name}{translator("league_added_success")}",
                 icon="🔥",
             )
         except LeagueExistsError:
-            st.error(
-                f"{league_name}{st.session_state.translator("league_exists_error")}",
-                icon="💢",
-            )
+            st.error(f"{league_name}{translator("league_exists_error")}", icon="💢")
         except InvalidLeagueNameError:
             st.error(
-                f"{league_name}{st.session_state.translator("league_invalid_name_error")}",
+                f"{league_name}{translator("league_invalid_name_error")}",
                 icon="💢",
             )
         except Exception as exc:
-            st.error(
-                f"{st.session_state.translator("league_added_error")}: {exc}", icon="💥"
-            )
+            st.error(f"{translator("league_added_error")}: {exc}", icon="💥")
     refresh_cache()

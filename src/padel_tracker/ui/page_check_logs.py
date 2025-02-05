@@ -10,7 +10,11 @@ write_header(st.session_state.translator("check_logs"))
 
 with DB.get_session() as session:
     df_logs = read_from_db(
-        Logs, as_df=True, order_by=Logs.timestamp, order_descending=True
+        Logs,
+        as_df=True,
+        order_by=Logs.timestamp,
+        order_descending=True,
+        limit_first=50,
     )
 
 col = ["timestamp", "name", "level", "message"]
