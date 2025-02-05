@@ -11,7 +11,7 @@ from padel_tracker.database.db import Session, DB
 from padel_tracker.services import player_manager, match_manager, league_manager
 from padel_tracker.main import init_app
 
-LOG_LEVEL = "INFO"
+LOG_LEVEL = "DEBUG"
 LOGGER = logging.getLogger("populate_db_history")
 LOGGER.setLevel(LOG_LEVEL)
 LOG_HANDLER = logging.StreamHandler()
@@ -33,11 +33,12 @@ list_match_data = [
     {"day":14, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
     {"day":28, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-1"},
     {"day":28, "month":1, "year": 2025,  "hour":19, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Maximator","Sergissimo"], "score":"4-6"},
+    {"day":5, "month":2, "year": 2025,  "hour":19, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Maximator","Sergissimo"], "score":"7-6,6-2"},
 ]
 # fmt: on
 
 LEAGUE_MAIN = "Ligue des pédales du Padel"
-# LEAGUE_ALT = "Liga Delabita"
+LEAGUE_ALT = "Liga Delabita"
 
 
 def create_league(session: Session):
@@ -86,31 +87,16 @@ def create_matches(session: Session, list_match_data, league_name: str):
         LOGGER.info(f"create_matches: successfully created match (id = {match.id})")
 
 
-# def assign_leagues(session: Session):
-#     # Assign someone to LEAGUE_ALT
-#     try:
-#         player = player_manager.get_player_from_name(session=session, name="Maximator")
-#         league = league_manager.get_league_from_name(session=session, name=LEAGUE_ALT)
-#         link = LinkPlayerLeague(
-#             player=player,
-#             league=league,
-#             player_name=player.name,
-#             league_name=league.name,
-#         )
-#         commit_to_db(link, session=session)
-#     except:
-#         LOGGER.warning("league link already exists")
-
-# def trial_get_all_players_from_league(session):
-#     return player_manager.get_all_players_from_league(
-#         session=session, league_name=LEAGUE_MAIN
-#     )
-#
-#
-# def trial_get_all_teams_from_league(session):
-#     return player_manager.get_all_teams_from_league(
-#         session=session, league_name=LEAGUE_MAIN
-#     )
+def assign_leagues(session: Session):
+    # Assign someone to LEAGUE_ALT
+    try:
+        player = player_manager.get_player_from_name(session=session, name="Maximator")
+        league = league_manager.get_league_from_name(session=session, name=LEAGUE_ALT)
+        league_manager.assign_league_to_player(
+            session=session, player=player, league=league
+        )
+    except Exception:
+        LOGGER.warning("league link already exists")
 
 
 if __name__ == "__main__":
@@ -130,26 +116,16 @@ if __name__ == "__main__":
     # # Trial: Delete match
     # with DB.get_session() as session:
     #     match_manager.delete_match(
-    #         session=session, match_id="9d7aae10582e495c97280c2fb0c1abf4"
+    #         session=session, match_id="6784062e-36e4-46ba-9880-a2d95ee09782"
     #     )
-
-    # # Trial: Show leagues
-    # with DB.get_session():
-    #     main_league = league_manager.get_league_from_name(session=session, name="Ligue des pédales du Padel")
-    #     list_player_names = [link.player.name for link in main_league.player_links]
-    #     print(list_player_names)
-    #     print("coucou")
-    #     league = league_manager.get_league_from_name(session=session, name="Liga Delabita")
-    #     list_player_names = [link.player.name for link in league.player_links]
-    #     print(list_player_names)
-    #     yes = trial_get_all_players_from_league(session)
-    #     print(yes)
 
     # # Trial: Show teams
     # with DB.get_session() as session:
     #     yes = trial_get_all_teams_from_league(session)
     #     print(yes)
     # with DB.get_session() as session:
-    #     df = ranking_manager.get_all_elo_rating_histories_from_players_in_league(session=session, league_name=LEAGUE_MAIN,as_df=True)
+    #     df = ranking_manager.get_all_elo_rating_histories_from_players_in_league(
+    #         session=session, league_name=LEAGUE_MAIN,as_df=True
+    #     )
 
     LOGGER.warning("END")
