@@ -1,4 +1,4 @@
-import sys
+# import sys
 from enum import StrEnum
 
 import streamlit as st
@@ -39,8 +39,10 @@ def update_cache_leagues(session: Session, force: bool = False):
             st.session_state.league_names = list(st.session_state[key]["name"])
         except KeyError:
             st.session_state.league_names = None
-            st.error(st.session_state.translator("empty_database"), icon="💢")
-            return
+            st.warning(
+                st.session_state.translator("no_league_database_error"), icon="💢"
+            )
+            # st.stop()
 
 
 def update_cache_players(session: Session, force: bool = False):
@@ -54,8 +56,11 @@ def update_cache_players(session: Session, force: bool = False):
         try:
             st.session_state.player_names = list(st.session_state[key]["name"])
         except KeyError:
-            st.error(st.session_state.translator("empty_database"), icon="💢")
-            return
+            st.warning(
+                st.session_state.translator("not_enough_players_database_error"),
+                icon="💢",
+            )
+            # st.stop()
 
 
 def update_cache_teams(session: Session, force: bool = False):
@@ -153,8 +158,10 @@ def check_not_empty_database_matches() -> None:
     key = CacheKey.df_elo_hist
     if key in st.session_state:
         if len(st.session_state[key]) == 0:
-            st.warning(st.session_state.translator("empty_database_error"), icon="💢")
-            sys.exit()
+            st.warning(
+                st.session_state.translator("no_match_database_error"), icon="💢"
+            )
+            st.stop()
 
 
 def check_not_empty_database_players() -> None:
@@ -165,4 +172,4 @@ def check_not_empty_database_players() -> None:
                 st.session_state.translator("not_enough_players_database_error"),
                 icon="💢",
             )
-            sys.exit()
+            st.stop()
