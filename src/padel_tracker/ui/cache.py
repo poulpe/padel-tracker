@@ -62,7 +62,6 @@ def update_cache_players(session: Session, force: bool = False):
                 st.session_state.translator("not_enough_players_database_error"),
                 icon="💢",
             )
-            # st.stop()
 
 
 def update_cache_teams(session: Session, force: bool = False):

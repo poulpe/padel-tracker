@@ -53,7 +53,6 @@ def get_league_from_name(session: Session, name: str) -> League:
     return league
 
 
-# TOCHECK: assign_league_to_player
 def assign_league_to_player(session: Session, player: Player, league: League) -> None:
     """"""
     # Check player not already in league
@@ -133,9 +132,6 @@ def create_league(session: Session, name: str, **kwargs) -> League:
 
 
 # UTILS
-
-
-# TOCHECK (prio1) :check_players_all_in_league
 def check_players_all_in_league(
     # session: Session,
     players: list[Player],

@@ -170,7 +170,6 @@ def _generate_team_overview_table(
     return df_teams
 
 
-# TOCHECK : adapt make_team_overview_table to league
 def make_team_overview_table(
     df_teams: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,

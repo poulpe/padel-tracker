@@ -176,8 +176,7 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
         except SamePlayerInOneTeamError:
             st.error(translator("team_same_player_error"), icon="💢")
         except Exception as exc:
-            err_msg = f"{translator("match_added_error")}: {exc}"
-            st.error(err_msg, icon="💥")
+            st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
         else:
             try:
                 LOGGER.debug("creating new match")

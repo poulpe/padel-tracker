@@ -29,7 +29,7 @@ if submit_button and player_name:
     try:
         with DB.get_session() as session:
             delete_player(session=session, name=player_name)
-            st.success(f"{player_name} {translator("player_deleted")}", icon="☠️")
+        st.success(f"{player_name} {translator("player_deleted")}", icon="☠️")
     except PlayerNotFoundError:
         st.error(f"{translator("player_already_deleted")}", icon="💥")
     except Exception as exc:

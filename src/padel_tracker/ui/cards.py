@@ -220,7 +220,7 @@ def display_player_relationships(
     col1, col2, col3, col4 = st.columns(4, border=True)
     font_size_name = 22
     font_size_text = 16
-    font_size_emoji = 24
+    font_size_emoji = 22
     with col1:
         write_subheader(translator("best_teammate"))
         write_subheader("⭐", font_size=font_size_emoji)
@@ -273,7 +273,7 @@ def display_team_relationships(
     col1, col2 = st.columns(2, border=True)
     font_size_name = 22
     font_size_text = 16
-    font_size_emoji = 24
+    font_size_emoji = 22
     with col1:
         write_subheader("‎ ‎ ‎ ‎ ‎ ‎" + translator("black_beasts") + " ‎ ‎ ‎ ‎ ‎ ‎ ")
         write_subheader("😭", font_size=font_size_emoji)

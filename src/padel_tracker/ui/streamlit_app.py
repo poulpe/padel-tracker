@@ -58,6 +58,7 @@ st.markdown(html_code_top_header, unsafe_allow_html=True)
 update_cache(only=CacheKey.df_leagues, force=True)
 if "league_name" not in st.session_state:
     try:
+        # TODO [users] : fetch favorite/deafault league from User
         st.session_state.league_name = st.session_state.league_names[0]
     except (KeyError, TypeError):
         # Warning already st.warning(translator("no_league_database_error"), icon="💢")

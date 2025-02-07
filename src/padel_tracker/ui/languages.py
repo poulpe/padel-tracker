@@ -230,7 +230,7 @@ class LanguageTranslator:
         try:
             result = self.dict_lang[key]
         except KeyError:
-            result = key
+            result = key[0].upper() + key[1:].replace("_", " ") if key else key
             logger = get_logger("ui.language")
             logger.error(f"translation for '{key}' in lang={str(self.lang)} is missing")
         return result
