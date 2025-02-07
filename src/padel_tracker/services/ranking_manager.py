@@ -1,7 +1,8 @@
+from uuid import UUID
+
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
-from padel_tracker.models.leagues import League
 from padel_tracker.models.players import (
     Player,
     EloRatingHistory,
@@ -15,8 +16,10 @@ from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
+    DB,
 )
-from padel_tracker.services import player_manager
+from padel_tracker.services.player_manager import get_all_players_from_league
+from padel_tracker.services.league_manager import get_league_from_name
 
 LOGGER = get_logger("ranking_manager")
 
@@ -194,64 +197,76 @@ def update_players_results_after_finished_match(
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
-# Case1: not threaded, can use session as arg
-# Case2: threaded, (thread_pool=thread_pool, session=None)
-
-
-# TODO : update_players_rank could be async ? (or ran once a day ?)
-def update_players_rank(session: Session, league: League) -> None:
-    """Calc ranks and updated database"""
+def update_players_rank(
+    league_name: str, league_id: UUID = None, session: Session = None
+) -> None:
+    """Calc ranks and updated database
+    Notes
+    -----
+    If wants to process in thread: session must be None (default).
+    It will create it, this allows running it in its own thread.
+    """
     # Get all players, sorted by top Elo to bottom Elo (descending order)
     logger = LOGGER
     logger_debug = logger.getChild("update_players_rank")
-    logger_debug.debug("starting rank update, fetching sorted_players")
-    sorted_players = player_manager.get_all_players_from_league(
-        session=session,
-        league_name=league.name,
-        order_by=Player.elo_rating,
-        order_descending=True,
-    )
-    # Update players
-    playerleague_links = []
-    rank_history_entries = []
-    for new_rank, player in enumerate(sorted_players, start=1):
-        # Fetch and update LinkPlayerLeague
-        logger_debug.debug(f"reading link for {player.name=}")
-        link = read_from_db(
-            LinkPlayerLeague,
-            where=(
-                LinkPlayerLeague.player_id == player.id,
-                LinkPlayerLeague.league_id == league.id,
-            ),
-            session=session,
-            unique=True,
-        )
-        link.rank = new_rank
-        current_best_rank = link.best_rank
-        if (player.nb_matches > 3) and (
-            (current_best_rank is None) or (current_best_rank > new_rank)
-        ):
-            link.best_rank = new_rank
-        playerleague_links.append(link)
 
-        # Update RankHistory with League
-        rank_history_entry = RankHistory(
-            player_id=player.id,
-            player_name=player.name,
-            league_id=league.id,
-            league_name=league.name,
-            rank=new_rank,
+    if session is None:
+        session = DB.get_session()
+        is_session_provided = False
+    else:
+        is_session_provided = True
+
+    try:
+        # Fetch league_id if not given
+        if league_id is None:
+            league_id = get_league_from_name(session=session, name=league_name).id
+        # Fetch players
+        logger_debug.debug("starting rank update, fetching sorted_players")
+        sorted_players = get_all_players_from_league(
+            session=session,
+            league_name=league_name,
+            order_by=Player.elo_rating,
+            order_descending=True,
         )
-        rank_history_entries.append(rank_history_entry)
-        logger_debug.debug(f"created rank_history_entry for {player.name=}")
-    # Commit
-    commit_to_db(
-        # *sorted_players,
-        *playerleague_links,
-        *rank_history_entries,
-        session=session,
-    )
-    logger.notif("updated players ranking")
+        # Update players
+        playerleague_links = []
+        rank_history_entries = []
+        for new_rank, player in enumerate(sorted_players, start=1):
+            # Fetch and update LinkPlayerLeague
+            logger_debug.debug(f"reading link for {player.name=}")
+            link = read_from_db(
+                LinkPlayerLeague,
+                where=(
+                    LinkPlayerLeague.player_id == player.id,
+                    LinkPlayerLeague.league_id == league_id,
+                ),
+                session=session,
+                unique=True,
+            )
+            link.rank = new_rank
+            current_best_rank = link.best_rank
+            if (player.nb_matches > 3) and (
+                (current_best_rank is None) or (current_best_rank > new_rank)
+            ):
+                link.best_rank = new_rank
+            playerleague_links.append(link)
+
+            # Update RankHistory with League
+            rank_history_entry = RankHistory(
+                player_id=player.id,
+                player_name=player.name,
+                league_id=league_id,
+                league_name=league_name,
+                rank=new_rank,
+            )
+            rank_history_entries.append(rank_history_entry)
+            logger_debug.debug(f"created rank_history_entry for {player.name=}")
+        # Commit
+        commit_to_db(*playerleague_links, *rank_history_entries, session=session)
+        logger.notif("updated players ranking")
+    finally:
+        if not is_session_provided:
+            session.close()
 
 
 def get_all_elo_rating_histories(
@@ -304,7 +319,7 @@ def get_all_elo_rating_histories_from_players_in_league(
     Also includes matches from players resgistered in several leagues.
     """
     # Fetch player_ids in league_name
-    league_players = player_manager.get_all_players_from_league(
+    league_players = get_all_players_from_league(
         session=session, league_name=league_name, as_df=False
     )
     player_ids = [player.id for player in league_players]

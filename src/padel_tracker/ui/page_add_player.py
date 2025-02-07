@@ -45,4 +45,4 @@ if submit_button:
     except Exception as exc:
         st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
     else:
-        refresh_cache()
+        refresh_cache(threaded=True)

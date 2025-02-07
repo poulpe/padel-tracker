@@ -35,4 +35,4 @@ if submit_button and player_name:
     except Exception as exc:
         st.error(f"{translator("player_deletion_error")}: {exc}", icon="💥")
     else:
-        refresh_cache()
+        refresh_cache(threaded=True)

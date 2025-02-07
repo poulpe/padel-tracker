@@ -63,6 +63,7 @@ def assign_league_to_player(session: Session, player: Player, league: League) ->
     link = LinkPlayerLeague(
         player=player, league=league, player_name=player.name, league_name=league.name
     )
+    league.nb_players += 1
     commit_to_db(link, player, league, session=session)
     LOGGER.notif(f"{player=} has been assigned to {league=}")
 

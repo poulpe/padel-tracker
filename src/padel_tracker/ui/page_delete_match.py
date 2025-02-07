@@ -1,5 +1,6 @@
 import streamlit as st
 
+from padel_tracker.ui.threads import get_thread_pool
 from padel_tracker.utils.errors import PlayerNotFoundError
 from padel_tracker.database.db import DB
 from padel_tracker.services.match_manager import delete_match
@@ -20,11 +21,11 @@ write_header(translator("delete_match"))
 # TODO : UI to fetch match to delete
 # Match is: players, date/time
 st.write("TODO, SOON")
-st.stop()
+# st.stop()
 
 form = st.form(translator("delete_match"))
 with form:
-    match_id = 12  # = make_match_selectbox()
+    match_id = st.text_input("match_id")  # 12  # = make_match_selectbox()
     _, col, _ = st.columns(3)
     with col:
         submit_button = st.form_submit_button(
@@ -34,10 +35,12 @@ with form:
 if submit_button and match_id:
     with DB.get_session() as session:
         try:
-            delete_match(session=session, match_id=match_id)
+            delete_match(
+                session=session, match_id=match_id, thread_pool=get_thread_pool()
+            )
             st.success(f"{match_id} {translator("match_deleted")}", icon="☠️")
         except PlayerNotFoundError:
             st.error(f"{translator("match_already_deleted")}", icon="💥")
         except Exception as exc:
             st.error(f"{translator("match_deletion_error")}: {exc}", icon="💥")
-    refresh_cache()
+    refresh_cache(threaded=True)
