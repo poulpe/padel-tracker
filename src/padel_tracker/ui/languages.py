@@ -104,6 +104,8 @@ _DICT_TO_FR = {
     "assign_league": "Recrute dans une ligue",
     "player_already_in_league_error": "  a déja été enregistré dans la ligue ",
     "assigned_league_to_player_success": " a bien été enregistré dans la ligue ",
+    "time_scale": "Échelle temps",
+    "time_scale_help_message": "Montre le temps réel entre les matchs sur le graph",
 }
 
 _DICT_TO_EN = {
@@ -207,6 +209,8 @@ _DICT_TO_EN = {
     "assign_league": "Assign player to league",
     "player_already_in_league_error": "  has already been assigned to this league",
     "assigned_league_to_player_success": " has been successfully assigned in the league ",
+    "time_scale": "Time scale",
+    "time_scale_help_message": "Show real time difference between matches on the graph",
 }
 
 
