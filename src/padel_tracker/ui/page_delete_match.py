@@ -40,4 +40,4 @@ if submit_button and match_id:
             st.error(f"{translator("match_already_deleted")}", icon="💥")
         except Exception as exc:
             st.error(f"{translator("match_deletion_error")}: {exc}", icon="💥")
-    refresh_cache()
+    refresh_cache(threaded=True)

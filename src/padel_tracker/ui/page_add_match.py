@@ -19,7 +19,7 @@ from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.cache import refresh_cache, check_not_empty_database_players
-from padel_tracker.ui.threads import THREAD_POOL
+from padel_tracker.ui.threads import get_thread_pool
 
 LOGGER = get_logger("ui.page_add_match")
 
@@ -196,7 +196,7 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                         session=session,
                         match=match,
                         delete_on_error=True,
-                        thread_pool=THREAD_POOL,
+                        thread_pool=get_thread_pool(),
                     )
                 )
                 LOGGER.debug("finished processing")
@@ -218,4 +218,4 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
     # TODO: Update ranks (in thread)
     # TODO: Refresh cache (in thread)
-    refresh_cache()  # thread_pool=st.session_state.thread_pool TODO: refresh only if OK
+    refresh_cache(threaded=True)  # TODO: refresh only if OK
