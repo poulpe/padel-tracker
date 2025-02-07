@@ -43,8 +43,7 @@ def process_finished_match(
                 session=session, match=match
             )
         )
-        # TODO: update_players_rank in a thread ? (must put at the end probably)
-        ranking_manager.update_players_rank(session=session, league=match.league)
+        # ranking_manager.update_players_rank(session=session, league_name=match.league.name, league_id=match.league.id)
         league_manager.update_league_after_finished_match(
             session=session, league=match.league, match=match
         )
@@ -58,6 +57,12 @@ def process_finished_match(
             err_msg += " and deleted it from db"
         LOGGER.error(err_msg)
         raise MatchNotFinishedError(err_msg)
+    # Update_players_rank in a thread
+    thread_pool.submit(
+        ranking_manager.update_players_rank,
+        league_name=match.league.name,
+        league_id=match.league.id,
+    )
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
@@ -228,7 +233,9 @@ def check_match_not_already_created(
 
 
 # TODO (prio3) : update player last_match_date if applicable
-def delete_match(session: Session, match_id: UUID | str) -> None:
+def delete_match(
+    session: Session, match_id: UUID | str, thread_pool: ThreadPoolExecutor
+) -> None:
     """Delete match after removing history.elo_gain corresponding to this match from players/team current elo
     Also updates league nb_matches.
     """
@@ -276,12 +283,18 @@ def delete_match(session: Session, match_id: UUID | str) -> None:
     league.nb_matches -= 1
     ## Commit updates
     commit_to_db(*list_players, *list_teams, league, session=session)
-    ranking_manager.update_players_rank(session=session, league=league)
+    # ranking_manager.update_players_rank(session=session, league_name=league.name, league_id=league.id)
     ## Delete history rows
     delete_from_db(
         *match_elo_rating_history, *match_team_elo_rating_history, session=session
     )
-
     # Finally delete
     delete_from_db(match, session=session)
     LOGGER.notif(f"deleted {match_id=} successfully")
+    # Update ranks in a thread (non blocking)
+    # (session=session, league_name=league.name, league_id=league.id)
+    thread_pool.submit(
+        ranking_manager.update_players_rank,
+        league_name=league.name,
+        league_id=league.id,
+    )
