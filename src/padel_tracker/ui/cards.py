@@ -68,7 +68,7 @@ def render_score_box(score: str | int) -> str:
 
 
 # TODO (prio3) : clickable player name to bring to his player page
-# TODO: Pass "clicked_player_name" when player is clicked from link (before switch_page)
+# TODO: Pass "clicked_player_name" when player is clicked from link (before switch_page or via st.page_link ?)
 def render_team(team_name: str, is_winner: bool) -> str:
     """Render aligned container with or without winner icon"""
     icon = ""
