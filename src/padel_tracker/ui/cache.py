@@ -192,9 +192,7 @@ def update_cache(
 ):
     if threaded:
         # get_thread_pool().submit(apply_update_cache_standard, force=force, only=only)
-        apply_update_cache_standard(
-            force=force, only=only
-        )  # apply_update_cache_threaded
+        apply_update_cache_standard(force=force, only=only)  # _threaded
     else:
         apply_update_cache_standard(force=force, only=only)
 

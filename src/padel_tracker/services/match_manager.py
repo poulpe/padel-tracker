@@ -43,20 +43,18 @@ def process_finished_match(
                 session=session, match=match
             )
         )
-        # ranking_manager.update_players_rank(session=session, league_name=match.league.name, league_id=match.league.id)
-        league_manager.update_league_after_finished_match(
-            session=session, league=match.league, match=match
-        )
-        info_msg = f"processed finished_match id={match.id}"
-        LOGGER.notif(info_msg)
     except Exception:
-        # TOCHECK (prio1) : err during process_finished_match
         err_msg = "match is not finished: won't process"
         if delete_on_error:
             delete_from_db(match, session=session)
             err_msg += " and deleted it from db"
         LOGGER.error(err_msg)
         raise MatchNotFinishedError(err_msg)
+    else:
+        league_manager.update_league_after_finished_match(
+            session=session, league=match.league, match=match
+        )
+        LOGGER.notif(f"processed finished_match id={match.id}")
     # Update_players_rank in a thread
     thread_pool.submit(
         ranking_manager.update_players_rank,
@@ -283,7 +281,6 @@ def delete_match(
     league.nb_matches -= 1
     ## Commit updates
     commit_to_db(*list_players, *list_teams, league, session=session)
-    # ranking_manager.update_players_rank(session=session, league_name=league.name, league_id=league.id)
     ## Delete history rows
     delete_from_db(
         *match_elo_rating_history, *match_team_elo_rating_history, session=session

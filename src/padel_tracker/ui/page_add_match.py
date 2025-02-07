@@ -216,6 +216,5 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                 st.error(translator("all_players_not_in_league_error"), icon="💢")
             except Exception as exc:
                 st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
-    # TODO: Update ranks (in thread)
-    # TODO: Refresh cache (in thread)
-    refresh_cache(threaded=True)  # TODO: refresh only if OK
+            else:
+                refresh_cache(threaded=True)

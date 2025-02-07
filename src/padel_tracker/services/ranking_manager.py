@@ -18,7 +18,8 @@ from padel_tracker.database.db import (
     read_from_db,
     DB,
 )
-from padel_tracker.services import player_manager
+from padel_tracker.services.player_manager import get_all_players_from_league
+from padel_tracker.services.league_manager import get_league_from_name
 
 LOGGER = get_logger("ranking_manager")
 
@@ -196,9 +197,8 @@ def update_players_results_after_finished_match(
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
-# TODO : update_players_rank could be async ? (or ran once a day ?)
 def update_players_rank(
-    league_name: str, league_id: UUID, session: Session = None
+    league_name: str, league_id: UUID = None, session: Session = None
 ) -> None:
     """Calc ranks and updated database
     Notes
@@ -217,8 +217,12 @@ def update_players_rank(
         is_session_provided = True
 
     try:
+        # Fetch league_id if not given
+        if league_id is None:
+            league_id = get_league_from_name(session=session, name=league_name).id
+        # Fetch players
         logger_debug.debug("starting rank update, fetching sorted_players")
-        sorted_players = player_manager.get_all_players_from_league(
+        sorted_players = get_all_players_from_league(
             session=session,
             league_name=league_name,
             order_by=Player.elo_rating,
@@ -315,7 +319,7 @@ def get_all_elo_rating_histories_from_players_in_league(
     Also includes matches from players resgistered in several leagues.
     """
     # Fetch player_ids in league_name
-    league_players = player_manager.get_all_players_from_league(
+    league_players = get_all_players_from_league(
         session=session, league_name=league_name, as_df=False
     )
     player_ids = [player.id for player in league_players]
