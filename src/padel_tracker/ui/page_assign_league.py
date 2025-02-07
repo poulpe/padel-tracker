@@ -21,7 +21,7 @@ with form:
     _, center_col, _ = st.columns([1, 5, 1])
     with center_col:
         league_name = make_league_selectbox()
-        player_name = make_player_selectbox()
+        player_name = make_player_selectbox(all_leagues=True)
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(

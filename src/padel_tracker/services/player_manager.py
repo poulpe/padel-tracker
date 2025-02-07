@@ -62,6 +62,11 @@ def get_all_players(
     return read_from_db(Player, session=session, as_df=as_df)
 
 
+def get_all_players_names(session: Session) -> list[str]:
+    """Names only as list of all players from all leagues"""
+    return read_from_db(Player.name, session=session)
+
+
 def get_all_players_from_league(
     session: Session,
     league_name: str,
@@ -231,7 +236,6 @@ def get_all_teams(session: Session, as_df: bool = False) -> list[Team] | pd.Data
     return read_from_db(Team, session=session, as_df=as_df)
 
 
-# TOCHECK
 def get_all_teams_from_league(
     session: Session, league_name: str, as_df: bool = False
 ) -> list[Team] | pd.DataFrame:
@@ -252,31 +256,6 @@ def get_all_teams_from_league(
         session=session,
         as_df=as_df,
     )
-
-
-# def create_team(session: Session, player1_name: str, player2_name: str, league_name:str) -> Team:
-#     logger = LOGGER.getChild("create_team")
-#     # Checks team doesn't exist
-#     try:
-#         team = get_team_from_players_name(
-#             session=session, player1_name=player1_name, player2_name=player2_name
-#         )
-#     except TeamNotFoundError:
-#         pass  # It's actually OK, team doesn't exists
-#     else:
-#         err_msg = f"team '{str(team)}' already exists, won't recreate it"
-#         logger.error(err_msg)
-#         raise TeamExistsError(err_msg)
-#     # Let's go
-#     ## Retrieve players
-#     player1 = get_player_from_name(session=session, name=player1_name)
-#     player2 = get_player_from_name(session=session, name=player2_name)
-#     ## Create team and commit
-#     team = Team(players=[player1, player2], leagues=)
-#     team.post_init()
-#     commit_to_db(team, session=session)
-#     logger.log(LOG_LEVEL_NOTIF, f"created {team=} (id={team.id})")
-#     return team
 
 
 def delete_team() -> None:
