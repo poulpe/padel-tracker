@@ -69,15 +69,9 @@ if st.experimental_user.is_logged_in:
                 )
                 st.session_state.user = user.model_dump()
             except UserNotFoundError:
-                #TODO : ensure "user not created" case is managed properly
-                #None is maybe not the right stuff ?
+                # TODO : ensure "user not created" case is managed properly
+                # None is maybe not the right stuff ?
                 st.session_state.user = None
-
-def perform_logout():
-    st.session_state.user = None
-    st.session_state.is_guest = False
-    st.logout()
-    st.rerun()
 
 ##### Sidebar ######
 # Make selectable league in sidebar
@@ -102,12 +96,6 @@ if st.experimental_user.is_logged_in:
         st.session_state.league_name, font_size=21, bold=False, extra_line=False
     )
 
-# Logout button
-is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
-if (st.experimental_user.is_logged_in) or is_guest:
-    st.sidebar.button(
-        translator("logout"), on_click=perform_logout, type="secondary", icon="🚪",
-    )
 
 # Language selector in sidebar
 def update_session_state_translator() -> None:
@@ -121,6 +109,25 @@ st.sidebar.selectbox(
     index=SUPPORTED_LANGUAGES.index(st.session_state.language),
     on_change=update_session_state_translator,
 )
+
+
+# Logout button
+def perform_logout():
+    st.session_state.user = None
+    st.session_state.is_guest = False
+    st.logout()
+    st.rerun()
+
+
+is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
+if (st.experimental_user.is_logged_in) or is_guest:
+    st.sidebar.button(
+        translator("logout"),
+        on_click=perform_logout,
+        type="secondary",
+        icon="🚪",
+        use_container_width=True,
+    )
 
 ##### Define CSS #####
 define_cards_css()
@@ -143,9 +150,7 @@ update_cache()
 
 ##### Pages definition #####
 ## Login page
-page_login = st.Page(
-    "page_login.py", title=translator("login"), default=True, icon="➡️"
-)
+page_login = st.Page("page_login.py", title=translator("login"), default=True, icon="➡️")
 page_finalize_signup = st.Page(
     "page_finalize_signup.py", title=translator("finalize_signup"), icon="🎉"
 )
@@ -153,10 +158,14 @@ page_finalize_signup = st.Page(
 page_overview = st.Page("page_overview.py", title="Overview", icon="🥎", default=True)
 page_add_match = st.Page("page_add_match.py", title=translator("add_match"), icon="➕")
 page_check_player = st.Page(
-    "page_check_player.py", title=translator("check_player"), icon="👤",
+    "page_check_player.py",
+    title=translator("check_player"),
+    icon="👤",
 )
 page_check_team = st.Page(
-    "page_check_team.py", title=translator("check_team"), icon="🤝",
+    "page_check_team.py",
+    title=translator("check_team"),
+    icon="🤝",
 )
 page_manage_account = st.Page(
     "page_manage_account.py", title=translator("manage_account")
@@ -166,7 +175,9 @@ page_add_player = st.Page(
     "page_add_player.py", title=translator("add_player"), icon="🆕"
 )
 page_delete_player = st.Page(
-    "page_delete_player.py", title=translator("delete_player"), icon="🙅",
+    "page_delete_player.py",
+    title=translator("delete_player"),
+    icon="🙅",
 )
 page_delete_match = st.Page(
     "page_delete_match.py", title=translator("delete_match"), icon="❌"
@@ -175,19 +186,17 @@ page_add_league = st.Page(
     "page_add_league.py", title=translator("add_league"), icon="🏆"
 )
 page_assign_league = st.Page(
-    "page_assign_league.py", title=translator("assign_league"), icon="👥️",
+    "page_assign_league.py",
+    title=translator("assign_league"),
+    icon="👥️",
 )
 page_check_logs = st.Page(
     "page_check_logs.py", title=translator("check_logs"), icon="📋"
 )
 
 # Define pages dict
-pages_not_logged = {
-    "Padel Tracker":[page_login]
-}
-pages_finalize_signup = {
-    "Padel Tracker":[page_finalize_signup]
-}
+pages_not_logged = {"Padel Tracker": [page_login]}
+pages_finalize_signup = {"Padel Tracker": [page_finalize_signup]}
 pages_guest = {
     "Padel Tracker": [page_overview],
     translator("players_teams"): [page_check_player, page_check_team],
@@ -196,14 +205,14 @@ pages_player = {
     "Padel Tracker": [page_overview],
     translator("matches"): [page_add_match],
     translator("players_teams"): [page_check_player, page_check_team],
-    translator("my_account"):[page_manage_account],
+    translator("my_account"): [page_manage_account],
 }
 pages_admin = {
     "Padel Tracker": [page_overview],
     translator("matches"): [page_add_match],
     translator("players_teams"): [page_check_player, page_check_team],
     # TODO: translator("leagues"): [page_check_leagues],
-    translator("my_account"):[page_manage_account],
+    translator("my_account"): [page_manage_account],
     translator("administration"): [
         page_add_player,
         page_delete_player,

@@ -17,17 +17,21 @@ from padel_tracker.services.player_manager import create_player
 
 LOGGER = get_logger("user_manager")
 
-def get_user_from_auth_user_id(session:Session, auth_user_id:str)-> User:
+
+def get_user_from_auth_user_id(session: Session, auth_user_id: str) -> User:
     try:
         user = read_from_db(
-            User, where=User.auth_user_id==auth_user_id, unique=True, session=session
+            User, where=User.auth_user_id == auth_user_id, unique=True, session=session
         )
     except sqlalchemy.exc.NoResultFound:
         raise UserNotFoundError(f"user with {auth_user_id=} not found in database")
     return user
 
+
 def create_user_from_auth_user(
-    session:Session, dict_auth_user:dict[str,Any], is_create_player:bool=True,
+    session: Session,
+    dict_auth_user: dict[str, Any],
+    is_create_player: bool = True,
 ) -> User:
     """
     Parameters
@@ -72,24 +76,22 @@ def create_user_from_auth_user(
         except pydantic.ValidationError as exc:
             name = dict_auth_user["nickname"]
             for char in [".", "@", "_", "-"]:
-                name = name.replace(char," ")
+                name = name.replace(char, " ")
             user.name = name.capitalize()
     # Commit
     commit_to_db(user, session=session)
     LOGGER.notif(f"created {user=}")
-    # Also create player if specified
+    # TODO: Also create player if specified
     # if is_create_player:
     #     create_player(session=session, name=)
     return user
 
 
-def assign_player_to_user(session: Session, user:User, player:Player)->None:
+def assign_player_to_user(session: Session, user: User, player: Player) -> None:
     user.player = player
     user.player_id = player.id
     if user.role == UserRole.GUEST:
         user.role = UserRole.PLAYER
-    player.user_id = user.id
-    player.user = user
     user.name = player.name
     commit_to_db(user, player, session=session)
     LOGGER.notif(f"{player=} has been assigned to {user=}")

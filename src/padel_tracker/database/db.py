@@ -34,7 +34,6 @@ def get_db_url(
             db_name += "_test"
         db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
-        #db_url= f"postgresql+psycopg2://{user}:{password}@localhost/{db_file}"
     elif db_mode == DBMode.CLOUD:
         db_url = get_cloud_db_url(
             user=user, password=password, host=host, port=port, dbname=dbname
@@ -119,14 +118,9 @@ class Database:
 
 DB = Database()
 
-# def ensure_users_table_exist(engine)->None:
-#     with engine.connect() as conn:
-#         conn.execute(text("CREATE TABLE IF NOT EXISTS auth.users"))
-#         conn.commit()
 
 def init_db_and_tables():
     """To be called in main at init"""
-    #ensure_users_table_exist(DB.engine)
     SQLModel.metadata.create_all(DB.engine)
 
 

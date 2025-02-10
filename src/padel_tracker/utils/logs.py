@@ -1,7 +1,7 @@
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 
-import supabase # Log in cloud database
+import supabase  # Log in cloud database
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
@@ -80,6 +80,7 @@ class LocalDatabaseLogHandler(logging.Handler):
         """Close properly the ThreadPoolExecutor"""
         self.thread_pool.shutdown(wait=True)
         super().close()
+
 
 class SupabaseLogHandler(logging.Handler):
     def __init__(
