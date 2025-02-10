@@ -30,6 +30,8 @@ if not is_guest:
             type="primary",
             use_container_width=True,
         )
+    if button_add_match:
+        st.switch_page("page_add_match.py")
 else:
     _, col_button_2, _ = st.columns([1, 3, 1])
     with col_button_2:
@@ -39,8 +41,6 @@ else:
             use_container_width=True,
         )
 
-if button_add_match:
-    st.switch_page("page_add_match.py")
 if button_feature_2:
     st.switch_page("page_check_player.py")
 
