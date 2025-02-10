@@ -24,6 +24,7 @@ _DICT_TO_FR = {
     "leagues": "Ligues",
     "league_name": "Ligue",
     "league_names": "Ligues",
+    "user": "Utilisateur",
     # UI message
     "language": "Langue",
     "add_match": "Nouveau match",
@@ -104,6 +105,19 @@ _DICT_TO_FR = {
     "assign_league": "Recrute dans une ligue",
     "player_already_in_league_error": "  a déja été enregistré dans la ligue ",
     "assigned_league_to_player_success": " a bien été enregistré dans la ligue ",
+    "time_scale": "Échelle temps",
+    "time_scale_help_message": "Montre le temps réel entre les matchs sur le graph",
+    "welcome_not_logged": "Bienvenue sur Padel Tracker",
+    "click_to_login": "Clique sur le bouton ci dessous pour t'identifier ou t'inscrire",
+    "login_signup": "Se connecter / S'inscrire",
+    "login": "Se connecter",
+    "connect_as_guest": "Se connecter en tant qu'invité",
+    "my_account": "Mon compte",
+    "manage_account": "Gérer mon compte",
+    "logout": "Se déconnecter",
+    "finalize_signup": "Bienvenue Champion, finalise ton inscription !",
+    "existing_league": "Ligue",
+    "existing_league_message": "Ta ligue existe deja et tu souhaites la rejoindre ? Laisse vide sinon",
 }
 
 _DICT_TO_EN = {
@@ -207,6 +221,8 @@ _DICT_TO_EN = {
     "assign_league": "Assign player to league",
     "player_already_in_league_error": "  has already been assigned to this league",
     "assigned_league_to_player_success": " has been successfully assigned in the league ",
+    "time_scale": "Time scale",
+    "time_scale_help_message": "Show real time difference between matches on the graph",
 }
 
 

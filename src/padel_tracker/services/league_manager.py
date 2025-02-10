@@ -41,8 +41,8 @@ def get_league_from_name(session: Session, name: str) -> League:
 
     Raises
     ------
-    PlayerNotFoundError
-        If player doesn't exist in database
+    LeagueNotFoundError
+        If league doesn't exist in database
     """
     try:
         league = read_from_db(

@@ -7,12 +7,13 @@ from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 from padel_tracker.services import ranking_manager
 
 
-@st.cache_data(max_entries=16)
+@st.cache_data(max_entries=32)
 def _generate_overview_elo_history_chart(
     df_elo_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
     league_name: str = None,
+    temporal_time_scale: bool = True,
 ) -> alt.Chart:
     # Fetch data if not given
     if df_elo_hist is None:
@@ -44,11 +45,17 @@ def _generate_overview_elo_history_chart(
     x_param = translator("date")
     y_param = translator("elo_rating")
     color_param = translator("player_name")
+    x_type = "temporal" if temporal_time_scale else "ordinal"
     chart = (
         alt.Chart(df_elo_hist)
         .mark_line(point=True)
         .encode(
-            x=alt.X(x_param, type="temporal"),
+            x=alt.X(
+                x_param,
+                title=x_param,
+                type=x_type,
+                timeUnit="yearmonthdatehoursminutes",
+            ),
             y=alt.Y(y_param, scale=alt.Scale(zero=False)),
             color=alt.Color(color_param),
             tooltip=[
@@ -70,11 +77,18 @@ def make_overview_elo_history_chart(
     limit_last_matches: int | None = 15,
     league_name: str = None,
 ) -> None:
+    # Button time scale
+    _, right_col = st.columns([3.3, 1])
+    temporal_time_scale = right_col.toggle(
+        translator("time_scale"), help=translator("time_scale_help_message")
+    )
+    # Make chart
     chart = _generate_overview_elo_history_chart(
         df_elo_hist=df_elo_hist,
         translator=translator,
         limit_last_matches=limit_last_matches,
         league_name=league_name,
+        temporal_time_scale=temporal_time_scale,
     )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
@@ -100,7 +114,7 @@ def _apply_determine_match_result(
     return row
 
 
-@st.cache_data(max_entries=16)
+@st.cache_data(max_entries=32)
 def _generate_player_metric_history_chart(
     player_name: str,
     df_matches: pd.DataFrame,
@@ -108,6 +122,7 @@ def _generate_player_metric_history_chart(
     metric: str = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
+    temporal_time_scale: bool = False,
 ) -> alt.Chart:
     # Metric selection
     if metric is None:
@@ -157,18 +172,20 @@ def _generate_player_metric_history_chart(
     color_param = translator("result")
     tooltip = [x_param, y_param, f"{color_param}:N", translator("match_name")]
     if metric == translator("elo_rating"):
-        # TODO: better elo_rating (ensure no zero + maybe via points ?)
-        base_chart = alt.Chart(df_hist).mark_bar()  # mark_rule(size=50)
+        base_chart = alt.Chart(df_hist).mark_bar()
+        y_domain = (df_hist[y_param].min() * 0.95, df_hist[y_param].max() * 1.05)
     elif metric == translator("nb_won_games_diff"):
         base_chart = alt.Chart(df_hist).mark_bar()
+        y_domain = (0, df_hist[y_param].max() * 1.2)
+    x_type = "temporal" if temporal_time_scale else "ordinal"
     chart = base_chart.encode(
         x=alt.X(
             x_param,
-            type="ordinal",
-            timeUnit="yearmonthdatehours",
+            type=x_type,
+            timeUnit="yearmonthdatehoursminutes",
             title=translator("date"),
         ),
-        y=alt.Y(y_param, scale=alt.Scale(zero=False)),
+        y=alt.Y(y_param, scale=alt.Scale(domain=y_domain)),
         color=alt.Color(
             color_param,
             type="nominal",
@@ -195,6 +212,12 @@ def make_player_metric_history_chart(
         options=[translator("elo_rating"), translator("nb_won_games_diff")],
         default=translator("nb_won_games_diff"),
     )
+    # # Button time scale
+    # _, right_col = st.columns([2.5,1])
+    # temporal_time_scale = right_col.toggle(
+    #     translator("time_scale"),
+    #     help=translator("time_scale_help_message")
+    # )
     # Gen chart
     chart = _generate_player_metric_history_chart(
         player_name=player_name,
@@ -203,6 +226,7 @@ def make_player_metric_history_chart(
         df_matches=df_matches,
         translator=translator,
         limit_last_matches=limit_last_matches,
+        # temporal_time_scale=temporal_time_scale,
     )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)

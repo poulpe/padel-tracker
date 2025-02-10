@@ -8,7 +8,7 @@ from padel_tracker.utils.logs import DEFAULT_LOG_FORMATTER
 from padel_tracker.utils.errors import PlayerExistsError, LeagueExistsError
 from padel_tracker.utils.datetime_utils import make_datetime
 from padel_tracker.database.db import Session, DB
-from padel_tracker.services import player_manager, match_manager, league_manager
+from padel_tracker.services import player_manager, match_manager, league_manager, user_manager
 from padel_tracker.main import init_app
 
 LOG_LEVEL = "DEBUG"
@@ -98,9 +98,29 @@ def assign_leagues(session: Session):
     except Exception:
         LOGGER.warning("league link already exists")
 
+def create_users_and_link(session):
+    user = user_manager.create_user_from_auth_user(
+        session=session,
+        dict_auth_user={
+            "sub":"",
+            "email":"pierre.letousey@gmail.com",
+            "email_verified":True,
+            "picture":"https://lh3.googleusercontent.com/a/ACg8ocI0o6stDRC5_aDbjUkvNUZEVMJNIRUfH6rZlgiUEE4j10Et_w=s96-c",
+            "name":"Pierre Letousey",
+            "nickname":"pierre.letousey",
+        },
+        is_create_player=False,
+    )
+    player = player_manager.get_player_from_name(session=session, name="ElPoulpo")
+    user_manager.assign_player_to_user(session=session, user=user, player=player)
+
 
 if __name__ == "__main__":
     init_app()
+
+    # Populate user
+    # with DB.get_session() as session:
+    #     create_users_and_link(session)
 
     # Populate leagues
     with DB.get_session() as session:

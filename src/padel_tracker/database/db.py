@@ -3,6 +3,7 @@ from typing import Iterable
 import pandas as pd
 from sqlalchemy.engine.base import Engine
 from sqlmodel import SQLModel, create_engine, Session, select
+import supabase
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
@@ -67,7 +68,10 @@ def set_db_engine(
         err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
         raise ValueError(err_msg)
     # Create engine
-    connect_args = {"options": "-csearch_path=public"} if db_mode == "cloud" else {}
+    if db_mode == DBMode.CLOUD:
+        connect_args = {"options": "-csearch_path=public"}
+    else:
+        connect_args = {}
     db_engine = create_engine(db_url, connect_args=connect_args)
     return db_engine
 
@@ -296,3 +300,10 @@ def delete_from_db(*objects, session: Session) -> None:
     for object in objects:
         session.delete(object)
     session.commit()
+
+
+def create_supabase_client():
+    return supabase.create_client(
+        supabase_url=DICT_CONF["db_credentials"]["supabase_api_url"],
+        supabase_key=DICT_CONF["db_credentials"]["supabase_api_key"],
+    )

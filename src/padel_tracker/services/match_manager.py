@@ -56,11 +56,16 @@ def process_finished_match(
         )
         LOGGER.notif(f"processed finished_match id={match.id}")
     # Update_players_rank in a thread
-    thread_pool.submit(
-        ranking_manager.update_players_rank,
-        league_name=match.league.name,
-        league_id=match.league.id,
-    )
+    if thread_pool:
+        thread_pool.submit(
+            ranking_manager.update_players_rank,
+            league_name=match.league.name,
+            league_id=match.league.id,
+        )
+    else:
+        ranking_manager.update_players_rank(
+            league_name=match.league.name, league_id=match.league.id
+        )
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
