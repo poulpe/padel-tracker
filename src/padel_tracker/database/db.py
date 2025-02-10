@@ -3,6 +3,7 @@ from typing import Iterable
 import pandas as pd
 from sqlalchemy.engine.base import Engine
 from sqlmodel import SQLModel, create_engine, Session, select
+import supabase
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
@@ -33,6 +34,7 @@ def get_db_url(
             db_name += "_test"
         db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
+        #db_url= f"postgresql+psycopg2://{user}:{password}@localhost/{db_file}"
     elif db_mode == DBMode.CLOUD:
         db_url = get_cloud_db_url(
             user=user, password=password, host=host, port=port, dbname=dbname
@@ -67,7 +69,10 @@ def set_db_engine(
         err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
         raise ValueError(err_msg)
     # Create engine
-    connect_args = {"options": "-csearch_path=public"} if db_mode == "cloud" else {}
+    if db_mode == DBMode.CLOUD:
+        connect_args = {"options": "-csearch_path=public"}
+    else:
+        connect_args = {}
     db_engine = create_engine(db_url, connect_args=connect_args)
     return db_engine
 
@@ -114,9 +119,14 @@ class Database:
 
 DB = Database()
 
+# def ensure_users_table_exist(engine)->None:
+#     with engine.connect() as conn:
+#         conn.execute(text("CREATE TABLE IF NOT EXISTS auth.users"))
+#         conn.commit()
 
 def init_db_and_tables():
     """To be called in main at init"""
+    #ensure_users_table_exist(DB.engine)
     SQLModel.metadata.create_all(DB.engine)
 
 
@@ -296,3 +306,10 @@ def delete_from_db(*objects, session: Session) -> None:
     for object in objects:
         session.delete(object)
     session.commit()
+
+
+def create_supabase_client():
+    return supabase.create_client(
+        supabase_url=DICT_CONF["db_credentials"]["supabase_api_url"],
+        supabase_key=DICT_CONF["db_credentials"]["supabase_api_key"],
+    )

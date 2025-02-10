@@ -60,3 +60,10 @@ class PlayerNotInLeagueError(Exception):
 
 class PlayerAlreadyInLeagueError(Exception):
     """Player is already part of the league"""
+
+# User errors
+class UserNotFoundError(Exception):
+    """User not found and probably doesn't exist in database"""
+
+class UserExistsError(Exception):
+    """User already exists in database"""

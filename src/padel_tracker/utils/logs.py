@@ -1,12 +1,12 @@
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 
-import supabase  # Log in cloud database
+import supabase # Log in cloud database
 
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.utils.conf import DICT_CONF, DBMode, RunMode
-from padel_tracker.database.db import commit_to_db_no_session
+from padel_tracker.database.db import commit_to_db_no_session, create_supabase_client
 from padel_tracker.models.base import Logs
 
 # Define custom log level for notif from main (between INFO and WARNING)
@@ -80,14 +80,6 @@ class LocalDatabaseLogHandler(logging.Handler):
         """Close properly the ThreadPoolExecutor"""
         self.thread_pool.shutdown(wait=True)
         super().close()
-
-
-def create_supabase_client():
-    return supabase.create_client(
-        supabase_url=DICT_CONF["db_credentials"]["supabase_api_url"],
-        supabase_key=DICT_CONF["db_credentials"]["supabase_api_key"],
-    )
-
 
 class SupabaseLogHandler(logging.Handler):
     def __init__(

@@ -4,9 +4,14 @@ from pathlib import Path
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
 
+from padel_tracker.utils.errors import UserNotFoundError
+
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
 from padel_tracker.utils.paths import get_absolute_path
+from padel_tracker.models.users import UserRole
+from padel_tracker.database.db import DB
+from padel_tracker.services import user_manager
 from padel_tracker.ui.languages import (
     DEFAULT_LANGUAGE,
     SUPPORTED_LANGUAGES,
@@ -53,27 +58,56 @@ html_code_top_header = f"""
 """
 st.markdown(html_code_top_header, unsafe_allow_html=True)
 
+##### TODO : Manage user #####
+if st.experimental_user.is_logged_in:
+    if ("user" not in st.session_state) or (st.session_state.user is None):
+        auth_user_id = st.experimental_user["sub"]
+        with DB.get_session() as session:
+            try:
+                user = user_manager.get_user_from_auth_user_id(
+                    session=session, auth_user_id=auth_user_id
+                )
+                st.session_state.user = user.model_dump()
+            except UserNotFoundError:
+                #TODO : ensure "user not created" case is managed properly
+                #None is maybe not the right stuff ?
+                st.session_state.user = None
+
+def perform_logout():
+    st.session_state.user = None
+    st.session_state.is_guest = False
+    st.logout()
+    st.rerun()
+
 ##### Sidebar ######
 # Make selectable league in sidebar
 update_cache(only=CacheKey.df_leagues, force=True)
 if "league_name" not in st.session_state:
     try:
-        # TODO [users] : fetch favorite/deafault league from User
+        # TODO [users] : fetch favorite/default league from User
         st.session_state.league_name = st.session_state.league_names[0]
     except (KeyError, TypeError):
         # Warning already st.warning(translator("no_league_database_error"), icon="💢")
         # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
         st.stop()
-st.sidebar.selectbox(
-    translator("league"),
-    st.session_state.league_names,
-    key="league_name",
-    on_change=refresh_cache,
-)
-write_subheader(
-    st.session_state.league_name, font_size=21, bold=False, extra_line=False
-)
 
+if st.experimental_user.is_logged_in:
+    st.sidebar.selectbox(
+        translator("league"),
+        st.session_state.league_names,
+        key="league_name",
+        on_change=refresh_cache,
+    )
+    write_subheader(
+        st.session_state.league_name, font_size=21, bold=False, extra_line=False
+    )
+
+# Logout button
+is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
+if (st.experimental_user.is_logged_in) or is_guest:
+    st.sidebar.button(
+        translator("logout"), on_click=perform_logout, type="secondary", icon="🚪",
+    )
 
 # Language selector in sidebar
 def update_session_state_translator() -> None:
@@ -108,25 +142,31 @@ if ("screen_inner_width" not in st.session_state) or (
 update_cache()
 
 ##### Pages definition #####
+## Login page
+page_login = st.Page(
+    "page_login.py", title=translator("login"), default=True, icon="➡️"
+)
+page_finalize_signup = st.Page(
+    "page_finalize_signup.py", title=translator("finalize_signup"), icon="🎉"
+)
+## Standard pages
 page_overview = st.Page("page_overview.py", title="Overview", icon="🥎", default=True)
 page_add_match = st.Page("page_add_match.py", title=translator("add_match"), icon="➕")
 page_check_player = st.Page(
-    "page_check_player.py",
-    title=translator("check_player"),
-    icon="👤",
+    "page_check_player.py", title=translator("check_player"), icon="👤",
 )
 page_check_team = st.Page(
-    "page_check_team.py",
-    title=translator("check_team"),
-    icon="🤝",
+    "page_check_team.py", title=translator("check_team"), icon="🤝",
 )
+page_manage_account = st.Page(
+    "page_manage_account.py", title=translator("manage_account")
+)
+## Admin pages
 page_add_player = st.Page(
     "page_add_player.py", title=translator("add_player"), icon="🆕"
 )
 page_delete_player = st.Page(
-    "page_delete_player.py",
-    title=translator("delete_player"),
-    icon="🙅",
+    "page_delete_player.py", title=translator("delete_player"), icon="🙅",
 )
 page_delete_match = st.Page(
     "page_delete_match.py", title=translator("delete_match"), icon="❌"
@@ -135,31 +175,64 @@ page_add_league = st.Page(
     "page_add_league.py", title=translator("add_league"), icon="🏆"
 )
 page_assign_league = st.Page(
-    "page_assign_league.py",
-    title=translator("assign_league"),
-    icon="👥️",
+    "page_assign_league.py", title=translator("assign_league"), icon="👥️",
 )
 page_check_logs = st.Page(
     "page_check_logs.py", title=translator("check_logs"), icon="📋"
 )
 
-# TODO: user features (+ see as guest = no show add/edit pages), so different navigations dict based on context
+# Define pages dict
+pages_not_logged = {
+    "Padel Tracker":[page_login]
+}
+pages_finalize_signup = {
+    "Padel Tracker":[page_finalize_signup]
+}
+pages_guest = {
+    "Padel Tracker": [page_overview],
+    translator("players_teams"): [page_check_player, page_check_team],
+}
+pages_player = {
+    "Padel Tracker": [page_overview],
+    translator("matches"): [page_add_match],
+    translator("players_teams"): [page_check_player, page_check_team],
+    translator("my_account"):[page_manage_account],
+}
+pages_admin = {
+    "Padel Tracker": [page_overview],
+    translator("matches"): [page_add_match],
+    translator("players_teams"): [page_check_player, page_check_team],
+    # TODO: translator("leagues"): [page_check_leagues],
+    translator("my_account"):[page_manage_account],
+    translator("administration"): [
+        page_add_player,
+        page_delete_player,
+        page_delete_match,
+        page_add_league,
+        page_assign_league,
+        page_check_logs,
+    ],
+}
 
-pg = st.navigation(
-    {
-        "Padel Tracker": [page_overview],
-        translator("matches"): [page_add_match],
-        translator("players_teams"): [page_check_player, page_check_team],
-        # TODO: translator("leagues"): [page_check_leagues],
-        # translator("analytics"): [],
-        translator("administration"): [
-            page_add_player,
-            page_delete_player,
-            page_delete_match,
-            page_add_league,
-            page_assign_league,
-            page_check_logs,
-        ],
-    }
-)
+# Determine pages to show based on user
+pages = pages_not_logged
+if not st.experimental_user.is_logged_in:
+    pages = pages_not_logged
+else:
+    # Case "see as guest"
+    if ("is_guest" in st.session_state) and (st.session_state.is_guest):
+        pages = pages_guest
+    # Case logged but no user linked
+    elif ("user" not in st.session_state) or (not st.session_state.user["player_id"]):
+        pages = pages_finalize_signup
+    # Case logged in as Player OK
+    elif st.session_state.user["role"] == UserRole.PLAYER:
+        pages = pages_player
+    # Case logged in as Admin OK
+    elif st.session_state.user["role"] == UserRole.ADMIN:
+        pages = pages_admin
+    else:
+        raise KeyError("unknown situation to generate pages")
+
+pg = st.navigation(pages=pages)
 pg.run()

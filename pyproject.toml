@@ -1,6 +1,6 @@
 [project]
 name = "padel-tracker"
-version = "0.2.0"
+version = "0.3.0"
 description = "App to keep track of Padel matches"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,13 +8,15 @@ authors = [
     {name = "Pierre Letousey"},
 ]
 dependencies = [
-    "streamlit", # For UI
+    "streamlit>=1.42", # For UI
     "streamlit-js-eval", # For UI
     "sqlmodel", # Combines sqlalchemy and pydantic
     "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
     "supabase", # For PostgreSQL com on cloud-hosted db
     "python-dotenv", # Secret management in .env file (for cloud-hosted db)
     "pandas",
+    "authlib>=1.4.1", # For User management in UI
+    "email-validator",
 ]
 [project.optional-dependencies]
 dev = [

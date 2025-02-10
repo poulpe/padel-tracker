@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
+from typing import Optional
 
 from sqlmodel import Field, Relationship, Column, DateTime
 from pydantic import PositiveInt, PositiveFloat, NonNegativeInt
@@ -93,6 +94,8 @@ class Player(ValidatedSQLModel, table=True):
     )
     elo_rating_history: list[EloRatingHistory] = Relationship(back_populates="player")
     rank_history: list[RankHistory] = Relationship(back_populates="player")
+    user_id: UUID | None = Field(default=None, foreign_key="user.id")
+    user: Optional["User"] = Relationship(back_populates="player")
 
 
 ##### Team #####
