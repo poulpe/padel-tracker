@@ -4,10 +4,11 @@ from pathlib import Path
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
 
-from padel_tracker.utils.errors import UserNotFoundError
+from padel_tracker.ui.login import make_login_form, make_finalize_signup_form
 
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
+from padel_tracker.utils.errors import UserNotFoundError
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.models.users import UserRole
 from padel_tracker.database.db import DB
@@ -58,7 +59,7 @@ html_code_top_header = f"""
 """
 st.markdown(html_code_top_header, unsafe_allow_html=True)
 
-##### TODO : Manage user #####
+##### Fetch user if logged_in #####
 if st.experimental_user.is_logged_in:
     if ("user" not in st.session_state) or (st.session_state.user is None):
         auth_user_id = st.experimental_user["sub"]
@@ -69,23 +70,31 @@ if st.experimental_user.is_logged_in:
                 )
                 st.session_state.user = user.model_dump()
             except UserNotFoundError:
-                # TODO : ensure "user not created" case is managed properly
-                # None is maybe not the right stuff ?
+                # Means new user, will be redirected to "finalize_signup"
                 st.session_state.user = None
+
+is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
 
 ##### Sidebar ######
 # Make selectable league in sidebar
 update_cache(only=CacheKey.df_leagues, force=True)
 if "league_name" not in st.session_state:
-    try:
-        # TODO [users] : fetch favorite/default league from User
-        st.session_state.league_name = st.session_state.league_names[0]
-    except (KeyError, TypeError):
-        # Warning already st.warning(translator("no_league_database_error"), icon="💢")
-        # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
-        st.stop()
+    # Try fetching default league from user
+    user_league = None
+    if ("user" in st.session_state) and (st.session_state.user):
+        user_league = st.session_state.user["default_league_name"]
+    # Determine default league
+    if user_league:
+        st.session_state.league_name = user_league
+    else:
+        try:
+            st.session_state.league_name = st.session_state.league_names[0]
+        except (KeyError, TypeError):
+            # st.warning(translator("no_league_database_error"), icon="💢")
+            # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
+            st.stop()
 
-if st.experimental_user.is_logged_in:
+if st.experimental_user.is_logged_in or is_guest:
     st.sidebar.selectbox(
         translator("league"),
         st.session_state.league_names,
@@ -119,8 +128,8 @@ def perform_logout():
     st.rerun()
 
 
-is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
 if (st.experimental_user.is_logged_in) or is_guest:
+    st.sidebar.divider()
     st.sidebar.button(
         translator("logout"),
         on_click=perform_logout,
@@ -149,11 +158,6 @@ if ("screen_inner_width" not in st.session_state) or (
 update_cache()
 
 ##### Pages definition #####
-## Login page
-page_login = st.Page("page_login.py", title=translator("login"), default=True, icon="➡️")
-page_finalize_signup = st.Page(
-    "page_finalize_signup.py", title=translator("finalize_signup"), icon="🎉"
-)
 ## Standard pages
 page_overview = st.Page("page_overview.py", title="Overview", icon="🥎", default=True)
 page_add_match = st.Page("page_add_match.py", title=translator("add_match"), icon="➕")
@@ -168,7 +172,9 @@ page_check_team = st.Page(
     icon="🤝",
 )
 page_manage_account = st.Page(
-    "page_manage_account.py", title=translator("manage_account")
+    "page_manage_account.py",
+    title=translator("manage_account"),
+    icon="⚙️",
 )
 ## Admin pages
 page_add_player = st.Page(
@@ -195,8 +201,6 @@ page_check_logs = st.Page(
 )
 
 # Define pages dict
-pages_not_logged = {"Padel Tracker": [page_login]}
-pages_finalize_signup = {"Padel Tracker": [page_finalize_signup]}
 pages_guest = {
     "Padel Tracker": [page_overview],
     translator("players_teams"): [page_check_player, page_check_team],
@@ -211,7 +215,7 @@ pages_admin = {
     "Padel Tracker": [page_overview],
     translator("matches"): [page_add_match],
     translator("players_teams"): [page_check_player, page_check_team],
-    # TODO: translator("leagues"): [page_check_leagues],
+    # TODO (prio 3): translator("leagues"): [page_check_leagues],
     translator("my_account"): [page_manage_account],
     translator("administration"): [
         page_add_player,
@@ -224,16 +228,22 @@ pages_admin = {
 }
 
 # Determine pages to show based on user
-pages = pages_not_logged
-if not st.experimental_user.is_logged_in:
-    pages = pages_not_logged
-else:
-    # Case "see as guest"
-    if ("is_guest" in st.session_state) and (st.session_state.is_guest):
-        pages = pages_guest
+is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
+is_user_not_defined = (
+    ("user" not in st.session_state)
+    or (st.session_state.user is None)
+    or (st.session_state.user["player_id"] is None)
+)
+is_finalize_signup = (not is_guest) and is_user_not_defined
+if not st.experimental_user.is_logged_in and not is_guest:
+    make_login_form(translator=translator)
+elif is_finalize_signup:
     # Case logged but no user linked
-    elif ("user" not in st.session_state) or (not st.session_state.user["player_id"]):
-        pages = pages_finalize_signup
+    make_finalize_signup_form(translator=translator)
+else:
+    if is_guest:
+        # Case "see as guest"
+        pages = pages_guest
     # Case logged in as Player OK
     elif st.session_state.user["role"] == UserRole.PLAYER:
         pages = pages_player
@@ -241,7 +251,7 @@ else:
     elif st.session_state.user["role"] == UserRole.ADMIN:
         pages = pages_admin
     else:
+        st.error(translator("unknown_pages_error"), icon="💥")
         raise KeyError("unknown situation to generate pages")
-
-pg = st.navigation(pages=pages)
-pg.run()
+    pg = st.navigation(pages=pages)
+    pg.run()

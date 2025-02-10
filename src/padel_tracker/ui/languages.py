@@ -116,6 +116,8 @@ _DICT_TO_FR = {
     "manage_account": "Gérer mon compte",
     "logout": "Se déconnecter",
     "finalize_signup": "Bienvenue Champion, finalise ton inscription !",
+    "existing_league": "Ligue",
+    "existing_league_message": "Ta ligue existe deja et tu souhaites la rejoindre ? Laisse vide sinon",
 }
 
 _DICT_TO_EN = {

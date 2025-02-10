@@ -15,14 +15,12 @@ from padel_tracker.utils.errors import (
     InvalidPlayerNameError,
     SamePlayerInOneTeamError,
     TeamNotFoundError,
-    # TeamExistsError,
 )
 from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
     delete_from_db,
-    # delete_from_db,
 )
 from padel_tracker.models.leagues import League
 from padel_tracker.models.links import LinkPlayerLeague, LinkTeamLeague
@@ -89,6 +87,11 @@ def get_all_players_from_league(
         order_by=order_by,
         order_descending=order_descending,
     )
+
+
+def get_all_players_without_user(session: Session) -> list[Player]:
+    condition = Player.user == None  # noqa: E711  # Didn't work with 'is None'
+    return read_from_db(Player, where=condition, session=session)
 
 
 def create_player(
