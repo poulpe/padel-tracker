@@ -242,12 +242,9 @@ elif is_finalize_signup:
     make_finalize_signup_form(translator=translator)
 else:
     if is_guest:
-        # Case "see as guest"
         pages = pages_guest
-    # Case logged in as Player OK
     elif st.session_state.user["role"] == UserRole.PLAYER:
         pages = pages_player
-    # Case logged in as Admin OK
     elif st.session_state.user["role"] == UserRole.ADMIN:
         pages = pages_admin
     else:
