@@ -6,6 +6,7 @@ from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.tables import make_player_overview_table
 from padel_tracker.ui.cache import check_not_empty_database_matches
+from padel_tracker.ui.login import determine_is_guest
 
 st.write("")
 
@@ -14,20 +15,29 @@ if "translator" not in st.session_state.keys():
 translator = st.session_state.translator
 
 # Top quick access buttons
-col_button_1, col_button_2 = st.columns([1, 1])
-
-with col_button_1:
-    button_add_match = st.button(
-        translator("add_match"),
-        type="primary",
-        use_container_width=True,
-    )
-with col_button_2:
-    button_feature_2 = st.button(
-        translator("check_player"),
-        type="primary",
-        use_container_width=True,
-    )
+is_guest = determine_is_guest()
+if not is_guest:
+    col_button_1, col_button_2 = st.columns([1, 1])
+    with col_button_1:
+        button_add_match = st.button(
+            translator("add_match"),
+            type="primary",
+            use_container_width=True,
+        )
+    with col_button_2:
+        button_feature_2 = st.button(
+            translator("check_player"),
+            type="primary",
+            use_container_width=True,
+        )
+else:
+    _, col_button_2, _ = st.columns([1, 3, 1])
+    with col_button_2:
+        button_feature_2 = st.button(
+            translator("check_player"),
+            type="primary",
+            use_container_width=True,
+        )
 
 if button_add_match:
     st.switch_page("page_add_match.py")

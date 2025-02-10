@@ -4,8 +4,6 @@ from pathlib import Path
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
 
-from padel_tracker.ui.login import make_login_form, make_finalize_signup_form
-
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
 from padel_tracker.utils.paths import get_absolute_path
@@ -19,6 +17,12 @@ from padel_tracker.ui.cache import update_cache, refresh_cache, CacheKey
 from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.ui.headers import write_subheader
 from padel_tracker.ui.threads import get_thread_pool
+from padel_tracker.ui.login import (
+    make_login_form,
+    make_finalize_signup_form,
+    determine_is_guest,
+    show_current_user_sidebar,
+)
 from padel_tracker.main import init_app
 
 ##### Init #####
@@ -61,7 +65,7 @@ if st.experimental_user.is_logged_in:
     if ("user" not in st.session_state) or (st.session_state.user is None):
         update_cache(only=CacheKey.user, force=True)
 
-is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
+is_guest = determine_is_guest()
 
 ##### Sidebar ######
 # Make selectable league in sidebar
@@ -117,19 +121,7 @@ def perform_logout():
 
 if (st.experimental_user.is_logged_in) or is_guest:
     st.sidebar.divider()
-    # Show user.name / user.email if possible
-    if "user" in st.session_state and st.session_state.user:
-        try:
-            name = st.session_state.user["name"]
-            email = st.session_state.user["email"]
-            st.sidebar.markdown(
-                f"""
-                    **{name}**      
-                    ({email})
-                """
-            )
-        except Exception:
-            pass
+    show_current_user_sidebar()
     # Logout button
     st.sidebar.button(
         translator("logout"),
@@ -163,28 +155,20 @@ update_cache()
 page_overview = st.Page("page_overview.py", title="Overview", icon="🥎", default=True)
 page_add_match = st.Page("page_add_match.py", title=translator("add_match"), icon="➕")
 page_check_player = st.Page(
-    "page_check_player.py",
-    title=translator("check_player"),
-    icon="👤",
+    "page_check_player.py", title=translator("check_player"), icon="👤"
 )
 page_check_team = st.Page(
-    "page_check_team.py",
-    title=translator("check_team"),
-    icon="🤝",
+    "page_check_team.py", title=translator("check_team"), icon="🤝"
 )
 page_manage_account = st.Page(
-    "page_manage_account.py",
-    title=translator("manage_account"),
-    icon="⚙️",
+    "page_manage_account.py", title=translator("manage_account"), icon="⚙️"
 )
 ## Admin pages
 page_add_player = st.Page(
     "page_add_player.py", title=translator("add_player"), icon="🆕"
 )
 page_delete_player = st.Page(
-    "page_delete_player.py",
-    title=translator("delete_player"),
-    icon="🙅",
+    "page_delete_player.py", title=translator("delete_player"), icon="🙅"
 )
 page_delete_match = st.Page(
     "page_delete_match.py", title=translator("delete_match"), icon="❌"
@@ -193,9 +177,7 @@ page_add_league = st.Page(
     "page_add_league.py", title=translator("add_league"), icon="🏆"
 )
 page_assign_league = st.Page(
-    "page_assign_league.py",
-    title=translator("assign_league"),
-    icon="👥️",
+    "page_assign_league.py", title=translator("assign_league"), icon="👥️"
 )
 page_check_logs = st.Page(
     "page_check_logs.py", title=translator("check_logs"), icon="📋"
@@ -234,7 +216,7 @@ pages_admin = {
 }
 
 # Determine pages to show based on user
-is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
+is_guest = determine_is_guest()
 is_user_not_defined = (
     ("user" not in st.session_state)
     or (st.session_state.user is None)

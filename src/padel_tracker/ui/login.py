@@ -1,16 +1,21 @@
 import streamlit as st
 
+from padel_tracker.utils.errors import InvalidPlayerNameError
 from padel_tracker.database.db import DB
 from padel_tracker.services import player_manager, league_manager, user_manager
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.languages import LanguageTranslator
 from padel_tracker.ui.cache import refresh_cache, ALL_CACHE_KEYS
-from padel_tracker.utils.errors import InvalidPlayerNameError
+
+
+def determine_is_guest() -> bool:
+    return ("is_guest" in st.session_state) and (st.session_state.is_guest)
 
 
 def make_login_form(translator: LanguageTranslator) -> None:
     # Page login
     write_header(translator("welcome_not_logged"), subheader="")
+    st.write("")
     _, col, _ = st.columns([1, 3, 1])
     col.button(
         translator("login_signup"),
@@ -160,3 +165,19 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
         else:
             refresh_cache(only=ALL_CACHE_KEYS)
             st.rerun()
+
+
+def show_current_user_sidebar() -> None:
+    """Show user.name / user.email if possible"""
+    if "user" in st.session_state and st.session_state.user:
+        try:
+            name = st.session_state.user["name"]
+            email = st.session_state.user["email"]
+            st.sidebar.markdown(
+                f"""
+                    **{name}**      
+                    ({email})
+                """
+            )
+        except Exception:
+            pass
