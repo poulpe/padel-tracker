@@ -7,10 +7,9 @@ Padel Tracker is a small app I made to keep track of Padel matches with my frien
 It provides player rankings using an Elo-based system and maintains a history of matches, teams, and individual performances.
 
 The application is hosted on **Streamlit Community Cloud**  
-➡ **https://poulpe-padel-tracker.streamlit.app**  
-
+➡ **https://poulpe-padel-tracker.streamlit.app**
       
-<img src="docs/img/screenshot_main_page_en.png" width="66%" height="66%"> 
+<img src="docs/img/screenshot_main_page_en.png" width="66%" height="66%">
 
 ## Features
 - **Player and Team Management**: Add, update, and check player and team statistics.
@@ -22,6 +21,7 @@ The application is hosted on **Streamlit Community Cloud**
 - **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface in a web browser.
 - **Visualization**: Charts and tables for ranking history and match statistics.
 - **Multilingual Support**: Users can switch between English and French.
+- **User management**: User authentification using OIDC provider
 
 ## Technologies used
 - **Backend**: [SQLModel](https://github.com/tiangolo/sqlmodel) (SQLAlchemy + Pydantic)
@@ -29,7 +29,8 @@ The application is hosted on **Streamlit Community Cloud**
 - **Database**: PostgreSQL (Hosted on [Supabase](https://supabase.com/))
 - **Database migrations**: Managed with [Alembic](https://alembic.sqlalchemy.org/)
 - **Logging**: Logs are stored in Supabase for tracking application events
-
+- **User authentification**: Through the OpenID Connect (OIDC) provider [Auth0](http://www.auth0.com), supporting email/password and Google account. OIDC is supported by Streamlit from `v1.42`. 
+ 
 ## Roadmap / Ideas
 - Loggings
   - [x] Overall stuff
@@ -37,9 +38,9 @@ The application is hosted on **Streamlit Community Cloud**
   - [x] Basic Streamlit tuto
   - [x] General layout
   - [ ] Graphs
-  - [ ] **User auth / login/logout ?**
 - Users
-  - [ ] Manage users ? (authentification, access...)
+  - [x] Manage users (authentification, access...)
+  - [x] User auth / login/logout in UI
 - Database
   - [ ] Deletes
   - [x] Migrations

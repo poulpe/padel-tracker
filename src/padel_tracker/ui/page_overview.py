@@ -40,7 +40,7 @@ st.write("")
 st.write("")
 
 # Overview chart
-nb_last_matches = 15
+nb_last_matches = 20
 subtitle = translator("ranking_evolution_over_x_last_matches").format(x=nb_last_matches)
 write_header("Billboard", subtitle, bold_subheader=False)
 make_overview_elo_history_chart(
@@ -51,10 +51,16 @@ make_overview_elo_history_chart(
 
 # Player data table overview
 write_header(translator("players_table"))
+highlight_player_name = None
+if "user" in st.session_state and st.session_state.user is not None:
+    player_id = st.session_state.user["player_id"]
+    if player_id:
+        highlight_player_name = st.session_state.user["name"]
 make_player_overview_table(
     df_players=st.session_state.df_players,
     df_linkplayerleague=st.session_state.df_linkplayerleague,
     translator=translator,
+    highlight_player_name=highlight_player_name,
 )
 
 # View last match history

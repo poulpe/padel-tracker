@@ -107,17 +107,44 @@ _DICT_TO_FR = {
     "assigned_league_to_player_success": " a bien été enregistré dans la ligue ",
     "time_scale": "Échelle temps",
     "time_scale_help_message": "Montre le temps réel entre les matchs sur le graph",
-    "welcome_not_logged": "Bienvenue sur Padel Tracker",
-    "click_to_login": "Clique sur le bouton ci dessous pour t'identifier ou t'inscrire",
+    "welcome_not_logged": "Bienvenue sur Padel Tracker !",
+    "padel_tracker_kezako": """
+        **Padel Tracker** est une petite appli qui te permet de garder une trace de tes matchs de Padel et de suivre ton évolution et celle de tes potes au cours du temps.    
+
+        L'appli intègre un systeme de classement type Elo, pratique pour etre utilisée au sein d'un groupe de joueurs réguliers (*Ligue*).  
+        Elle permet aussi d'analyser tes performances croisées avec les différents équipiers de ta ligue, utile pour consulter les relations et identifier les paires qui fonctionnent bien (ou moins bien... 😬)
+
+        - Alors, qui sera le gros Bill de ta ligue ? 
+        - Qui s'avérera être le/la partenaire de choix avec qui tu défonces tout ?
+        - Qui sera la lanterne rouge et ne manquera pas de payer son coup au prochain match ?
+
+        Pour te connecter, plusieurs options:
+        - Crée un compte / connecte toi via un standard email/mot de passe.  
+          (_l'appli utilise [`Auth0`](http://www.auth0.com) pour l'authentification, si tu reçois des mails sous ce nom là, c'est OK_)    
+        - Tu peux aussi utiliser un compte `Google` pour te connecter rapidement  
+            _(l'appli ne fait rien de tes infos persos, au delà de garder en mémoire un identifiant unique te permettant de t'identifer la prochaine fois)_
+
+        Projet Open-Source, plus d'infos sur le [repo Github du projet](https://github.com/poulpe/padel-tracker)
+    """,
+    "click_to_login": "Clique ci dessous pour t'identifier ou t'inscrire",
     "login_signup": "Se connecter / S'inscrire",
     "login": "Se connecter",
+    "click_to_connect_as_guest": "Si t'es timide, tu peux juste venir y jeter un oeil comme ça",
     "connect_as_guest": "Se connecter en tant qu'invité",
     "my_account": "Mon compte",
     "manage_account": "Gérer mon compte",
     "logout": "Se déconnecter",
     "finalize_signup": "Bienvenue Champion, finalise ton inscription !",
     "existing_league": "Ligue",
-    "existing_league_message": "Ta ligue existe deja et tu souhaites la rejoindre ? Laisse vide sinon",
+    "existing_league_message": "Ta ligue existe déja et tu souhaites la rejoindre ? Laisse vide sinon",
+    "finalize_signup_existing_player_message_header": "Peut-être que tu as déja été ajouté en tant que joueur ?",
+    "finalize_signup_existing_player_message_sub": "Si tu te reconnais, tu peux t'assigner:",
+    "finalize_signup_not_existing_player_message_header": "Tu ne t'es pas trouvé(e) au dessus ?",
+    "finalize_signup_not_existing_player_message_sub": "C'est ici que ça se passe alors:",
+    "existing_player": "En fait, c'est moi:",
+    "username_help": "Faut que ce soit un putain de nom de Champion ! Idéalement à consonnance espagnole donc... Juste pas de caractères spéciaux, ni de chiffres",
+    "user_added_success": "Nickel, ton compte est en cours de création !",
+    "existing_league_help": "Ta ligue existe déja et tu souhaites la rejoindre ? Laisse vide sinon. Tu pourras toujours créer/rejoindre une ligue plus tard dans le menu",
 }
 
 _DICT_TO_EN = {
@@ -223,6 +250,44 @@ _DICT_TO_EN = {
     "assigned_league_to_player_success": " has been successfully assigned in the league ",
     "time_scale": "Time scale",
     "time_scale_help_message": "Show real time difference between matches on the graph",
+    "welcome_not_logged": "Welcome to Padel Tracker!",
+    "padel_tracker_kezako": """
+        **Padel Tracker** is a small app that lets you keep track of your Padel matches and monitor your progress, as well as that of your friends, over time.    
+
+        The app includes an Elo-based ranking system, perfect for use within a group of regular players (*League*).  
+        It also allows you to analyze your performance alongside different teammates in your league, helping you identify which pairs work well together (or... not so well 😬).
+
+        - So, who will be the big shot of your league?  
+        - Who will turn out to be your ultimate winning partner?  
+        - Who will end up at the bottom and owe a round of drinks at the next match?  
+
+        You have several options to log in:
+        - Create an account / log in with a standard email/password.  
+          (_The app uses [`Auth0`](http://www.auth0.com) for authentication. If you receive emails under this name, that's expected._)    
+        - You can also log in quickly using a `Google` account  
+            _(The app doesn’t use your personal data beyond storing a unique identifier to recognize you next time.)_
+
+        Open-source project, more info on the [project's GitHub repository](https://github.com/poulpe/padel-tracker).
+    """,
+    "click_to_login": "Click below to log in or sign up",
+    "login_signup": "Log in / Sign up",
+    "login": "Log in",
+    "click_to_connect_as_guest": "If you're feeling shy, you can just take a look around",
+    "connect_as_guest": "Log in as a guest",
+    "my_account": "My account",
+    "manage_account": "Manage my account",
+    "logout": "Log out",
+    "finalize_signup": "Welcome Champion, finalize your registration !",
+    "existing_league": "League",
+    "existing_league_message": "Does your league already exist and you want to join? Leave blank otherwise.",
+    "finalize_signup_existing_player_message_header": "Maybe you've already been added as a player ?",
+    "finalize_signup_existing_player_message_sub": "If you recognize yourself, you can assign yourself:",
+    "finalize_signup_not_existing_player_message_header": "Didn't find yourself above?",
+    "finalize_signup_not_existing_player_message_sub": "Then this is the place for you:",
+    "existing_player": "Actually, that's me:",
+    "username_help": "It has to be a badass Champion name! Ideally, something Spanish-sounding… Just no special characters or numbers",
+    "user_added_success": "Great! Your account is being created!",
+    "existing_league_help": "Does your league already exist, and you want to join? Leave blank otherwise. You can always create/join a league later from the menu",
 }
 
 

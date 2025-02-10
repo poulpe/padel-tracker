@@ -3,12 +3,14 @@ from enum import StrEnum
 import streamlit as st
 
 from padel_tracker.database.db import DB, Session
+from padel_tracker.utils.errors import UserNotFoundError
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.services import (
     player_manager,
     match_manager,
     ranking_manager,
     league_manager,
+    user_manager,
 )
 
 LOGGER = get_logger("ui.cache")
@@ -27,9 +29,13 @@ class CacheKey(StrEnum):
     df_matches_all_leagues = "df_matches_all_leagues"
     df_elo_hist = "df_elo_hist"
     df_linkplayerleague = "df_linkplayerleague"
+    user = "user"
 
 
 ALL_CACHE_KEYS = tuple(CacheKey)
+list_cache_keys_no_user = list(CacheKey)
+list_cache_keys_no_user.remove(CacheKey.user)
+CACHE_KEYS_NO_USER = tuple(list_cache_keys_no_user)
 
 
 def update_cache_leagues(session: Session, force: bool = False):
@@ -118,6 +124,23 @@ def update_cache_linkplayerleague(session: Session, force: bool = False):
         )
 
 
+def update_cache_user(session: Session, force: bool = False):
+    key = str(CacheKey.user)
+    if (key not in st.session_state) or force:
+        if st.experimental_user.is_logged_in:
+            auth_user_id = st.experimental_user["sub"]
+            try:
+                user = user_manager.get_user_from_auth_user_id(
+                    session=session, auth_user_id=auth_user_id
+                )
+                st.session_state.user = user.model_dump()
+            except UserNotFoundError:
+                # Means new user, will be redirected to "finalize_signup"
+                st.session_state.user = None
+        else:
+            st.session_state.user = None
+
+
 DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.df_leagues: update_cache_leagues,
     CacheKey.league_names: update_cache_leagues,
@@ -129,6 +152,7 @@ DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.df_matches_all_leagues: update_cache_matches,
     CacheKey.df_elo_hist: update_cache_elo_hist,
     CacheKey.df_linkplayerleague: update_cache_linkplayerleague,
+    CacheKey.user: update_cache_user,
     # CacheKey.df_players_all_leagues:update_cache_players,
     # CacheKey.player_names_all_leagues:update_cache_players,
 }
@@ -198,7 +222,7 @@ def update_cache(
 
 
 def refresh_cache(
-    only: str | CacheKey | tuple[str] | tuple[CacheKey] = ALL_CACHE_KEYS,
+    only: str | CacheKey | tuple[str] | tuple[CacheKey] = CACHE_KEYS_NO_USER,
     threaded: bool = False,
 ):
     update_cache(force=True, only=only, threaded=threaded)

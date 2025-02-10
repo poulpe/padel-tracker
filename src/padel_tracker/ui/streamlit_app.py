@@ -8,11 +8,8 @@ from padel_tracker.ui.login import make_login_form, make_finalize_signup_form
 
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 
-from padel_tracker.utils.errors import UserNotFoundError
 from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.models.users import UserRole
-from padel_tracker.database.db import DB
-from padel_tracker.services import user_manager
 from padel_tracker.ui.languages import (
     DEFAULT_LANGUAGE,
     SUPPORTED_LANGUAGES,
@@ -62,16 +59,7 @@ st.markdown(html_code_top_header, unsafe_allow_html=True)
 ##### Fetch user if logged_in #####
 if st.experimental_user.is_logged_in:
     if ("user" not in st.session_state) or (st.session_state.user is None):
-        auth_user_id = st.experimental_user["sub"]
-        with DB.get_session() as session:
-            try:
-                user = user_manager.get_user_from_auth_user_id(
-                    session=session, auth_user_id=auth_user_id
-                )
-                st.session_state.user = user.model_dump()
-            except UserNotFoundError:
-                # Means new user, will be redirected to "finalize_signup"
-                st.session_state.user = None
+        update_cache(only=CacheKey.user, force=True)
 
 is_guest = ("is_guest" in st.session_state) and (st.session_state.is_guest)
 
@@ -125,11 +113,24 @@ def perform_logout():
     st.session_state.user = None
     st.session_state.is_guest = False
     st.logout()
-    st.rerun()
 
 
 if (st.experimental_user.is_logged_in) or is_guest:
     st.sidebar.divider()
+    # Show user.name / user.email if possible
+    if "user" in st.session_state and st.session_state.user:
+        try:
+            name = st.session_state.user["name"]
+            email = st.session_state.user["email"]
+            st.sidebar.markdown(
+                f"""
+                    **{name}**      
+                    ({email})
+                """
+            )
+        except Exception:
+            pass
+    # Logout button
     st.sidebar.button(
         translator("logout"),
         on_click=perform_logout,
@@ -210,6 +211,11 @@ pages_player = {
     translator("matches"): [page_add_match],
     translator("players_teams"): [page_check_player, page_check_team],
     translator("my_account"): [page_manage_account],
+    translator("administration"): [
+        page_add_league,
+        page_add_player,
+        page_assign_league,
+    ],
 }
 pages_admin = {
     "Padel Tracker": [page_overview],
@@ -218,11 +224,11 @@ pages_admin = {
     # TODO (prio 3): translator("leagues"): [page_check_leagues],
     translator("my_account"): [page_manage_account],
     translator("administration"): [
+        page_add_league,
         page_add_player,
+        page_assign_league,
         page_delete_player,
         page_delete_match,
-        page_add_league,
-        page_assign_league,
         page_check_logs,
     ],
 }

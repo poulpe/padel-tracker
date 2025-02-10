@@ -76,6 +76,19 @@ def _generate_player_overview_table(
     return df_players
 
 
+def apply_highlight_player_row(
+    row, player_name: str = "", translator: LanguageTranslator = DEFAULT_TRANSLATOR
+):
+    return [
+        (
+            "background-color: rgba(255, 70, 0, 0.05)"
+            if row[translator("name")] == player_name
+            else ""
+        )
+        for _ in row
+    ]
+
+
 def make_player_overview_table(
     df_players: pd.DataFrame = None,
     df_linkplayerleague: pd.DataFrame = None,
@@ -84,6 +97,7 @@ def make_player_overview_table(
     is_single: bool = False,
     league_name: str = None,
     use_container_width: bool = True,
+    highlight_player_name: str = None,
 ) -> None:
     """
     Parameters
@@ -109,8 +123,17 @@ def make_player_overview_table(
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
     }
+    if highlight_player_name:
+        df_plot = df_players.style.apply(
+            apply_highlight_player_row,
+            player_name=highlight_player_name,
+            translator=translator,
+            axis=1,
+        )
+    else:
+        df_plot = df_players
     st.dataframe(
-        df_players,
+        df_plot,
         hide_index=True,
         use_container_width=use_container_width,
         column_config=column_config,

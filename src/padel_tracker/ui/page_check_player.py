@@ -24,10 +24,17 @@ write_header(translator("check_player"))
 
 # Player select box
 # TODO : pass "clicked_player_name" when player is clicked from link (before switch_page)
+player_name = None
 if "clicked_player_name" in st.session_state:
     player_name = st.session_state["clicked_player_name"]
-else:
-    player_name = None
+elif ("user" in st.session_state) and (st.session_state.user):
+    # Default from user
+    try:
+        player_id = st.session_state.user["player_id"]
+        if player_id:
+            player_name = st.session_state.user["name"]
+    except KeyError:
+        pass
 player_name = make_player_selectbox(player_name)
 st.write("")
 
@@ -60,6 +67,7 @@ if player_name:
         extra_col=True,
         is_single=True,
         use_container_width=True,
+        highlight_player_name=None,  # Only one name, no need to highlight
     )
 
     # Relationships related
