@@ -13,6 +13,7 @@ from padel_tracker.utils.datetime_utils import now
 class UserRole(StrEnum):
     GUEST = auto()
     PLAYER = auto()
+    TRUSTEDPLAYER = auto()
     ADMIN = auto()
 
 

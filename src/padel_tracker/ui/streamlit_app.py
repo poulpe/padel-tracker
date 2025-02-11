@@ -7,7 +7,7 @@ from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.ui.headers import write_subheader
 from padel_tracker.ui.threads import get_thread_pool
 from padel_tracker.ui.images import display_logo_and_top_header
-from padel_tracker.ui.pages import PAGES_GUEST, PAGES_PLAYER, PAGES_ADMIN
+from padel_tracker.ui.pages import PagesCollection
 from padel_tracker.ui.cache import (
     update_cache,
     refresh_cache,
@@ -99,19 +99,24 @@ is_undefined_user = (
 is_finalize_signup = (not is_guest) and is_undefined_user
 
 # Define pages and run navigation
+pages = PagesCollection()
+pages.make_pages(translator=translator)
+
 if not st.experimental_user.is_logged_in and not is_guest:
     make_login_form(translator=translator)
 elif is_finalize_signup:
     make_finalize_signup_form(translator=translator)  # = logged but no user linked
 else:
     if is_guest:
-        pages = PAGES_GUEST
+        current_pages = pages.GUEST
     elif st.session_state.user["role"] == UserRole.PLAYER:
-        pages = PAGES_PLAYER
+        current_pages = pages.PLAYER
+    elif st.session_state.user["role"] == UserRole.TRUSTEDPLAYER:
+        current_pages = pages.TRUSTEDPLAYER
     elif st.session_state.user["role"] == UserRole.ADMIN:
-        pages = PAGES_ADMIN
+        current_pages = pages.ADMIN
     else:
         st.error(translator("unknown_pages_error"), icon="💥")
         raise KeyError("unknown situation to generate pages")
-    pg = st.navigation(pages=pages)
+    pg = st.navigation(pages=current_pages)
     pg.run()
