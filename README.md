@@ -3,24 +3,23 @@
 Small app to keep track of Padel matches
 
 ## Overview
-Padel Tracker is a small app I made to keep track of Padel matches with my friends and to allow analysis of our progresses over time.  
-It provides player rankings using an Elo-based system and maintains a history of matches, teams, and individual performances.
+Padel Tracker is a small app to keep track of Padel matches and allow analysis of the progresses of a group of friends over time.  
+It provides player rankings using an Elo-based system and maintains a history of matches, teams and individual performances.
 
-The application is hosted on **Streamlit Community Cloud**  
+The application is hosted on **Streamlit Community Cloud** and can be used on web browser or mobile   
 ➡ **https://poulpe-padel-tracker.streamlit.app**
       
 <img src="docs/img/screenshot_main_page_en.png" width="66%" height="66%">
 
 ## Features
 - **Player and Team Management**: Add, update, and check player and team statistics.
-- **Match Tracking**: Record match results (date, teams, scores)
-- **Elo Ranking System**: Calculate player rankings dynamically based on match results.
-- **Match History**: Store and visualize the ranking evolution of players over time.
+- **Match History**: Record match results (date, teams, scores)
+- **Elo Ranking System**: Calculate player rankings dynamically based on match results with a bonus system vs won games difference. Every single point counts !
 - **League Management**: Ability to group players within a league, to follow/compare only your mates (player can also belong to several leagues)
 - **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need of hosting database online.
 - **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface in a web browser.
 - **Visualization**: Charts and tables for ranking history and match statistics.
-- **Multilingual Support**: Users can switch between English and French.
+- **Multilingual Support**: Users can switch between English, French and Español.
 - **User management**: User authentification using OIDC provider
 
 ## Technologies used
@@ -38,6 +37,7 @@ The application is hosted on **Streamlit Community Cloud**
   - [x] Basic Streamlit tuto
   - [x] General layout
   - [ ] Graphs
+  - [ ] Export data as .csv ?
 - Users
   - [x] Manage users (authentification, access...)
   - [x] User auth / login/logout in UI
@@ -47,14 +47,18 @@ The application is hosted on **Streamlit Community Cloud**
   - [x] Get 'data' online
 - Analytics
   - [x] Best teammate
-  - [x] Best rival ?
+  - [x] Best rival
   - [x] nb_games per Match
   - [x] Other stats (V/D ratio)
     - [x] Like select player, it shows these analytics
-- Extra features
-  - [x] Allow several leagues
+- Leagues
+  - [x] Allow several league
+  - [ ] League description ?
+  - [ ] Manage league ? (i.e: league admin to add/remove players, rename league)
 - Tests
   - [ ] Not the funniest part, but, eh...
+- Feedback
+  - [ ] "Report bug" form
 
 ## Gallery
 
