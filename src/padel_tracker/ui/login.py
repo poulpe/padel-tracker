@@ -181,3 +181,22 @@ def show_current_user_sidebar() -> None:
             )
         except Exception:
             pass
+
+
+def perform_logout() -> None:
+    st.session_state.user = None
+    st.session_state.is_guest = False
+    st.logout()
+
+
+def display_sidebar_logout_button(translator: LanguageTranslator) -> None:
+    st.sidebar.divider()
+    show_current_user_sidebar()
+    # Logout button
+    st.sidebar.button(
+        translator("logout"),
+        on_click=perform_logout,
+        type="secondary",
+        icon="🚪",
+        use_container_width=True,
+    )

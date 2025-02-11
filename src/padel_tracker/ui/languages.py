@@ -1,6 +1,8 @@
 from enum import StrEnum
 from dataclasses import dataclass
 
+import streamlit as st
+
 from padel_tracker.utils.logs import get_logger
 
 _DICT_TO_FR = {
@@ -317,6 +319,10 @@ class LanguageTranslator:
             logger = get_logger("ui.language")
             logger.error(f"translation for '{key}' in lang={str(self.lang)} is missing")
         return result
+
+
+def update_session_state_translator() -> None:
+    st.session_state.translator = LanguageTranslator(st.session_state.language)
 
 
 DEFAULT_LANGUAGE = Language.FR

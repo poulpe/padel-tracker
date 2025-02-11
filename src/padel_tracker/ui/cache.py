@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 import streamlit as st
+from streamlit_js_eval import streamlit_js_eval
 
 from padel_tracker.database.db import DB, Session
 from padel_tracker.utils.errors import UserNotFoundError
@@ -252,3 +253,35 @@ def check_not_empty_database_players() -> None:
                 icon="💢",
             )
             st.stop()
+
+
+def determine_session_state_device_type() -> None:
+    if ("screen_inner_width" not in st.session_state) or (
+        st.session_state.screen_inner_width is None
+    ):
+        screen_inner_width = streamlit_js_eval(
+            js_expressions="window.innerWidth", key="WIDTH", want_output=True
+        )
+        device_type = "pc"  # Default
+        if screen_inner_width is not None:
+            device_type = "mobile" if screen_inner_width < 550 else "pc"
+            st.session_state.screen_inner_width = screen_inner_width
+        st.session_state.device_type = device_type
+
+
+def determine_session_state_league_name() -> None:
+    if "league_name" not in st.session_state:
+        # Try fetching default league from user
+        user_league = None
+        if ("user" in st.session_state) and (st.session_state.user):
+            user_league = st.session_state.user["default_league_name"]
+        # Determine default league
+        if user_league:
+            st.session_state.league_name = user_league
+        else:
+            try:
+                st.session_state.league_name = st.session_state.league_names[0]
+            except (KeyError, TypeError):
+                # st.warning(translator("no_league_database_error"), icon="💢")
+                # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
+                st.stop()
