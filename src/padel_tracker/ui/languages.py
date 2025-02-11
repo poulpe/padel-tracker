@@ -113,12 +113,15 @@ _DICT_TO_FR = {
     "padel_tracker_kezako": """
         **Padel Tracker** est une petite appli qui te permet de garder une trace de tes matchs de Padel et de suivre ton évolution et celle de tes potes au cours du temps.    
 
-        L'appli intègre un systeme de classement type Elo, pratique pour etre utilisée au sein d'un groupe de joueurs réguliers (*Ligue*).  
-        Elle permet aussi d'analyser tes performances croisées avec les différents équipiers de ta ligue, utile pour consulter les relations et identifier les paires qui fonctionnent bien (ou moins bien... 😬)
+        L'appli intègre un système de classement type Elo, pratique pour être utilisée au sein d'un groupe de joueurs réguliers (*Ligue*).            
+        Elle permet aussi d'analyser tes performances croisées avec les différents équipiers de ta ligue, utile pour identifier les paires qui fonctionnent bien (ou moins bien... 😬)     
 
         - Alors, qui sera le gros Bill de ta ligue ? 
         - Qui s'avérera être le/la partenaire de choix avec qui tu défonces tout ?
         - Qui sera la lanterne rouge et ne manquera pas de payer son coup au prochain match ?
+
+        **Note**: le système de classement bonifie l'écart de jeux gagnés entre les 2 équipes dans un match.   
+        Donc, même menés à 5-0, ne baissez pas les bras : chaque point compte !   
 
         Pour te connecter, plusieurs options:
         - Crée un compte / connecte toi via un standard email/mot de passe.  
@@ -147,6 +150,7 @@ _DICT_TO_FR = {
     "username_help": "Faut que ce soit un putain de nom de Champion ! Idéalement à consonnance espagnole donc... Juste pas de caractères spéciaux, ni de chiffres",
     "user_added_success": "Nickel, ton compte est en cours de création !",
     "existing_league_help": "Ta ligue existe déja et tu souhaites la rejoindre ? Laisse vide sinon. Tu pourras toujours créer/rejoindre une ligue plus tard dans le menu",
+    "join_league": "Rejoindre une ligue",
 }
 
 _DICT_TO_EN = {
@@ -290,17 +294,166 @@ _DICT_TO_EN = {
     "username_help": "It has to be a badass Champion name! Ideally, something Spanish-sounding… Just no special characters or numbers",
     "user_added_success": "Great! Your account is being created!",
     "existing_league_help": "Does your league already exist, and you want to join? Leave blank otherwise. You can always create/join a league later from the menu",
+    "join_league": "Join a league",
+}
+
+_DICT_TO_ES = {
+    # Models fields
+    "name": "Nombre",
+    "date": "Fecha",
+    "elo_rating": "Puntos Elo",
+    "elo_rating_gain": "Ganancia de puntos",
+    "rank": "Rango",
+    "best_rank": "Mejor rango",
+    "best_elo_rating": "Mejor Elo",
+    "nb_matches": "Partidos",
+    "nb_victories": "V",
+    "nb_defeats": "D",
+    "player_name": "Jugador",
+    "team_name": "Equipo",
+    "last_match_date": "Último partido",
+    "score": "Puntuación",
+    "match_name": "Partido",
+    "league": "Liga",
+    "leagues": "Ligas",
+    "league_name": "Liga",
+    "league_names": "Ligas",
+    "user": "Usuario",
+    # UI message
+    "language": "Idioma",
+    "add_match": "Nuevo partido",
+    "add_player": "Nuevo jugador",
+    "check_player": "Ficha del jugador",
+    "check_team": "Ficha del equipo",
+    "match_history": "Historial de partidos",
+    "last_match_history": "Historial de los últimos partidos",
+    "billboard": "Clasificación",
+    "overview": "Vista general",
+    "matches": "Partidos",
+    "analytics": "Análisis",
+    "administration": "Administración",
+    "submit": "Enviar",
+    "ranking": "Clasificación",
+    "players_teams": "Jugadores/Equipos",
+    "players_table": "Tabla de jugadores",
+    "team": "Equipo",
+    "team1": "Equipo 1",
+    "team2": "Equipo 2",
+    "player": "Jugador",
+    "player1": "Jugador 1",
+    "player2": "Jugador 2",
+    "time": "Hora",
+    "match_added_success": "¡Partido registrado!",
+    "match_added_error": "No se pudo agregar el partido, error desconocido",
+    "match_exists_error": "El partido ya ha sido registrado",
+    "match_not_finished_error": "Los cálculos no cuadran, el marcador no coincide",
+    "see_updated_elo_below": "Aquí están los nuevos puntos Elo:",
+    "player_added_success": " ha sido añadido con éxito!",
+    "player_added_error": "No se pudo agregar el jugador, error desconocido:",
+    "player_exists_error": " ya ha sido registrado",
+    "player_invalid_name_error": " no es un nombre válido. Asegúrate de que tenga al menos 2 caracteres, sin números y que sea un verdadero nombre de campeón.",
+    "player_not_selected_error": "Asegúrate de haber seleccionado todos los jugadores",
+    "player_deletion_error": "Error al eliminar el jugador:",
+    "team_same_player_error": "El mismo jugador ha sido seleccionado en el mismo equipo, ¡1 contra 2 no es justo!",
+    "team_not_found_error": "Este equipo nunca ha jugado un partido juntos. Tal vez sea una pena, pero no hay nada que mostrar.",
+    "same_player_in_both_teams_error": "Un jugador está presente en ambos equipos al mismo tiempo, ¡difícil estar en dos sitios a la vez!",
+    "next_feature": "PRÓXIMAMENTE",
+    "ranking_evolution": "Evolución del ranking",
+    "ranking_evolution_over_x_last_matches": "Evolución del ranking en los últimos {x} partidos",
+    "result": "Resultado",
+    "victory": "Victoria",
+    "defeat": "Derrota",
+    "ratio_vd": "V/D",
+    "nb_won_games_diff": "Diferencia de juegos ganados",
+    "metric": "Métrica",
+    "evolution": "Evolución",
+    "creation_date": "Fecha de creación",
+    "player_relationships": "Espíritu de equipo",
+    "best_teammate": "Mejor compañero",
+    "x_victories_together": "{x} victorias juntos",
+    "most_teammate": "Compañero de confianza",
+    "x_matches_together": "{x} partidos juntos",
+    "black_beast": "Bestia negra",
+    "x_defeats_against": "{x} derrotas contra él/ella",
+    "black_beasts": "Bestias negras",
+    "x_defeats_against_them": "{x} derrotas contra ellos/ellas",
+    "favorite_victim": "Víctima favorita",
+    "x_victories_against": "{x} victorias contra él/ella",
+    "favorite_victims": "Víctimas favoritas",
+    "x_victories_against_them": "{x} victorias contra ellos/ellas",
+    "no_league_database_error": "No hay ninguna liga para mostrar por el momento. Registra una liga en la página 'Nueva liga'.",
+    "no_match_database_error": "No hay ningún partido en esta liga por el momento. Asegúrate de registrar a tus primeros jugadores en la página 'Nuevo jugador', luego ingresa tu primer partido en la página 'Nuevo partido'.",
+    "not_enough_players_database_error": "Todavía no hay suficientes jugadores registrados en esta liga para jugar un partido. Asegúrate de haber creado al menos 4 jugadores en la página 'Nuevo jugador'.",
+    "check_logs": "Consultar registros",
+    "delete_player": "Eliminar un jugador",
+    "delete_match": "Eliminar un partido",
+    "delete": "Eliminar",
+    "player_deleted": " ha sido eliminado. Adiós 😢",
+    "player_already_deleted": " ya ha sido eliminado, deja de insistir, ya fue lo suficientemente doloroso 😭",
+    "all_players_not_in_league_error": "Hay jugadores que no pertenecen a la liga. Asegúrate de que todos los campeones sean parte de la misma liga para registrar un partido juntos.",
+    "add_league": "Nueva liga",
+    "league_added_success": " ha sido añadida con éxito.",
+    "league_exists_error": " ya está registrada.",
+    "league_invalid_name_error": " no es un nombre de liga válido. Asegúrate de que tenga al menos 2 caracteres, sin números y que represente un verdadero nombre de liga de campeones.",
+    "league_added_error": " No se pudo agregar la liga, error desconocido:",
+    "assign_league": "Asignar a una liga",
+    "player_already_in_league_error": " ya está registrado en la liga ",
+    "assigned_league_to_player_success": " ha sido registrado en la liga ",
+    "time_scale": "Escala de tiempo",
+    "time_scale_help_message": "Muestra el tiempo real entre los partidos en el gráfico",
+    "welcome_not_logged": "¡Bienvenido a Padel Tracker!",
+    "padel_tracker_kezako": """
+        **Padel Tracker** es una pequeña aplicación que te permite registrar tus partidos de pádel y seguir tu evolución y la de tus amigos a lo largo del tiempo.    
+
+        La aplicación incorpora un sistema de clasificación tipo Elo, ideal para su uso dentro de un grupo de jugadores habituales (*Liga*).  
+        También te permite analizar tu rendimiento con diferentes compañeros de liga, útil para identificar qué parejas funcionan bien juntas (o no... 😬).
+        El sistema de clasificación tiene en cuenta la diferencia de juegos ganados entre los dos equipos. Así que, incluso si van perdiendo 5-0, no se rindan: ¡cada punto cuenta!
+
+        - ¿Quién será el campeón de tu liga?  
+        - ¿Quién será el compañero ideal con el que arrasas en la cancha?  
+        - ¿Quién será el último en la clasificación y tendrá que pagar la ronda en el próximo partido?  
+
+        Para iniciar sesión, tienes varias opciones:
+        - Crear una cuenta / iniciar sesión con un correo y contraseña estándar.  
+          (_La aplicación utiliza [`Auth0`](http://www.auth0.com) para la autenticación. Si recibes correos con ese nombre, no te preocupes._)    
+        - También puedes iniciar sesión rápidamente con una cuenta de `Google`.  
+            _(La aplicación no usa tus datos personales más allá de almacenar un identificador único para reconocerte la próxima vez)._  
+
+        Proyecto de código abierto, más información en el [repositorio de GitHub del proyecto](https://github.com/poulpe/padel-tracker).
+    """,
+    "click_to_login": "Haz clic abajo para iniciar sesión o registrarte",
+    "login_signup": "Iniciar sesión / Registrarse",
+    "login": "Iniciar sesión",
+    "click_to_connect_as_guest": "Si eres tímido, solo puedes echar un vistazo",
+    "connect_as_guest": "Iniciar sesión como invitado",
+    "my_account": "Mi cuenta",
+    "manage_account": "Administrar mi cuenta",
+    "logout": "Cerrar sesión",
+    "finalize_signup": "¡Bienvenido, campeón! Finaliza tu registro",
+    "existing_league": "Liga",
+    "existing_league_message": "¿Tu liga ya existe y quieres unirte? Déjalo en blanco si no.",
+    "finalize_signup_existing_player_message_header": "¿Tal vez ya has sido agregado como jugador?",
+    "finalize_signup_existing_player_message_sub": "Si te reconoces, puedes asignarte:",
+    "finalize_signup_not_existing_player_message_header": "¿No te encontraste arriba?",
+    "finalize_signup_not_existing_player_message_sub": "Entonces, este es tu lugar:",
+    "existing_player": "En realidad, soy yo:",
+    "username_help": "¡Debe ser un nombre de campeón! Solo sin caracteres especiales ni números.",
+    "user_added_success": "¡Genial! Tu cuenta se está creando.",
+    "existing_league_help": "¿Tu liga ya existe y quieres unirte? Déjalo en blanco si no. Siempre podrás crear/unirte a una liga más tarde desde el menú.",
+    "join_league": "Unirse a una liga",
 }
 
 
 class Language(StrEnum):
     FR = "Français"
     EN = "English"
+    ES = "Español"
 
 
 _DICT_LANGUAGES = {
     Language.FR: _DICT_TO_FR,
     Language.EN: _DICT_TO_EN,
+    Language.ES: _DICT_TO_ES,
 }
 
 
@@ -328,4 +481,6 @@ def update_session_state_translator() -> None:
 DEFAULT_LANGUAGE = Language.FR
 DEFAULT_TRANSLATOR = LanguageTranslator(DEFAULT_LANGUAGE)
 
-SUPPORTED_LANGUAGES = (Language.FR, Language.EN)
+SUPPORTED_LANGUAGES = (Language.FR, Language.EN, Language.ES)
+# SUPPORTED_LANGUAGES = tuple([str(lang) for lang in Language])
+# SUPPORTED_LANGUAGES = ([lang.value for lang in Language])
