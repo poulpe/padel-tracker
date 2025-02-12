@@ -51,7 +51,9 @@ def _generate_player_overview_table(
     df_linkplayerleague = df_linkplayerleague.rename(columns={"player_name": "name"})
     df_players = pd.merge(df_players, df_linkplayerleague, on="name")
     # Deduct extras from current data
-    df_players["ratio_vd"] = df_players["nb_victories"] / df_players["nb_defeats"]
+    df_players["ratio_vd"] = (
+        df_players["nb_victories"] / df_players["nb_defeats"]
+    ).round(3)
     # Keep only useful columns
     col_to_keep = []
     if not is_single:
