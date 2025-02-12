@@ -51,9 +51,7 @@ def _generate_player_overview_table(
     df_linkplayerleague = df_linkplayerleague.rename(columns={"player_name": "name"})
     df_players = pd.merge(df_players, df_linkplayerleague, on="name")
     # Deduct extras from current data
-    df_players["ratio_vd"] = (
-        df_players["nb_victories"] / df_players["nb_defeats"]
-    ).round(3)
+    df_players["ratio_vd"] = df_players["nb_victories"] / df_players["nb_defeats"]
     # Keep only useful columns
     col_to_keep = []
     if not is_single:
@@ -124,6 +122,7 @@ def make_player_overview_table(
     column_config = {
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
+        translator("ratio_vd"): st.column_config.NumberColumn(format="%.3f"),
     }
     if highlight_player_name:
         df_plot = df_players.style.apply(
@@ -224,6 +223,7 @@ def make_team_overview_table(
     column_config = {
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
+        translator("ratio_vd"): st.column_config.NumberColumn(format="%.3f"),
     }
     st.dataframe(
         df_teams,
