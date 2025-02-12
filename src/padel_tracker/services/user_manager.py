@@ -82,6 +82,9 @@ def create_user_from_auth_user(
     # Go creation
     if not username:
         username = determine_default_username(dict_auth_user)
+    for key in ["email", "email_verified", "picture"]:
+        if key not in dict_auth_user.keys():
+            dict_auth_user[key] = None
     user = User(
         auth_user_id=auth_user_id,
         email=dict_auth_user["email"],

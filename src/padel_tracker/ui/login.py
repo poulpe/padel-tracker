@@ -173,12 +173,16 @@ def show_current_user_sidebar() -> None:
         try:
             name = st.session_state.user["name"]
             email = st.session_state.user["email"]
-            st.sidebar.markdown(
-                f"""
+            if email:
+                string = f"""
                     **{name}**      
                     ({email})
                 """
-            )
+            else:
+                string = f"""
+                    **{name}**      
+                """
+            st.sidebar.markdown(string)
         except Exception:
             pass
 
