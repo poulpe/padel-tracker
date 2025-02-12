@@ -80,11 +80,15 @@ def create_user_from_auth_user(
         LOGGER.error(err_msg)
         raise UserExistsError(err_msg)
     # Go creation
+    ## Default to None/False missing data
     if not username:
         username = determine_default_username(dict_auth_user)
-    for key in ["email", "email_verified", "picture"]:
+    for key in ["email", "picture"]:
         if key not in dict_auth_user.keys():
             dict_auth_user[key] = None
+    if "email_verified" not in dict_auth_user.keys():
+        dict_auth_user["email_verified"] = False
+    ## Create user object
     user = User(
         auth_user_id=auth_user_id,
         email=dict_auth_user["email"],
