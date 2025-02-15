@@ -151,6 +151,20 @@ _DICT_TO_FR = {
     "user_added_success": "Nickel, ton compte est en cours de création !",
     "existing_league_help": "Ta ligue existe déja et tu souhaites la rejoindre ? Laisse vide sinon. Tu pourras toujours créer/rejoindre une ligue plus tard dans le menu",
     "join_league": "Rejoindre une ligue",
+    "feedback_header": "Formulaire de feedback",
+    "feedback_button": "Un bug ? Une demande ?",
+    "feedback_subheader_line1": "Un bug ?",
+    "feedback_subheader_line2": "Une amélioration que tu aimerais ou une demande particulière ?",
+    "feedback_subsubheader": """
+        N'hesite pas à me faire ton retour !     
+        _(Meme si c'est pour m'insulter à cause de ce 'scrogneugneu' de bug ou juste de me remercier parce que tu trouves l'appli cool !)_
+    """,
+    "feedback_title": "Titre",
+    "feedback_description": "Description",
+    "feedback_submit_success": """
+        Message envoyé avec succès, merci de ton retour ! 
+        Si tu veux consulter le suivi du problème: """,
+    "feedback_submit_error": "Problème durant l'envoi du feedback, cette appli est definitivement buggée du cul...",
 }
 
 _DICT_TO_EN = {
@@ -469,7 +483,7 @@ class LanguageTranslator:
             result = self.dict_lang[key]
         except KeyError:
             result = key[0].upper() + key[1:].replace("_", " ") if key else key
-            logger = get_logger("ui.language")
+            logger = get_logger("ui.languages")
             logger.error(f"translation for '{key}' in lang={str(self.lang)} is missing")
         return result
 
@@ -482,5 +496,3 @@ DEFAULT_LANGUAGE = Language.FR
 DEFAULT_TRANSLATOR = LanguageTranslator(DEFAULT_LANGUAGE)
 
 SUPPORTED_LANGUAGES = (Language.FR, Language.EN, Language.ES)
-# SUPPORTED_LANGUAGES = tuple([str(lang) for lang in Language])
-# SUPPORTED_LANGUAGES = ([lang.value for lang in Language])

@@ -27,6 +27,7 @@ from padel_tracker.ui.login import (
     determine_is_guest,
     display_sidebar_logout_button,
 )
+from padel_tracker.ui.feedback import make_feedback_button, make_feedback_form
 from padel_tracker.main import init_app
 
 ##### Init #####
@@ -80,6 +81,12 @@ st.sidebar.selectbox(
 if (st.experimental_user.is_logged_in) or is_guest:
     display_sidebar_logout_button(translator)
 
+# Feedback button
+if "is_feedback_clicked" not in st.session_state:
+    st.session_state.is_feedback_clicked = False
+    st.session_state.is_feedback_ongoing = False
+make_feedback_button(translator)
+
 ##### Define CSS #####
 define_cards_css()
 
@@ -106,6 +113,9 @@ if not st.experimental_user.is_logged_in and not is_guest:
     make_login_form(translator=translator)
 elif is_finalize_signup:
     make_finalize_signup_form(translator=translator)  # = logged but no user linked
+elif st.session_state.is_feedback_clicked or st.session_state.is_feedback_ongoing:
+    make_feedback_form(translator=translator)
+    st.session_state.is_feedback_clicked = False
 else:
     if is_guest:
         current_pages = pages.GUEST
