@@ -119,3 +119,5 @@ if player_name:
         matches_cont = st.container(border=True, height=900)
     with matches_cont:
         make_match_cards(df_matches=df_matches, limit_last=None)
+
+    # TODO (prio3) : feature suggest/show players in your category (i.e: elo +/- 300)
