@@ -123,7 +123,7 @@ def create_match(
         teams=teams,
         date=date,
         league_name=league_name,
-        score=score,
+        # score=score,
         logger=logger,
     )
     # Check players all in the same league
@@ -204,7 +204,7 @@ def check_match_not_already_created(
     teams: list[Team],
     league_name: str,
     date: datetime,
-    score: str | MatchScore | None = None,
+    # score: str | MatchScore | None = None,
     logger: logging.Logger = LOGGER,
 ) -> None:
     """Raises MatchExistsError if already created, nothing otherwise"""
@@ -213,29 +213,19 @@ def check_match_not_already_created(
         session=session,
         where=(
             Match.date == date,
-            Match.score == score,
+            # Match.score == score,
             Match.league_name == league_name,
         ),
     )
     if list_matches_same_date_score:
-        is_team1_in_match = False
-        is_team2_in_match = False
         for match in list_matches_same_date_score:
-            # Checks if teams in
-            if teams[0] in match.teams:
-                is_team1_in_match = True
-            if teams[1] in match.teams:
-                is_team2_in_match = True
-            if is_team1_in_match and is_team2_in_match:
+            if (teams[0] in match.teams) and (teams[1] in match.teams):
                 err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league_name=} already exists"
                 logger.error(err_msg)
                 raise MatchExistsError(err_msg)
 
 
 # DELETE
-
-
-# TODO (prio3) : update player last_match_date if applicable
 def delete_match(
     session: Session, match_id: UUID | str, thread_pool: ThreadPoolExecutor
 ) -> None:
@@ -264,6 +254,14 @@ def delete_match(
             player.nb_victories -= 1
         else:
             player.nb_defeats -= 1
+        ### Manage player last_match_date if applicable
+        if match.date == player.last_match_date:
+            # Find "before the last" match date
+            try:
+                sorted_matches = sorted(player.matches, key=lambda match: match.date)
+                player.last_match_date = sorted_matches[-2].date
+            except (KeyError, AttributeError, Exception):
+                player.last_match_date = None
         list_players.append(player)
     ## Manage teams (Revert Elo gain from players from this match)
     match_team_elo_rating_history = read_from_db(
@@ -281,6 +279,14 @@ def delete_match(
             team.nb_victories -= 1
         else:
             team.nb_defeats -= 1
+        ### Manage team last_match_date if applicable
+        if match.date == team.last_match_date:
+            # Find "before the last" match date
+            try:
+                sorted_matches = sorted(team.matches, key=lambda match: match.date)
+                team.last_match_date = sorted_matches[-2].date
+            except (KeyError, AttributeError, Exception):
+                team.last_match_date = None
         list_teams.append(team)
     ## Manage league
     league.nb_matches -= 1
@@ -294,7 +300,6 @@ def delete_match(
     delete_from_db(match, session=session)
     LOGGER.notif(f"deleted {match_id=} successfully")
     # Update ranks in a thread (non blocking)
-    # (session=session, league_name=league.name, league_id=league.id)
     thread_pool.submit(
         ranking_manager.update_players_rank,
         league_name=league.name,

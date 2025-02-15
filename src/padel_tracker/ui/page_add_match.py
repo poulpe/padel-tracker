@@ -143,12 +143,15 @@ if submit_button and is_players_all_fulfilled:
             games_set3_team1=games_set3_team1,
             games_set3_team2=games_set3_team2,
         )
-        is_score_validated = True
-    except ValidationError:
+        if not match_score.is_match_finished():
+            raise MatchNotFinishedError
+    except (ValidationError, ValueError, MatchNotFinishedError):
         st.error(translator("match_not_finished_error"), icon="💢")
     except Exception as exc:
         err_msg = f"{translator("match_not_finished_error")}: {exc}"
         st.error(err_msg, icon="💢")
+    else:
+        is_score_validated = True
 
 # Create match if submitted
 if submit_button and is_players_all_fulfilled and is_score_validated:

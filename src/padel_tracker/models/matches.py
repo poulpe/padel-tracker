@@ -129,6 +129,10 @@ class MatchScore(BaseModel, validate_assignment=True):
         self.nb_won_sets_diff = abs(self.nb_won_sets_team1 - self.nb_won_sets_team2)
         return self.won_sets
 
+    def is_match_finished(self) -> bool:
+        self.calc_won_sets_and_games()
+        return self.nb_won_sets_diff > 0
+
     def __str__(self):
         self.check_basic_validity()
         score = f"{self.games_set1_team1}-{self.games_set1_team2}"
@@ -224,9 +228,7 @@ class Match(ValidatedSQLModel, table=True):
         self._set_match_name()
         self._set_league_name()
 
-    def get_winners_losers(
-        self,
-    ) -> list[Team, Team]:  # tuple[list[Player], list[Player]]:
+    def get_winners_losers(self) -> list[Team, Team]:
         """"""
         self.validate_players()
         match_score = MatchScore.from_string(self.score)
