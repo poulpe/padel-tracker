@@ -9,14 +9,10 @@ jobs:
     name: Linting (Black & Ruff)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install UV
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available in PATH
-          source $HOME/.local/bin/env
+        run: astral-sh/setup-uv@v5
 
       - name: Setup venv & install dependencies
         run: uv sync --all-extras
@@ -31,14 +27,10 @@ jobs:
     name: Testing (Pytest & Coverage)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install UV
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          source $HOME/.local/bin/env
+        run: astral-sh/setup-uv@v5
 
       - name: Setup venv & install dependencies
         run: uv sync --all-extras
