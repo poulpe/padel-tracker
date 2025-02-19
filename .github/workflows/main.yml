@@ -1,0 +1,56 @@
+name: main
+
+on:
+  pull_request:
+  workflow_dispatch:  # Allows manual triggering from GitHub Actions UI
+
+jobs:
+  test-lint:
+    name: Linting (Black & Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available in PATH
+          source $HOME/.local/bin/env
+
+      - name: Setup venv & install dependencies
+        run: uv sync --all-extras
+
+      - name: Check formatting with Black
+        run: uv run black . --check
+
+      - name: Check linting with Ruff
+        run: uv run ruff check
+
+  test-pytest:
+    name: Testing (Pytest & Coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          source $HOME/.local/bin/env
+
+      - name: Setup venv & install dependencies
+        run: uv sync --all-extras
+          
+      - name: Run tests with coverage
+        run: |
+          uv run coverage run -m pytest --junitxml=report.xml
+          uv run coverage xml
+          uv run coverage report
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: true
