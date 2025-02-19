@@ -6,7 +6,7 @@ on:
 
 jobs:
   test-lint:
-    name: Linting (Black & Ruff)
+    name: Check linting (Black + Ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
         run: uv run ruff check
 
   test-pytest:
-    name: Testing (Pytest & Coverage)
+    name: Test with Pytest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,14 +35,5 @@ jobs:
       - name: Setup venv & install dependencies
         run: uv sync --all-extras
           
-      - name: Run tests with coverage
-        run: |
-          uv run coverage run -m pytest --junitxml=report.xml
-          uv run coverage xml
-          uv run coverage report
-
-      - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          files: coverage.xml
-          fail_ci_if_error: true
+      - name: Run pytest tests
+        run: uv run pytest tests
