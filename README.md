@@ -19,7 +19,7 @@ The application is hosted on **Streamlit Community Cloud** and can be used on we
 - **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need of hosting database online.
 - **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface in a web browser.
 - **Visualization**: Charts and tables for ranking history and match statistics.
-- **Multilingual Support**: Users can switch between English, French and Español.
+- **Multilingual Support**: English, French and Español
 - **User management**: User authentification using OIDC provider
 
 ## Technologies used

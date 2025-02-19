@@ -139,7 +139,7 @@ _DICT_TO_FR = {
     "my_account": "Mon compte",
     "manage_account": "Gérer mon compte",
     "logout": "Se déconnecter",
-    "finalize_signup": "Bienvenue Champion, finalise ton inscription !",
+    "finalize_signup": "Bienvenue Champion(ne), finalise ton inscription !",
     "existing_league": "Ligue",
     "existing_league_message": "Ta ligue existe déja et tu souhaites la rejoindre ? Laisse vide sinon",
     "finalize_signup_existing_player_message_header": "Peut-être que tu as déja été ajouté en tant que joueur ?",
@@ -157,7 +157,7 @@ _DICT_TO_FR = {
     "feedback_subheader_line2": "Une amélioration que tu aimerais ou une demande particulière ?",
     "feedback_subsubheader": """
         N'hesite pas à me faire ton retour !     
-        _(Meme si c'est pour m'insulter à cause de ce 'scrogneugneu' de bug ou juste de me remercier parce que tu trouves l'appli cool !)_
+        _(Meme si c'est juste pour râler à cause de ces 'scrogneugneus' de bugs ou juste de me remercier parce que tu trouves l'appli cool !)_
     """,
     "feedback_title": "Titre",
     "feedback_description": "Description",
@@ -309,6 +309,20 @@ _DICT_TO_EN = {
     "user_added_success": "Great! Your account is being created!",
     "existing_league_help": "Does your league already exist, and you want to join? Leave blank otherwise. You can always create/join a league later from the menu",
     "join_league": "Join a league",
+    "feedback_header": "Feedback Form",
+    "feedback_button": "A bug? A request?",
+    "feedback_subheader_line1": "A bug?",
+    "feedback_subheader_line2": "An improvement you'd like or a specific request?",
+    "feedback_subsubheader": """
+        Feel free to share your feedback!     
+        _(Even if it's just to rant about those damn bugs or to thank me because you find the app cool!)_
+    """,
+    "feedback_title": "Title",
+    "feedback_description": "Description",
+    "feedback_submit_success": """
+        Message sent successfully, thanks for your feedback!  
+        If you want to track the issue: """,
+    "feedback_submit_error": "Error while sending feedback, this app is definitely buggy as hell...",
 }
 
 _DICT_TO_ES = {
@@ -455,6 +469,20 @@ _DICT_TO_ES = {
     "user_added_success": "¡Genial! Tu cuenta se está creando.",
     "existing_league_help": "¿Tu liga ya existe y quieres unirte? Déjalo en blanco si no. Siempre podrás crear/unirte a una liga más tarde desde el menú.",
     "join_league": "Unirse a una liga",
+    "feedback_header": "Formulario de comentarios",
+    "feedback_button": "¿Un error? ¿Una solicitud?",
+    "feedback_subheader_line1": "¿Un error?",
+    "feedback_subheader_line2": "¿Una mejora que te gustaría o una solicitud específica?",
+    "feedback_subsubheader": """
+        ¡No dudes en compartir tu opinión!     
+        _(Aunque solo sea para quejarte de esos malditos bugs o para agradecerme porque encuentras la app genial!)_
+    """,
+    "feedback_title": "Título",
+    "feedback_description": "Descripción",
+    "feedback_submit_success": """
+        ¡Mensaje enviado con éxito, gracias por tu comentario!  
+        Si quieres hacer seguimiento del problema: """,
+    "feedback_submit_error": "Error al enviar el comentario, esta app definitivamente está llena de bugs...",
 }
 
 
