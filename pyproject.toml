@@ -20,6 +20,8 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
+    "black",
+    "ruff",
     "alembic", # For database migrations
     "pytest",
     "coverage",
