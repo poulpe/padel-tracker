@@ -18,7 +18,7 @@ jobs:
         run: uv sync --all-extras
 
       - name: Check formatting with Black
-        run: uv run black . # --check
+        run: uv run black . --diff # --check
 
       - name: Check linting with Ruff
         run: uv run ruff check
