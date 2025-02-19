@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install UV
-        run: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v5
 
       - name: Setup venv & install dependencies
         run: uv sync --all-extras
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install UV
-        run: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v5
 
       - name: Setup venv & install dependencies
         run: uv sync --all-extras
