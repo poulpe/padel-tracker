@@ -58,7 +58,7 @@ The application is hosted on **Streamlit Community Cloud** and can be used on we
 - Tests
   - [ ] Not the funniest part, but, eh...
 - Feedback
-  - [ ] "Report bug" form
+  - [x] "Report bug" form
 
 ## Gallery
 
