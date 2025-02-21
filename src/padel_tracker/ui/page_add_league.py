@@ -20,6 +20,13 @@ with form:
     _, center_col, _ = st.columns([1, 5, 1])
     with center_col:
         league_name = st.text_input(translator("name"))
+        league_description = st.text_area(translator("description"))
+    _, center_col, _ = st.columns([1.3, 1, 1])
+    with center_col:
+        is_private = st.checkbox(
+            translator("private_league"), help=translator("private_league_help")
+        )
+        # League admins = current user + all admins ? => nope, in manage_league_page, can add later league_admins. And
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
@@ -29,8 +36,19 @@ with form:
 
 if submit_button:
     try:
+        # Fetch current user to put it as league admin
+        admin_name = None
+        if "user" in st.session_state:
+            admin_name = st.session_state.user["name"]
+        # Go create
         with DB.get_session() as session:
-            league_manager.create_league(session=session, name=league_name)
+            league = league_manager.create_league(
+                session=session,
+                name=league_name,
+                is_private=is_private,
+                admin_name=admin_name,
+                description=league_description,
+            )
         st.success(f"{league_name}{translator("league_added_success")}", icon="🔥")
     except LeagueExistsError:
         st.error(f"{league_name}{translator("league_exists_error")}", icon="💢")

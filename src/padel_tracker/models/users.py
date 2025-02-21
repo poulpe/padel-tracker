@@ -6,8 +6,9 @@ from typing import Optional
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, Column, DateTime
 
-from padel_tracker.models.base import ValidatedSQLModel
 from padel_tracker.utils.datetime_utils import now
+from padel_tracker.models.base import ValidatedSQLModel
+from padel_tracker.models.links import LinkLeagueadminUser
 
 
 class UserRole(StrEnum):
@@ -45,5 +46,10 @@ class User(ValidatedSQLModel, table=True):
     role: str = Field(default=UserRole.PLAYER)
     picture_url: str | None = Field(default=None, repr=False)
     # App settings
-    default_league_name: str | None = Field(None)
     default_language: str | None = Field(None)
+    # Leagues
+    default_league_name: str | None = Field(None)
+    admin_leagues: list["League"] = Relationship(
+        back_populates="admin_users",
+        link_model=LinkLeagueadminUser,
+    )

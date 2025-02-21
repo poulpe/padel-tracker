@@ -6,7 +6,12 @@ from sqlmodel import Field, Relationship, Column, DateTime
 
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.models.base import ValidatedSQLModel
-from padel_tracker.models.links import LinkPlayerLeague, LinkLeagueMatch, LinkTeamLeague
+from padel_tracker.models.links import (
+    LinkPlayerLeague,
+    LinkLeagueMatch,
+    LinkTeamLeague,
+    LinkLeagueadminUser,
+)
 from padel_tracker.models.players import RankHistory
 
 
@@ -17,6 +22,10 @@ class League(ValidatedSQLModel, table=True):
         min_length=2,
         max_length=64,
         schema_extra={"pattern": r"^[\p{L}' -]*[\p{L}][\p{L}][\p{L}' -]*$"},
+    )
+    is_private: bool = Field(False)
+    description: str | None = Field(
+        None, description="Friendly text for users", max_length=256
     )
     creation_date: datetime = Field(
         default_factory=now,
@@ -39,4 +48,7 @@ class League(ValidatedSQLModel, table=True):
     rank_history: list["RankHistory"] = Relationship(back_populates="league")
     teams: list["Team"] = Relationship(
         back_populates="leagues", link_model=LinkTeamLeague
+    )
+    admin_users: list["User"] = Relationship(
+        back_populates="admin_leagues", link_model=LinkLeagueadminUser
     )

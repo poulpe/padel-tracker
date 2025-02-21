@@ -123,6 +123,7 @@ def make_player_overview_table(
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("ratio_vd"): st.column_config.NumberColumn(format="%.3f"),
+        translator("rank"): st.column_config.NumberColumn(format="%i"),
     }
     if highlight_player_name:
         df_plot = df_players.style.apply(
@@ -227,6 +228,30 @@ def make_team_overview_table(
     }
     st.dataframe(
         df_teams,
+        hide_index=True,
+        use_container_width=use_container_width,
+        column_config=column_config,
+    )
+
+
+def make_league_overview_table(
+    df_league: pd.DataFrame,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    is_single: bool = False,
+    use_container_width: bool = True,
+) -> None:
+    col_to_keep = []
+    if not is_single:
+        col_to_keep += ["name"]
+    col_to_keep += ["nb_players", "nb_matches", "last_match_date", "creation_date"]
+    df_plot = df_league[col_to_keep].copy()
+    df_plot = df_plot.rename(columns=translator.dict_lang)
+    column_config = {
+        translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
+        translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
+    }
+    st.dataframe(
+        df_plot,
         hide_index=True,
         use_container_width=use_container_width,
         column_config=column_config,

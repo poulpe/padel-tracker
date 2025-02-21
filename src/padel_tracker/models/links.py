@@ -43,3 +43,8 @@ class LinkPlayerLeague(SQLModel, table=True):
 class LinkTeamLeague(SQLModel, table=True):
     team_id: UUID | None = Field(None, foreign_key="team.id", primary_key=True)
     league_id: UUID | None = Field(None, foreign_key="league.id", primary_key=True)
+
+
+class LinkLeagueadminUser(SQLModel, table=True):
+    league_id: UUID | None = Field(None, foreign_key="league.id", primary_key=True)
+    user_id: UUID | None = Field(None, foreign_key="user.id", primary_key=True)

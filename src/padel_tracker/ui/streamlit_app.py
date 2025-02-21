@@ -54,7 +54,7 @@ is_guest = determine_is_guest()
 
 ##### Sidebar ######
 # Make selectable league in sidebar
-update_cache(only=CacheKey.df_leagues, force=True)
+update_cache(only=CacheKey.df_leagues, force=False)
 determine_session_state_league_name()
 
 if st.experimental_user.is_logged_in or is_guest:

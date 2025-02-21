@@ -165,6 +165,14 @@ _DICT_TO_FR = {
         Message envoyé avec succès, merci de ton retour ! 
         Si tu veux consulter le suivi du problème: """,
     "feedback_submit_error": "Problème durant l'envoi du feedback, cette appli est definitivement buggée du cul...",
+    "private_league": "Ligue privée",
+    "private_league_help": "Faire en sorte que la ligue ne soit visible que pour toi et pour les joueurs que tu ajouteras manuellement via le menu 'Gérer la ligue'",
+    "public_league": "Ligue publique",
+    "my_league": "Ma ligue",
+    "manage_league": "Gérer la ligue",
+    "description": "Description",
+    "no_description_yet": "Pas de description pour le moment...",
+    "add_in_league": "Recrute dans la ligue",
 }
 
 _DICT_TO_EN = {
