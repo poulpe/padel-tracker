@@ -17,6 +17,7 @@ _DICT_TO_FR = {
     "nb_matches": "Matches",
     "nb_victories": "V",
     "nb_defeats": "D",
+    "nb_players": "Nombre de joueurs",
     "player_name": "Joueur",
     "team_name": "Équipe",
     "last_match_date": "Dernier match",
@@ -173,6 +174,10 @@ _DICT_TO_FR = {
     "description": "Description",
     "no_description_yet": "Pas de description pour le moment...",
     "add_in_league": "Recrute dans la ligue",
+    "remove_from_league": "Retire un joueur de la ligue",
+    "league_admins": "Administrateurs de la ligue",
+    "league_administration": "Gestion de la ligue",
+    "player_removed": " a été retiré. Bye bye 😢",
 }
 
 _DICT_TO_EN = {

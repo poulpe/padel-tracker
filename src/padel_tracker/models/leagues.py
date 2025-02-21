@@ -23,7 +23,7 @@ class League(ValidatedSQLModel, table=True):
         max_length=64,
         schema_extra={"pattern": r"^[\p{L}' -]*[\p{L}][\p{L}][\p{L}' -]*$"},
     )
-    is_private: bool = Field(False)
+    is_private: bool | None = Field(False)
     description: str | None = Field(
         None, description="Friendly text for users", max_length=256
     )

@@ -23,6 +23,7 @@ class CacheKey(StrEnum):
     user = "user"
     df_leagues = "df_leagues"
     league_names = "league_names"
+    league_admins = "league_admins"
     df_players = "df_players"
     # df_players_all_leagues = "df_players_all_leagues" # Optional
     player_names = "player_names"
@@ -51,6 +52,9 @@ def update_cache_user(session: Session, force: bool = False):
                     session=session, auth_user_id=auth_user_id
                 )
                 st.session_state.user = user.model_dump()
+                st.session_state.user["admin_leagues"] = [
+                    league.name for league in user.admin_leagues
+                ]
             except UserNotFoundError:
                 # Means new user, will be redirected to "finalize_signup"
                 st.session_state.user = None
@@ -177,6 +181,15 @@ def update_cache_linkplayerleague(session: Session, force: bool = False):
         )
 
 
+def update_cache_league_admins(session: Session, force: bool = False):
+    key = str(CacheKey.league_admins)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = league_manager.get_admin_names_from_league_name(
+            session=session,
+            name=st.session_state.league_name,
+        )
+
+
 DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.user: update_cache_user,
     CacheKey.df_leagues: update_cache_leagues,
@@ -189,6 +202,7 @@ DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.df_matches_all_leagues: update_cache_matches,
     CacheKey.df_elo_hist: update_cache_elo_hist,
     CacheKey.df_linkplayerleague: update_cache_linkplayerleague,
+    CacheKey.league_admins: update_cache_league_admins,
     # CacheKey.df_players_all_leagues:update_cache_players,
     # CacheKey.player_names_all_leagues:update_cache_players,
 }

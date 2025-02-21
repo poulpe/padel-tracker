@@ -24,7 +24,7 @@ from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
-    # delete_from_db,
+    delete_from_db,
 )
 
 LOGGER = get_logger("league_manager")
@@ -111,6 +111,11 @@ def get_all_league_names(session: Session) -> list[str]:
     return read_from_db(League.name, session=session)
 
 
+def get_admin_names_from_league_name(session, name: str) -> list[str]:
+    league = get_league_from_name(session=session, name=name)
+    return [user.name for user in league.admin_users]
+
+
 def get_linkplayerleague_from_league(
     session: Session, league_name: str, as_df: bool = False
 ) -> list[LinkPlayerLeague] | pd.DataFrame:
@@ -136,6 +141,25 @@ def assign_league_to_player(session: Session, player: Player, league: League) ->
     league.nb_players += 1
     commit_to_db(link, player, league, session=session)
     LOGGER.notif(f"{player=} has been assigned to {league=}")
+
+
+# TODO:remove_player_from_league
+def remove_player_from_league(session: Session, player: Player, league: League) -> None:
+    """"""
+    # Fetch link
+    link_to_delete = None
+    for link in player.league_links:
+        if link.league == league:
+            link_to_delete = link
+            break
+    if not link_to_delete:
+        raise PlayerNotInLeagueError
+    # Unlink
+    league.nb_players -= 1
+    commit_to_db(league, session=session)
+    # Delete link
+    delete_from_db(link_to_delete, session=session)
+    LOGGER.notif(f"{player=} has been removed from {league=}")
 
 
 def update_league_after_finished_match(

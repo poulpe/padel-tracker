@@ -26,7 +26,6 @@ with form:
         is_private = st.checkbox(
             translator("private_league"), help=translator("private_league_help")
         )
-        # League admins = current user + all admins ? => nope, in manage_league_page, can add later league_admins. And
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
