@@ -125,7 +125,7 @@ if add_submit_button:
         refresh_cache(threaded=True)
 
 
-# TOCHECK : FORM Remove player from league
+# FORM Remove player from league
 form = st.form("remove_from_league")
 with form:
     write_subheader(translator("remove_from_league"))
@@ -160,7 +160,7 @@ if remove_submit_button:
     else:
         refresh_cache(threaded=True)
 
-# TODO: FORM Change league description
+# FORM Change league description
 form = st.form("change_league_description")
 with form:
     write_subheader(translator("change_league_description"))
