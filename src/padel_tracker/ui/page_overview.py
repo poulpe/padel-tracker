@@ -5,7 +5,10 @@ from padel_tracker.ui.cards import make_match_cards
 from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.tables import make_player_overview_table
-from padel_tracker.ui.cache import check_not_empty_database_matches
+from padel_tracker.ui.cache import (
+    check_not_empty_database_matches,
+    check_not_empty_database_leagues,
+)
 from padel_tracker.ui.login import determine_is_guest
 
 st.write("")
@@ -13,6 +16,8 @@ st.write("")
 if "translator" not in st.session_state.keys():
     st.session_state.translator = DEFAULT_TRANSLATOR
 translator = st.session_state.translator
+
+check_not_empty_database_leagues()
 
 # Top quick access buttons
 is_guest = determine_is_guest()

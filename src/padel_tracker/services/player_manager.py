@@ -89,6 +89,25 @@ def get_all_players_from_league(
     )
 
 
+def get_all_players_names_from_other_leagues(
+    session: Session,
+    league_name_exclude: str,
+) -> list[str]:
+    # First fetch player IDs from LinkPlayerLeague
+    player_ids = read_from_db(
+        LinkPlayerLeague.player_id,
+        where=LinkPlayerLeague.league_name != league_name_exclude,
+        session=session,
+    )
+    # Then get players with corresponding IDs
+    return read_from_db(
+        Player.name,
+        where=Player.id.in_(player_ids),
+        session=session,
+        as_df=False,
+    )
+
+
 def get_all_players_without_user(session: Session) -> list[Player]:
     condition = Player.user == None  # noqa: E711  # Didn't work with 'is None'
     return read_from_db(Player, where=condition, session=session)

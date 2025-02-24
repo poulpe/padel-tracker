@@ -17,6 +17,7 @@ _DICT_TO_FR = {
     "nb_matches": "Matches",
     "nb_victories": "V",
     "nb_defeats": "D",
+    "nb_players": "Nombre de joueurs",
     "player_name": "Joueur",
     "team_name": "Équipe",
     "last_match_date": "Dernier match",
@@ -157,7 +158,7 @@ _DICT_TO_FR = {
     "feedback_subheader_line2": "Une amélioration que tu aimerais ou une demande particulière ?",
     "feedback_subsubheader": """
         N'hesite pas à me faire ton retour !     
-        _(Meme si c'est juste pour râler à cause de ces 'scrogneugneus' de bugs ou juste de me remercier parce que tu trouves l'appli cool !)_
+        _(Meme si c'est juste pour dire que tu trouves l'appli cool, on ne sait jamais !)_
     """,
     "feedback_title": "Titre",
     "feedback_description": "Description",
@@ -165,6 +166,21 @@ _DICT_TO_FR = {
         Message envoyé avec succès, merci de ton retour ! 
         Si tu veux consulter le suivi du problème: """,
     "feedback_submit_error": "Problème durant l'envoi du feedback, cette appli est definitivement buggée du cul...",
+    "private_league": "Ligue privée",
+    "private_league_help": "Faire en sorte que la ligue ne soit visible que pour toi et pour les joueurs que tu ajouteras manuellement via le menu 'Gérer la ligue'",
+    "public_league": "Ligue publique",
+    "my_league": "Ma ligue",
+    "manage_league": "Gérer la ligue",
+    "description": "Description",
+    "no_description_yet": "Pas de description pour le moment...",
+    "add_in_league": "Recrute dans la ligue",
+    "remove_from_league": "Retire un joueur de la ligue",
+    "league_admins": "Administrateurs de la ligue",
+    "league_administration": "Gestion de la ligue",
+    "player_removed": " a été retiré. Bye bye 😢",
+    "change_league_description": "Changer la description",
+    "description_updated_success": "La description a bien été modifiée",
+    "unknown_error_update": "Erreur inconnue pendant la modification: ",
 }
 
 _DICT_TO_EN = {
@@ -323,6 +339,21 @@ _DICT_TO_EN = {
         Message sent successfully, thanks for your feedback!  
         If you want to track the issue: """,
     "feedback_submit_error": "Error while sending feedback, this app is definitely buggy as hell...",
+    "private_league": "Private League",
+    "private_league_help": "Make the league visible only to you and the players you manually add via the 'Manage League' menu.",
+    "public_league": "Public League",
+    "my_league": "My League",
+    "manage_league": "Manage League",
+    "description": "Description",
+    "no_description_yet": "No description yet...",
+    "add_in_league": "Recruit into the league",
+    "remove_from_league": "Remove a player from the league",
+    "league_admins": "League Administrators",
+    "league_administration": "League Management",
+    "player_removed": " has been removed. Bye bye 😢",
+    "change_league_description": "Change league description",
+    "description_updated_success": "The description has been successfully updated",
+    "unknown_error_update": "Unknown error while updating: ",
 }
 
 _DICT_TO_ES = {
@@ -483,6 +514,21 @@ _DICT_TO_ES = {
         ¡Mensaje enviado con éxito, gracias por tu comentario!  
         Si quieres hacer seguimiento del problema: """,
     "feedback_submit_error": "Error al enviar el comentario, esta app definitivamente está llena de bugs...",
+    "private_league": "Liga privada",
+    "private_league_help": "Haz que la liga sea visible solo para ti y para los jugadores que añadas manualmente desde el menú 'Gestionar la liga'.",
+    "public_league": "Liga pública",
+    "my_league": "Mi liga",
+    "manage_league": "Gestionar la liga",
+    "description": "Descripción",
+    "no_description_yet": "Sin descripción por ahora...",
+    "add_in_league": "Reclutar en la liga",
+    "remove_from_league": "Eliminar un jugador de la liga",
+    "league_admins": "Administradores de la liga",
+    "league_administration": "Gestión de la liga",
+    "player_removed": " ha sido eliminado. Adiós 😢",
+    "change_league_description": "Actualizar la descripción",
+    "description_updated_success": "La descripción se ha actualizado correctamente",
+    "unknown_error_update": "Error desconocido al actualizar: ",
 }
 
 

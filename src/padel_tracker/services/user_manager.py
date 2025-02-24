@@ -2,6 +2,7 @@ from typing import Any
 
 import sqlalchemy
 import pydantic
+import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import UserNotFoundError, UserExistsError
@@ -16,6 +17,8 @@ from padel_tracker.services import player_manager, league_manager
 
 LOGGER = get_logger("user_manager")
 
+# GET
+
 
 def get_user_from_auth_user_id(session: Session, auth_user_id: str) -> User:
     try:
@@ -25,6 +28,21 @@ def get_user_from_auth_user_id(session: Session, auth_user_id: str) -> User:
     except sqlalchemy.exc.NoResultFound:
         raise UserNotFoundError(f"user with {auth_user_id=} not found in database")
     return user
+
+
+def get_user_from_name(session: Session, name: str) -> User:
+    try:
+        user = read_from_db(User, where=User.name == name, unique=True, session=session)
+    except sqlalchemy.exc.NoResultFound:
+        raise UserNotFoundError(f"user with {name=} not found in database")
+    return user
+
+
+def get_all_users(session: Session, as_df: bool = False) -> list[User] | pd.DataFrame:
+    return read_from_db(User, session=session, as_df=as_df)
+
+
+# CREATE
 
 
 def determine_default_username(dict_auth_user: dict[str, Any]) -> str:

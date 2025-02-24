@@ -48,6 +48,12 @@ class PagesCollection:
             url_path="manage_account",
             icon="⚙️",
         )
+        page_manage_league = st.Page(
+            "page_manage_league.py",
+            title=translator("manage_league"),
+            url_path="manage_league",
+            icon="🏆",
+        )
         ## Admin pages
         page_add_player = st.Page(
             "page_add_player.py",
@@ -71,21 +77,20 @@ class PagesCollection:
             "page_add_league.py",
             title=translator("add_league"),
             url_path="add_league",
-            icon="🏆",
-        )
-        page_assign_league = st.Page(
-            "page_assign_league.py",
-            title=translator("assign_league"),
-            url_path="assign_league",
-            icon="👥️",
+            icon="📋",
         )
         page_check_logs = st.Page(
             "page_check_logs.py",
             title=translator("check_logs"),
             url_path="check_logs",
-            icon="📋",
+            icon="📜",
         )
-
+        page_assign_league = st.Page(
+            "page_assign_league.py",
+            title=translator("assign_league"),
+            url_path="assign_league",
+            icon="🔗",
+        )
         # Define pages dict
         self.GUEST = {
             "Padel Tracker": [page_overview],
@@ -96,6 +101,7 @@ class PagesCollection:
             translator("matches"): [page_add_match],
             translator("players_teams"): [page_check_player, page_check_team],
             translator("my_account"): [page_join_league, page_manage_account],
+            translator("my_league"): [page_manage_league],
             translator("administration"): [
                 page_add_league,
                 page_add_player,
@@ -106,6 +112,7 @@ class PagesCollection:
             translator("matches"): [page_add_match],
             translator("players_teams"): [page_check_player, page_check_team],
             translator("my_account"): [page_join_league, page_manage_account],
+            translator("my_league"): [page_manage_league],
             translator("administration"): [
                 page_add_league,
                 page_add_player,
@@ -116,8 +123,8 @@ class PagesCollection:
             "Padel Tracker": [page_overview],
             translator("matches"): [page_add_match],
             translator("players_teams"): [page_check_player, page_check_team],
-            # TODO (prio 3): translator("leagues"): [page_check_leagues],
             translator("my_account"): [page_join_league, page_manage_account],
+            translator("my_league"): [page_manage_league],
             translator("administration"): [
                 page_add_league,
                 page_add_player,
