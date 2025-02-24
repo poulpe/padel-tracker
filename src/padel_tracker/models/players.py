@@ -60,7 +60,7 @@ class Player(ValidatedSQLModel, table=True):
         index=True,
         min_length=2,
         max_length=32,
-        schema_extra={"pattern": r"^[a-zA-Z' -]*[a-zA-Z][a-zA-Z][a-zA-Z' -]*$"},
+        schema_extra={"pattern": r"^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ '’.-]{1,}$"},
     )
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     elo_rating: PositiveInt = Field(ELO_BASE_RATING, index=True)

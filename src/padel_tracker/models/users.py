@@ -41,7 +41,7 @@ class User(ValidatedSQLModel, table=True):
         default=None,
         min_length=2,
         max_length=32,
-        schema_extra={"pattern": r"^[a-zA-Z' -]*[a-zA-Z][a-zA-Z][a-zA-Z' -]*$"},
+        schema_extra={"pattern": r"^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ '’.-]{1,}$"},
     )
     role: str = Field(default=UserRole.PLAYER)
     picture_url: str | None = Field(default=None, repr=False)
