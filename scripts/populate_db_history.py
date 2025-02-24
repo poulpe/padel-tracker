@@ -25,36 +25,45 @@ LOGGER.addHandler(LOG_HANDLER)
 
 # fmt: off
 list_match_data = [
-    {"day":3, "month":10, "year": 2024,  "hour":18, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Sergissimo","Maximator"], "score":"7-6"},
-    {"day":17, "month":10, "year": 2024, "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-3, 6-3"},
-    {"day":22, "month":10, "year": 2024, "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"4-6, 6-4, 6-1"},
-    {"day":7, "month":11, "year": 2024,  "hour":18, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Sergissimo","Maximator"], "score":"3-6"},
-    {"day":7, "month":11, "year": 2024,  "hour":19, "t1_names":["Biboono","Maximator"], "t2_names":["ElPoulpo","Sergissimo"], "score":"6-7"},
-    {"day":12, "month":11, "year": 2024, "hour":18, "t1_names":["ElPoulpo","Axelito"], "t2_names":["Maximator","Biboono"], "score":"2-6"},
-    {"day":29, "month":11, "year": 2024, "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-2"},
-    {"day":29, "month":11, "year": 2024, "hour":19, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Maximator","Sergissimo"], "score":"7-6"},
-    {"day":7, "month":1, "year": 2025,   "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
-    {"day":14, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-4, 6-2"},
-    {"day":28, "month":1, "year": 2025,  "hour":18, "t1_names":["ElPoulpo","Sergissimo"], "t2_names":["Maximator","Biboono"], "score":"6-1"},
-    {"day":28, "month":1, "year": 2025,  "hour":19, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Maximator","Sergissimo"], "score":"4-6"},
-    {"day":5, "month":2, "year": 2025,  "hour":19, "t1_names":["ElPoulpo","Biboono"], "t2_names":["Maximator","Sergissimo"], "score":"7-6,6-2"},
+    {"day":3, "month":10, "year": 2024,  "hour":18, "t1_names":["ElTrueno","LaBiba"], "t2_names":["Raqueta Loca","Chaco Smash"], "score":"7-6"},
+    {"day":17, "month":10, "year": 2024, "hour":18, "t1_names":["ElTrueno","Raqueta Loca"], "t2_names":["Chaco Smash","LaBiba"], "score":"6-3, 6-3"},
+    {"day":22, "month":10, "year": 2024, "hour":18, "t1_names":["ElTrueno","Raqueta Loca"], "t2_names":["Chaco Smash","LaBiba"], "score":"4-6, 6-4, 6-1"},
+    {"day":7, "month":11, "year": 2024,  "hour":18, "t1_names":["ElTrueno","LaBiba"], "t2_names":["Raqueta Loca","Chaco Smash"], "score":"3-6"},
+    {"day":7, "month":11, "year": 2024,  "hour":19, "t1_names":["LaBiba","Chaco Smash"], "t2_names":["ElTrueno","Raqueta Loca"], "score":"6-7"},
+    {"day":12, "month":11, "year": 2024, "hour":18, "t1_names":["ElTrueno","Manu Revés"], "t2_names":["Chaco Smash","LaBiba"], "score":"2-6"},
+    {"day":29, "month":11, "year": 2024, "hour":18, "t1_names":["ElTrueno","Raqueta Loca"], "t2_names":["Chaco Smash","LaBiba"], "score":"6-2"},
+    {"day":29, "month":11, "year": 2024, "hour":19, "t1_names":["ElTrueno","LaBiba"], "t2_names":["Chaco Smash","Raqueta Loca"], "score":"7-6"},
+    {"day":7, "month":1, "year": 2025,   "hour":18, "t1_names":["ElTrueno","Raqueta Loca"], "t2_names":["Chaco Smash","LaBiba"], "score":"6-4, 6-2"},
+    {"day":14, "month":1, "year": 2025,  "hour":18, "t1_names":["ElTrueno","Raqueta Loca"], "t2_names":["Chaco Smash","LaBiba"], "score":"6-4, 6-2"},
+    {"day":28, "month":1, "year": 2025,  "hour":18, "t1_names":["ElTrueno","Raqueta Loca"], "t2_names":["Chaco Smash","LaBiba"], "score":"6-1"},
+    {"day":28, "month":1, "year": 2025,  "hour":19, "t1_names":["ElTrueno","LaBiba"], "t2_names":["Chaco Smash","Raqueta Loca"], "score":"4-6"},
+    {"day":5, "month":2, "year": 2025,  "hour":19, "t1_names":["ElTrueno","LaBiba"], "t2_names":["Chaco Smash","Raqueta Loca"], "score":"7-6,6-2"},
 ]
 # fmt: on
 
-LEAGUE_MAIN = "Ligue des pédales du Padel"
+LEAGUE_MAIN = "Liga Demo"
 
 
 def create_league(session: Session):
-    for league_name in [LEAGUE_MAIN]:
-        try:
-            league_manager.create_league(session=session, name=league_name)
-        except LeagueExistsError:
-            pass
+    try:
+        league_manager.create_league(
+            session=session,
+            name=LEAGUE_MAIN,
+            description="Just for fun",
+        )
+    except LeagueExistsError:
+        pass
 
 
 def create_players(session: Session):
     main_league = league_manager.get_league_from_name(session=session, name=LEAGUE_MAIN)
-    for player_name in ["ElPoulpo", "Maximator", "Sergissimo", "Biboono", "Axelito"]:
+    for player_name in [
+        "ElTrueno",
+        "Chaco Smash",
+        "Raqueta Loca",
+        "LaBiba",
+        "Manu Revés",
+    ]:
         try:
             player_manager.create_player(
                 session=session, name=player_name, league=main_league
