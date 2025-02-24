@@ -71,7 +71,7 @@ is_user_league_admin = (
     user and ("admin_leagues" in user.keys()) and (league_name in user["admin_leagues"])
 )
 is_user_admin = user and "role" in user.keys() and user["role"] == UserRole.ADMIN
-if (not is_user_league_admin) or (not is_user_admin):
+if not (is_user_league_admin or is_user_admin):
     st.stop()
 
 write_header(translator("administration"))
@@ -125,7 +125,7 @@ if add_submit_button:
         refresh_cache(threaded=True)
 
 
-# TODO : form Remove player from league
+# TOCHECK : FORM Remove player from league
 form = st.form("remove_from_league")
 with form:
     write_subheader(translator("remove_from_league"))
@@ -160,4 +160,41 @@ if remove_submit_button:
     else:
         refresh_cache(threaded=True)
 
-# TODO: define league admins
+# TODO: FORM Change league description
+form = st.form("change_league_description")
+with form:
+    write_subheader(translator("change_league_description"))
+    _, center_col, _ = st.columns([1, 5, 1])
+    with center_col:
+        new_description = st.text_area(
+            translator("description"), value=description, max_chars=256
+        )
+    _, center_col, _ = st.columns([1, 2, 1])
+    with center_col:
+        change_description_submit_button = st.form_submit_button(
+            label=translator("submit"),
+            use_container_width=True,
+        )
+if change_description_submit_button:
+    try:
+        with DB.get_session() as session:
+            league = league_manager.get_league_from_name(
+                session=session,
+                name=league_name,
+            )
+            league_manager.update_league_description(
+                session=session,
+                league=league,
+                description=new_description,
+            )
+        st.success(translator("description_updated_success"), icon="🔥")
+    except Exception as exc:
+        st.error(f"{translator("unknown_error_update")}: {exc}", icon="💥")
+    else:
+        refresh_cache(threaded=True)
+
+# TODO: FORM define league admins
+
+# DANGER ZONE
+# TODO (prio3): make league public/private FORM
+# TODO (prio3): rename league FORM

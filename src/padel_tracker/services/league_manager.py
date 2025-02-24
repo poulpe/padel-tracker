@@ -143,7 +143,6 @@ def assign_league_to_player(session: Session, player: Player, league: League) ->
     LOGGER.notif(f"{player=} has been assigned to {league=}")
 
 
-# TODO:remove_player_from_league
 def remove_player_from_league(session: Session, player: Player, league: League) -> None:
     """"""
     # Fetch link
@@ -183,6 +182,33 @@ def assign_admin_to_league(session: Session, user: User, league: League) -> None
         user.default_league_name = league.name
     commit_to_db(league, user, session=session)
     LOGGER.notif(f"assigned user='{user.name}' as admin of league='{league.name}'")
+
+
+# TOCHECK: make_league_private
+def make_league_private(session: Session, league: League) -> None:
+    if not league.is_private:
+        league.is_private = True
+        commit_to_db(league, session=session)
+        LOGGER.notif(f"league '{league.name}' has been made 'private'")
+    else:
+        raise ValueError(f"league '{league.name}' is already 'private'")
+
+
+# TOCHECK: make_league_public
+def make_league_public(session: Session, league: League) -> None:
+    if league.is_private:
+        league.is_private = False
+        commit_to_db(league, session=session)
+        LOGGER.notif(f"league '{league.name}' has been made 'public'")
+    else:
+        raise ValueError(f"league '{league.name}' is already 'public'")
+
+
+def update_league_description(
+    session: Session, league: League, description: str
+) -> None:
+    league.description = description
+    commit_to_db(league, session=session)
 
 
 # CREATE
