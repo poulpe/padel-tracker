@@ -6,7 +6,7 @@ from sqlmodel import Field, Relationship, Column, DateTime
 from pydantic import BaseModel, NonNegativeInt
 
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.utils.errors import MatchNotFinishedError
+from padel_tracker.utils.errors import MatchNotFinishedError, TeamNotFoundError
 from padel_tracker.models.base import ValidatedSQLModel
 from padel_tracker.models.links import LinkPlayerMatch, LinkTeamMatch, LinkLeagueMatch
 from padel_tracker.models.players import Player, Team
@@ -181,6 +181,8 @@ class MatchScore(BaseModel, validate_assignment=True):
 
 class Match(ValidatedSQLModel, table=True):
     teams: list[Team] = Relationship(back_populates="matches", link_model=LinkTeamMatch)
+    team1_name: str
+    team2_name: str
     players: list[Player] = Relationship(
         back_populates="matches", link_model=LinkPlayerMatch
     )
@@ -209,7 +211,7 @@ class Match(ValidatedSQLModel, table=True):
     )
 
     def _set_match_name(self) -> None:
-        self.name = f"{str(self.teams[0])} vs {str(self.teams[1])}"
+        self.name = f"{self.team1_name} vs {self.team2_name}"
 
     def _set_league_name(self) -> None:
         self.league_name = self.league.name
@@ -235,13 +237,24 @@ class Match(ValidatedSQLModel, table=True):
         match_score.calc_won_sets_and_games()
         self.nb_won_sets_diff = match_score.nb_won_sets_diff
         self.nb_won_games_diff = match_score.nb_won_games_diff
+        # Identify team1/team2 from team1_name
+        team1 = None
+        team2 = None
+        for team in self.teams:
+            if team.name == self.team1_name:
+                team1 = team
+            elif team.name == self.team2_name:
+                team2 = team
+            else:
+                raise TeamNotFoundError("mismatch vs team1_name/team2_name and teams")
+        # Determine winners / losers
         if match_score.nb_won_sets_team1 > match_score.nb_won_sets_team2:
-            winners = self.teams[0]
-            losers = self.teams[1]
+            winners = team1
+            losers = team2
             self.team1_won = True
         elif match_score.nb_won_sets_team1 < match_score.nb_won_sets_team2:
-            losers = self.teams[0]
-            winners = self.teams[1]
+            losers = team1
+            winners = team2
             self.team1_won = False
         else:
             raise MatchNotFinishedError(f"no winner yet ({match_score = })")
