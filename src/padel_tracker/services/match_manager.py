@@ -138,7 +138,15 @@ def create_match(
 
     # Create match
     logger_debug.debug("creating match")
-    match = Match(teams=teams, players=players, date=date, score=score, league=league)
+    match = Match(
+        teams=teams,
+        team1_name=teams[0].name,
+        team2_name=teams[1].name,
+        players=players,
+        date=date,
+        score=score,
+        league=league,
+    )
     match.post_init()
     ## Commit
     logger_debug.debug("committing to db")
