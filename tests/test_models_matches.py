@@ -24,7 +24,10 @@ def test_create_match():
     assert str(score) == "7-5, 6-3"
 
     match1 = Match(
-        teams=[t1, t2], players=[p1, p2, p3, p4], team1_name=t1.name, team2_name=t2.name,
+        teams=[t1, t2],
+        players=[p1, p2, p3, p4],
+        team1_name=t1.name,
+        team2_name=t2.name,
     )
     match1.score = str(score)
     winners, losers = match1.get_winners_losers()
