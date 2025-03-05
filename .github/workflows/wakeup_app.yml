@@ -1,6 +1,6 @@
 # For preventing streamlit app from going to "inactivity" mode
 
-name: Wakeup Streamlit App (Community Cloud)
+name: wakeup_app
 
 on:
   workflow_dispatch:  # Manually
