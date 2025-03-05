@@ -1,0 +1,20 @@
+# For preventing streamlit app from going to "inactivity" mode
+
+name: wakeup_app
+
+on:
+  workflow_dispatch:  # Manually
+  schedule:
+    - cron: "0 */22 * * *" # Each 22h
+
+jobs:
+  wakeup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wakeup Streamlit App (Community Cloud)
+        run: |
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://poulpe-padel-tracker.streamlit.app/)
+          if [[ $RESPONSE_CODE -lt 200 || $RESPONSE_CODE -ge 300 ]]; then
+            echo "❌ Error : Streamlit app did not respond correctly. Got HTTP response code : $RESPONSE_CODE"
+            exit 1
+          fi
