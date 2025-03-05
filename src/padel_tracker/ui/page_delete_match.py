@@ -38,9 +38,9 @@ if submit_button and match_id:
             delete_match(
                 session=session, match_id=match_id, thread_pool=get_thread_pool()
             )
-            st.success(f"{match_id} {translator("match_deleted")}", icon="☠️")
+            st.success(f"{translator('match_deleted')} (id={match_id} )", icon="☠️")
         except PlayerNotFoundError:
-            st.error(f"{translator("match_already_deleted")}", icon="💥")
+            st.error(f"{translator('match_already_deleted')}", icon="💥")
         except Exception as exc:
-            st.error(f"{translator("match_deletion_error")}: {exc}", icon="💥")
+            st.error(f"{translator('match_deletion_error')}: {exc}", icon="💥")
     refresh_cache(threaded=True)

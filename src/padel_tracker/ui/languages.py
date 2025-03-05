@@ -56,6 +56,8 @@ _DICT_TO_FR = {
     "match_added_error": " Impossible d'ajouter le match, erreur inconnue",
     "match_exists_error": " Le match a déja été enregistré",
     "match_not_finished_error": "Les calculs sont pas bons Kévin, le score ne colle pas",
+    "match_deleted": "Le match a été supprimé",
+    "match_deletion_error": "Erreur pendant la suppression du match: ",
     "see_updated_elo_below": "Voici les nouveaux points Elo:",
     "player_added_success": " a été ajouté avec succès !",
     "player_added_error": " Impossible d'ajouter le joueur, erreur inconnue:",
