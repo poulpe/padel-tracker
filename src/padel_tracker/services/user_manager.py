@@ -101,6 +101,7 @@ def create_user_from_auth_user(
     ## Default to None/False missing data
     if not username:
         username = determine_default_username(dict_auth_user)
+    username = (username[0].upper() + username[1:]).strip()
     for key in ["email", "picture"]:
         if key not in dict_auth_user.keys():
             dict_auth_user[key] = None

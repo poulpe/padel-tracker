@@ -125,7 +125,8 @@ def create_player(
 
     """
     logger = LOGGER  # .getChild("create_player")
-    name = name[0].upper() + name[1:] if name else name  # Capitalize 1st letter
+    # Clean name (capitalize 1st letter + remove leading/trailing space)
+    name = (name[0].upper() + name[1:]).strip() if name else name
     # Checks player doesn't exist
     try:
         player = get_player_from_name(session=session, name=name)
@@ -231,9 +232,6 @@ def get_team_from_players_name(
     try:
         team = read_from_db(
             Team,
-            # join_class=LinkTeamLeague,
-            # join_clause=Team.id == LinkTeamLeague.team_id,
-            # where=(LinkTeamLeague.league_id == league.id, Team.name == team_name),
             where=Team.name == team_name,
             unique=True,
             session=session,
