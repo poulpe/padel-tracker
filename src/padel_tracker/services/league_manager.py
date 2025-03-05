@@ -168,7 +168,8 @@ def update_league_after_finished_match(
 ) -> League:
     LOGGER.debug("starting update of league")
     league.nb_matches += 1
-    league.last_match_date = match.date
+    if league.last_match_date < match.date:
+        league.last_match_date = match.date
     commit_to_db(league, session=session)
     LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
     return league

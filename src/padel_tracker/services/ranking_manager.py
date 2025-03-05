@@ -116,7 +116,8 @@ def update_players_results_after_finished_match(
     logger_debug.debug("starting update of player objects")
     for player in winners + losers:
         # Update player updated_date
-        player.last_match_date = match_date
+        if player.last_match_date < match_date:
+            player.last_match_date = match_date
         # Updated Elo
         elo_rating_gain = dict_elo_rating_gains[player.name]
         updated_elo_rating = player.elo_rating + elo_rating_gain
@@ -153,7 +154,8 @@ def update_players_results_after_finished_match(
     team_elo_history_entries = []
     logger_debug.debug("starting update of team objects")
     for team in [winner_team, loser_team]:
-        team.last_match_date = match_date
+        if team.last_match_date < match_date:
+            team.last_match_date = match_date
         # Update Team elo (will trigger comput of self.elo_rating)
         previous_elo_rating = team.elo_rating
         updated_elo_rating = team.calc_team_elo_rating()
