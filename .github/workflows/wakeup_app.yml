@@ -1,4 +1,4 @@
-# For preventing streamlit app from going to "inactivity" mode
+# For preventing streamlit app from going to "inactivity" mode of Community Cloud
 
 name: wakeup_app
 
@@ -11,10 +11,6 @@ jobs:
   wakeup:
     runs-on: ubuntu-latest
     steps:
-      - name: Wakeup Streamlit App (Community Cloud)
+      - name: Wakeup Streamlit app (Community Cloud)
         run: |
-          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L https://poulpe-padel-tracker.streamlit.app/)
-          if [[ $RESPONSE_CODE -lt 200 || $RESPONSE_CODE -ge 300 ]]; then
-            echo "❌ Error : Streamlit app did not respond correctly. Got HTTP response code : $RESPONSE_CODE"
-            exit 1
-          fi
+           python -c "import requests; r = requests.get(r'https://poulpe-padel-tracker.streamlit.app/', timeout=10); print(f'{r.status_code=}'); exit(1) if (r.status_code < 200 or r.status_code >= 300) else exit(0)"
