@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Wakeup Streamlit App (Community Cloud)
         run: |
-          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://poulpe-padel-tracker.streamlit.app/)
+          RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L https://poulpe-padel-tracker.streamlit.app/)
           if [[ $RESPONSE_CODE -lt 200 || $RESPONSE_CODE -ge 300 ]]; then
             echo "❌ Error : Streamlit app did not respond correctly. Got HTTP response code : $RESPONSE_CODE"
             exit 1
