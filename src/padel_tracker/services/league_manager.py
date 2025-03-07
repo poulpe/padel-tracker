@@ -168,7 +168,7 @@ def update_league_after_finished_match(
 ) -> League:
     LOGGER.debug("starting update of league")
     league.nb_matches += 1
-    if league.last_match_date and (league.last_match_date < match.date):
+    if not league.last_match_date or (league.last_match_date < match.date):
         league.last_match_date = match.date
     commit_to_db(league, session=session)
     LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
@@ -223,7 +223,8 @@ def create_league(
     **kwargs,
 ) -> League:
     logger = LOGGER.getChild("create")
-    name = name[0].upper() + name[1:] if name else name  # Capitalize 1st letter
+    # Clean name (capitalize 1st letter + remove leading/trailing space)
+    name = (name[0].upper() + name[1:]).strip() if name else name
     # Checks league doesn't exist
     try:
         league = get_league_from_name(session=session, name=name)
@@ -284,6 +285,23 @@ def delete_league(session: Session, name: str) -> None:
     except Exception as exc:
         logger.exception(exc)
         raise (exc)
+
+    # Delete all player_links from league
+    try:
+        links = league.player_links
+        delete_from_db(*links, session=session)
+    except Exception as exc:
+        logger.exception(exc)
+        raise (exc)
+
+    # Update affected users "default_league_name"
+    users = read_from_db(User, where=User.default_league_name == name, session=session)
+    if users:
+        for user in users:
+            user.default_league_name = None
+        commit_to_db(*users, session=session)
+
+    # /!\ Do NOT delete matches, can keep. Can be checked later...
 
     # Delete
     delete_from_db(league, session=session)
