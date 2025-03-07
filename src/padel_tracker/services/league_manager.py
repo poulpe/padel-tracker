@@ -27,7 +27,7 @@ from padel_tracker.database.db import (
     delete_from_db,
 )
 
-LOGGER = get_logger("league_manager")
+LOGGER = get_logger("leagues")
 
 # GET/UPDATE
 
@@ -168,7 +168,7 @@ def update_league_after_finished_match(
 ) -> League:
     LOGGER.debug("starting update of league")
     league.nb_matches += 1
-    if league.last_match_date < match.date:
+    if league.last_match_date and (league.last_match_date < match.date):
         league.last_match_date = match.date
     commit_to_db(league, session=session)
     LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
@@ -222,7 +222,7 @@ def create_league(
     admin_name: str = "",
     **kwargs,
 ) -> League:
-    logger = LOGGER  # .getChild("create_league")
+    logger = LOGGER.getChild("create")
     name = name[0].upper() + name[1:] if name else name  # Capitalize 1st letter
     # Checks league doesn't exist
     try:
@@ -269,3 +269,22 @@ def check_players_all_in_league(
         list_is_in.append(is_in)
     if not all(list_is_in):
         raise PlayerNotInLeagueError
+
+
+# DELETE
+def delete_league(session: Session, name: str) -> None:
+    logger = LOGGER.getChild("delete")
+    # Fetch league
+    try:
+        league = get_league_from_name(session=session, name=name)
+    except LeagueNotFoundError:
+        err_msg = f"{name} doesn't exist, cannot delete it"
+        logger.error(err_msg)
+        raise LeagueNotFoundError(err_msg)
+    except Exception as exc:
+        logger.exception(exc)
+        raise (exc)
+
+    # Delete
+    delete_from_db(league, session=session)
+    logger.notif(f"deleted '{name}' successfully from database")
