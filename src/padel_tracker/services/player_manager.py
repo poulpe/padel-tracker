@@ -27,7 +27,7 @@ from padel_tracker.models.links import LinkPlayerLeague, LinkTeamLeague
 from padel_tracker.models.players import Player, Team
 
 
-LOGGER = get_logger("player_manager")
+LOGGER = get_logger("players")
 
 
 ##### Players #####
@@ -124,7 +124,7 @@ def create_player(
     InvalidPlayerNameError
 
     """
-    logger = LOGGER  # .getChild("create_player")
+    logger = LOGGER.getChild("create")
     # Clean name (capitalize 1st letter + remove leading/trailing space)
     name = (name[0].upper() + name[1:]).strip() if name else name
     # Checks player doesn't exist
@@ -165,7 +165,7 @@ def create_player(
 
 
 def delete_player(session: Session, name: str) -> None:
-    logger = LOGGER  # .getChild("delete_player")
+    logger = LOGGER.getChild("delete")
     # Fetch player
     try:
         player = get_player_from_name(session=session, name=name)

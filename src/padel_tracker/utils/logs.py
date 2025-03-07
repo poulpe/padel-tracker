@@ -14,12 +14,12 @@ LOG_LEVEL_NOTIF = 25
 logging.addLevelName("NOTIF", LOG_LEVEL_NOTIF)
 
 # Define parameters
-MAIN_LOG_NAME = "PadelTracker"
+MAIN_LOG_NAME = "PT"
 DEFAULT_LOG_LEVEL_CONSOLE = logging.INFO
 DEFAULT_LOG_LEVEL_FILE = LOG_LEVEL_NOTIF
 DEFAULT_LOG_FOLDER = get_absolute_path(__file__, "../../../data/logs/")
 DEFAULT_LOG_FORMATTER = logging.Formatter(
-    fmt="%(asctime)s - %(name)-30s - %(levelname)-6s - %(message)s",
+    fmt="%(asctime)s - %(name)-22s - %(levelname)-6s - %(message)s",
     datefmt="%d/%m/%Y %H:%M:%S",
 )
 logging.Formatter.converter = lambda *args: now().timetuple()
@@ -220,7 +220,7 @@ def init_loggings(
 
     # Log starting message logging
     msg = f"init with conf: db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_file=}"
-    main_logger.getChild("init_loggings").log(LOG_LEVEL_NOTIF, msg)
+    main_logger.getChild("init_logs").log(LOG_LEVEL_NOTIF, msg)
 
     return main_logger
 

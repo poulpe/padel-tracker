@@ -15,7 +15,7 @@ from padel_tracker.models.players import Player
 from padel_tracker.models.users import User, UserRole
 from padel_tracker.services import player_manager, league_manager
 
-LOGGER = get_logger("user_manager")
+LOGGER = get_logger("users")
 
 # GET
 
@@ -82,6 +82,8 @@ def create_user_from_auth_user(
     username:str
         If None, will get from default determining. Otherwise will use it
     """
+    logger = LOGGER.getChild("create")
+
     # Extract auth_user_id
     try:
         auth_user_id = dict_auth_user["sub"]
@@ -95,7 +97,7 @@ def create_user_from_auth_user(
         pass
     else:
         err_msg = f"User({user.id=}, {auth_user_id=}) already exists, won't recreate"
-        LOGGER.error(err_msg)
+        logger.error(err_msg)
         raise UserExistsError(err_msg)
     # Go creation
     ## Default to None/False missing data
@@ -119,7 +121,7 @@ def create_user_from_auth_user(
     )
     # Commit
     commit_to_db(user, session=session)
-    LOGGER.notif(f"created {user=}")
+    logger.notif(f"created {user=}")
     # Create player if specified
     if is_create_player:
         default_league = None

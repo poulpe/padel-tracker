@@ -28,7 +28,7 @@ from padel_tracker.database.db import (
 )
 from padel_tracker.services import ranking_manager, league_manager
 
-LOGGER = get_logger("match_manager")
+LOGGER = get_logger("matches")
 
 
 def process_finished_match(
@@ -81,14 +81,13 @@ def create_match(
     is_finished: bool = True,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
-    logger = LOGGER
-    logger_debug = logger.getChild("create_match")
+    logger = LOGGER.getChild("create")
 
     # Normalize score as str for creation
     if isinstance(score, MatchScore):
         score = str(score)
     # Basic check nb teams
-    logger_debug.debug("performing basic checks")
+    logger.debug("performing basic checks")
     nb_teams = len(teams)
     if nb_teams != 2:
         err_msg = f"a match must have exactly 2 teams. Got {nb_teams=}"
@@ -111,13 +110,13 @@ def create_match(
             raise SamePlayerInBothTeamsError(err_msg)
 
     # Fetch league
-    logger_debug.debug("fetching league")
+    logger.debug("fetching league")
     league = read_from_db(
         League, where=League.name == league_name, session=session, unique=True
     )
 
     # Check match doesn't exist already
-    logger_debug.debug("checking match doesn't exist")
+    logger.debug("checking match doesn't exist")
     check_match_not_already_created(
         session=session,
         teams=teams,
@@ -133,11 +132,11 @@ def create_match(
         teams[1].players[0],
         teams[1].players[1],
     ]
-    logger_debug.debug("checking all players in league")
+    logger.debug("checking all players in league")
     league_manager.check_players_all_in_league(players=players, league=league)
 
     # Create match
-    logger_debug.debug("creating match")
+    logger.debug("creating match")
     match = Match(
         teams=teams,
         team1_name=teams[0].name,
@@ -149,7 +148,7 @@ def create_match(
     )
     match.post_init()
     ## Commit
-    logger_debug.debug("committing to db")
+    logger.debug("committing to db")
     commit_to_db(match, league, session=session)
     logger.notif(f"created new match id={match.id}")
     # Process it if finished
@@ -183,30 +182,7 @@ def get_all_matches_from_league(
     )
 
 
-# def get_last_matches(
-#     session: Session, limit_last: int = 10, as_df: bool = False
-# ) -> list[Match] | pd.DataFrame:
-#     return read_from_db(Match, session=session, limit_last=limit_last, as_df=as_df)
-#
-#
-# def get_all_matches_from_player(player: Player) -> list[Match]:
-#     list_player_matches = player.matches
-#     return list_player_matches
-#
-#
-# def get_last_matches_from_player(player: Player, limit_last: int = 10) -> list[Match]:
-#     list_player_matches = player.matches[:-limit_last]
-#     return list_player_matches
-#
-#
-# def get_all_matches_from_team(team: Team) -> list[Match]:
-#     return team.matches
-#
-#
-# def get_last_matches_from_team(team: Player, limit_last: int = 10) -> list[Match]:
-#     return team.matches[:-limit_last]
-
-
+# FIXME: score not included ??
 def check_match_not_already_created(
     session: Session,
     teams: list[Team],
@@ -240,6 +216,8 @@ def delete_match(
     """Delete match after removing history.elo_gain corresponding to this match from players/team current elo
     Also updates league nb_matches.
     """
+    logger = LOGGER.getChild("delete")
+
     if isinstance(match_id, str):
         match_id = UUID(match_id)
 
@@ -306,7 +284,7 @@ def delete_match(
     )
     # Finally delete
     delete_from_db(match, session=session)
-    LOGGER.notif(f"deleted {match_id=} successfully")
+    logger.notif(f"deleted {match_id=} successfully")
     # Update ranks in a thread (non blocking)
     thread_pool.submit(
         ranking_manager.update_players_rank,
