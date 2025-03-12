@@ -19,7 +19,7 @@ DEFAULT_LOG_LEVEL_CONSOLE = logging.INFO
 DEFAULT_LOG_LEVEL_FILE = LOG_LEVEL_NOTIF
 DEFAULT_LOG_FOLDER = get_absolute_path(__file__, "../../../data/logs/")
 DEFAULT_LOG_FORMATTER = logging.Formatter(
-    fmt="%(asctime)s - %(name)-22s - %(levelname)-6s - %(message)s",
+    fmt="%(asctime)s - %(name)-16s - %(levelname)-6s - %(message)s",
     datefmt="%d/%m/%Y %H:%M:%S",
 )
 logging.Formatter.converter = lambda *args: now().timetuple()
