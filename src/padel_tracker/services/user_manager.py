@@ -6,11 +6,7 @@ import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import UserNotFoundError, UserExistsError
-from padel_tracker.database.db import (
-    Session,
-    commit_to_db,
-    read_from_db,
-)
+from padel_tracker.database.db import Session, commit_to_db, read_from_db
 from padel_tracker.models.players import Player
 from padel_tracker.models.users import User, UserRole
 from padel_tracker.services import player_manager, league_manager

@@ -26,6 +26,9 @@ dev = [
     "pytest",
     "coverage",
 ]
+wakeup = [
+    "selenium>=4.29",
+]
 
 [build-system]
 requires = ["setuptools>=64.0.0"]

@@ -12,12 +12,7 @@ from padel_tracker.models.players import (
 from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.models.ranking import calc_player_elo_rating_gain, calc_k_value
 from padel_tracker.models.links import LinkPlayerLeague
-from padel_tracker.database.db import (
-    Session,
-    commit_to_db,
-    read_from_db,
-    DB,
-)
+from padel_tracker.database.db import Session, commit_to_db, read_from_db, DB
 from padel_tracker.services.player_manager import get_all_players_from_league
 from padel_tracker.services.league_manager import get_league_from_name
 

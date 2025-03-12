@@ -15,7 +15,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Setup venv & install dependencies
-        run: uv sync --all-extras
+        run: uv sync --extra dev
 
       - name: Check formatting with Black
         run: uv run black . --check
@@ -33,7 +33,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Setup venv & install dependencies
-        run: uv sync --all-extras
+        run: uv sync --extra dev
           
       - name: Run pytest tests
         run: uv run pytest tests
