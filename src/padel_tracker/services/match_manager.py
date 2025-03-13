@@ -211,7 +211,9 @@ def check_match_not_already_created(
 
 # DELETE
 def delete_match(
-    session: Session, match_id: UUID | str, thread_pool: ThreadPoolExecutor
+    session: Session,
+    match_id: UUID | str,
+    thread_pool: ThreadPoolExecutor = None,
 ) -> None:
     """Delete match after removing history.elo_gain corresponding to this match from players/team current elo
     Also updates league nb_matches.
@@ -286,8 +288,13 @@ def delete_match(
     delete_from_db(match, session=session)
     logger.notif(f"deleted {match_id=} successfully")
     # Update ranks in a thread (non blocking)
-    thread_pool.submit(
-        ranking_manager.update_players_rank,
-        league_name=league.name,
-        league_id=league.id,
-    )
+    if thread_pool:
+        thread_pool.submit(
+            ranking_manager.update_players_rank,
+            league_name=league.name,
+            league_id=league.id,
+        )
+    else:
+        ranking_manager.update_players_rank(
+            league_name=league.name, league_id=league.id
+        )
