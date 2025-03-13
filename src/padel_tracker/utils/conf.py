@@ -17,6 +17,13 @@ class RunMode(StrEnum):
     PROD = "prod"
 
 
+_DEFAULT_CONF = {
+    "log_level_console": "INFO",
+    "db_mode": "local",
+    "run_mode": "test",
+}
+
+
 def get_conf() -> dict[str, Any]:
     """Get conf in this order: try from dotenv first, else try from st.secrets
     Fallback to None if not found.
@@ -54,7 +61,7 @@ def get_conf() -> dict[str, Any]:
             try:
                 value = st.secrets["general"][key]
             except (KeyError, FileNotFoundError):
-                pass
+                value = _DEFAULT_CONF[key]
         dict_conf["general"][key] = value
 
     return dict_conf
