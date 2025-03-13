@@ -44,7 +44,7 @@ def get_conf() -> dict[str, Any]:
         if value is None:
             try:
                 value = st.secrets["db_credentials"][key]
-            except KeyError:
+            except (KeyError, FileNotFoundError):
                 pass
         dict_conf["db_credentials"][key] = value
     ## General conf
@@ -53,7 +53,7 @@ def get_conf() -> dict[str, Any]:
         if value is None:
             try:
                 value = st.secrets["general"][key]
-            except KeyError:
+            except (KeyError, FileNotFoundError):
                 pass
         dict_conf["general"][key] = value
 
