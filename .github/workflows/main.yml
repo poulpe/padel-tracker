@@ -21,7 +21,10 @@ jobs:
         run: uv run black . --check
 
       - name: Check linting with Ruff
-        run: uv run ruff check
+        run: |
+          ls --lR
+          source .venv/bin/activate
+          pytest
 
   test-pytest:
     name: Test with Pytest

@@ -38,10 +38,9 @@ def get_db_url(
         # Determine db_url vs modes
         if run_mode == RunMode.TEST:
             db_file = get_absolute_path(__file__, f"../../../tests/data/{db_name}.db")
-            db_url = f"sqlite://{db_file}"
         else:
             db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
-            db_url = f"sqlite:///{db_file}"
+        db_url = f"sqlite:///{db_file}"
     elif db_mode == DBMode.CLOUD:
         db_url = get_cloud_db_url(
             user=user, password=password, host=host, port=port, dbname=dbname
