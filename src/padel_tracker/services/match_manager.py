@@ -65,7 +65,9 @@ def process_finished_match(
         )
     else:
         ranking_manager.update_players_rank(
-            league_name=match.league.name, league_id=match.league.id, session=session,
+            league_name=match.league.name,
+            league_id=match.league.id,
+            session=session,
         )
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
@@ -298,5 +300,7 @@ def delete_match(
         )
     else:
         ranking_manager.update_players_rank(
-            league_name=league.name, league_id=league.id, session=session,
+            league_name=league.name,
+            league_id=league.id,
+            session=session,
         )
