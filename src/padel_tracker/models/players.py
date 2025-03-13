@@ -120,7 +120,7 @@ class Team(ValidatedSQLModel, table=True):
     elo_rating: PositiveInt | None = Field(None, description="Avg of both players")
     name: str | None = Field(None, index=True, description="'p1-p2' alphabetical order")
     # History related
-    last_match_date: datetime = Field(
+    last_match_date: datetime | None = Field(
         default_factory=now,
         description="Latest update date of Elo score",
         repr=False,
