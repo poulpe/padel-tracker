@@ -12,6 +12,7 @@ class DBMode(StrEnum):
 
 
 class RunMode(StrEnum):
+    DEBUG = "debug"
     TEST = "test"
     PROD = "prod"
 

@@ -32,6 +32,8 @@ def get_db_url(
         db_name = "database"
         if run_mode == RunMode.TEST:
             db_name += "_test"
+        elif run_mode == RunMode.DEBUG:
+            db_name += "_debug"
         db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
     elif db_mode == DBMode.CLOUD:
@@ -119,9 +121,9 @@ class Database:
 DB = Database()
 
 
-def init_db_and_tables():
+def init_db_and_tables(db: Database = DB):
     """To be called in main at init"""
-    SQLModel.metadata.create_all(DB.engine)
+    SQLModel.metadata.create_all(db.engine)
 
 
 def commit_to_db_no_session(*objects, refresh: bool = True) -> None:
