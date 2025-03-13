@@ -1,3 +1,5 @@
+import pytest
+
 from padel_tracker.models.players import Player, Team
 from padel_tracker.models.matches import Match, MatchScore
 
@@ -59,3 +61,20 @@ def test_create_match_score_from_string():
         games_set2_team2=1,
     )
     assert str(score_from_class) == str(score_from_str)
+
+
+def test_match_score_validity():
+    score = MatchScore(games_set1_team1=6, games_set1_team2=4)
+    score.check_basic_validity()
+    assert score.nb_played_sets == 1
+
+
+def test_match_score_set_validity():
+    with pytest.raises(ValueError):
+        MatchScore.check_set_validity(6, 6)
+
+
+def test_match_score_won_sets():
+    score = MatchScore.from_string("6-4, 3-6, 6-2")
+    won_sets = score.calc_won_sets_and_games()
+    assert won_sets == (2, 1)
