@@ -39,4 +39,7 @@ jobs:
         run: uv sync --extra dev
           
       - name: Run pytest tests
-        run: uv run pytest tests
+        run: |
+          ls --lR
+          source .venv/bin/activate
+          pytest
