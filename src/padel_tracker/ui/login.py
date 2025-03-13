@@ -12,6 +12,12 @@ def determine_is_guest() -> bool:
     return ("is_guest" in st.session_state) and (st.session_state.is_guest)
 
 
+def determine_is_logged_in() -> bool:
+    return (
+        "is_logged_in" in st.experimental_user
+    ) and st.experimental_user.is_logged_in
+
+
 def make_login_form(translator: LanguageTranslator) -> None:
     # Page login
     write_header(translator("welcome_not_logged"), subheader="")

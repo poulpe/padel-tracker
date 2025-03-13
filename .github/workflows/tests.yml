@@ -1,4 +1,4 @@
-name: main
+name: tests
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   test-lint:
-    name: Check linting (Black + Ruff)
+    name: Check linting (black + ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
         run: uv run ruff check
 
   test-pytest:
-    name: Test with Pytest
+    name: Test with pytest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,8 +35,5 @@ jobs:
       - name: Setup venv & install dependencies
         run: uv sync --extra dev
           
-      - name: Run pytest tests
-        run: |
-          ls --lR
-          source .venv/bin/activate
-          pytest
+      - name: Run pytest
+        run: uv run pytest

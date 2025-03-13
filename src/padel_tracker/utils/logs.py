@@ -187,7 +187,7 @@ def init_loggings(
         try:
             run_mode = RunMode(DICT_CONF["general"]["run_mode"].lower())
         except (KeyError, ValueError):
-            run_mode = RunMode.TEST
+            run_mode = RunMode.DEBUG
 
     # Convert log levels to take into account custom NOTIF level
     # log_level = logging.getLevelName(log_level)

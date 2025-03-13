@@ -45,7 +45,9 @@ CACHE_KEYS_NO_USER = tuple(list_cache_keys_no_user)
 def update_cache_user(session: Session, force: bool = False):
     key = str(CacheKey.user)
     if (key not in st.session_state) or force:
-        if st.experimental_user.is_logged_in:
+        if (
+            "is_logged_in" in st.experimental_user
+        ) and st.experimental_user.is_logged_in:
             auth_user_id = st.experimental_user["sub"]
             try:
                 user = user_manager.get_user_from_auth_user_id(

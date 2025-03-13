@@ -12,8 +12,16 @@ class DBMode(StrEnum):
 
 
 class RunMode(StrEnum):
+    DEBUG = "debug"
     TEST = "test"
     PROD = "prod"
+
+
+_DEFAULT_CONF = {
+    "log_level_console": "INFO",
+    "db_mode": "local",
+    "run_mode": "test",
+}
 
 
 def get_conf() -> dict[str, Any]:
@@ -43,7 +51,7 @@ def get_conf() -> dict[str, Any]:
         if value is None:
             try:
                 value = st.secrets["db_credentials"][key]
-            except KeyError:
+            except (KeyError, FileNotFoundError):
                 pass
         dict_conf["db_credentials"][key] = value
     ## General conf
@@ -52,8 +60,8 @@ def get_conf() -> dict[str, Any]:
         if value is None:
             try:
                 value = st.secrets["general"][key]
-            except KeyError:
-                pass
+            except (KeyError, FileNotFoundError):
+                value = _DEFAULT_CONF[key]
         dict_conf["general"][key] = value
 
     return dict_conf

@@ -29,10 +29,19 @@ def get_db_url(
     db_mode = db_mode.lower()
     run_mode = run_mode.lower()
     if db_mode == DBMode.LOCAL:
+        # Determine db_name vs modes
         db_name = "database"
         if run_mode == RunMode.TEST:
             db_name += "_test"
-        db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
+        elif run_mode == RunMode.DEBUG:
+            db_name += "_debug"
+        # Determine db_url vs modes
+        if run_mode == RunMode.TEST:
+            db_file = get_absolute_path(__file__, f"../../../tests/data/{db_name}.db")
+            # Need to ensure directory is created and access OK (for Github action)
+            db_file.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
     elif db_mode == DBMode.CLOUD:
         db_url = get_cloud_db_url(
@@ -119,9 +128,9 @@ class Database:
 DB = Database()
 
 
-def init_db_and_tables():
+def init_db_and_tables(db: Database = DB):
     """To be called in main at init"""
-    SQLModel.metadata.create_all(DB.engine)
+    SQLModel.metadata.create_all(db.engine)
 
 
 def commit_to_db_no_session(*objects, refresh: bool = True) -> None:

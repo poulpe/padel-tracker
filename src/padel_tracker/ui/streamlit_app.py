@@ -25,6 +25,7 @@ from padel_tracker.ui.login import (
     make_login_form,
     make_finalize_signup_form,
     determine_is_guest,
+    determine_is_logged_in,
     display_sidebar_logout_button,
 )
 from padel_tracker.ui.feedback import make_feedback_button, make_feedback_form
@@ -46,7 +47,8 @@ translator = st.session_state.translator
 display_logo_and_top_header()
 
 ##### Fetch user if logged_in #####
-if st.experimental_user.is_logged_in:
+is_logged_in = determine_is_logged_in()
+if is_logged_in:
     if ("user" not in st.session_state) or (st.session_state.user is None):
         update_cache(only=CacheKey.user, force=True)
 
@@ -57,7 +59,7 @@ is_guest = determine_is_guest()
 update_cache(only=CacheKey.df_leagues, force=False)
 determine_session_state_league_name()
 
-if st.experimental_user.is_logged_in or is_guest:
+if is_logged_in or is_guest:
     st.sidebar.selectbox(
         translator("league"),
         st.session_state.league_names,
@@ -78,7 +80,7 @@ st.sidebar.selectbox(
 )
 
 # Logout button
-if (st.experimental_user.is_logged_in) or is_guest:
+if is_logged_in or is_guest:
     display_sidebar_logout_button(translator)
 
 # Feedback button
@@ -109,7 +111,7 @@ is_finalize_signup = (not is_guest) and is_undefined_user
 pages = PagesCollection()
 pages.make_pages(translator=translator)
 
-if not st.experimental_user.is_logged_in and not is_guest:
+if not is_logged_in and not is_guest:
     make_login_form(translator=translator)
 elif is_finalize_signup:
     make_finalize_signup_form(translator=translator)  # = logged but no user linked
