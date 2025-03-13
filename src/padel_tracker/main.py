@@ -4,10 +4,10 @@ from concurrent.futures.thread import ThreadPoolExecutor
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
 from padel_tracker.utils.logs import init_loggings
-from padel_tracker.database.db import init_db_and_tables
+# from padel_tracker.database.db import init_db_and_tables
 from padel_tracker.utils.paths import get_absolute_path
 
-
+#TODO : add differentiation when "test" or "prod" for DB
 def init_app(
     log_level_console: str | int = None,
     threaded_logs: bool = True,
@@ -19,7 +19,7 @@ def init_app(
         is_threaded=threaded_logs,
         thread_pool=thread_pool,
     )
-    init_db_and_tables()
+    # init_db_and_tables()
 
 
 def run_streamlit_app() -> None:
