@@ -40,6 +40,6 @@ jobs:
           
       - name: Run pytest tests
         run: |
-          ls --lR
+          ls -lr
           source .venv/bin/activate
           pytest
