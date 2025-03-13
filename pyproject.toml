@@ -52,4 +52,7 @@ lint.ignore = [
 exclude = ["src/padel_tracker/database/migrations/versions/*.py"]
 
 [tool.pytest.ini_options]
-addopts = "--ignore=examples/" # --doctest-modules
+addopts = "--ignore=examples/"
+
+[tool.coverage.run]
+source = ["src"]

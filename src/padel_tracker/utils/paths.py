@@ -28,3 +28,6 @@ def get_absolute_path(current_file: str | Path, rel_path: str | Path) -> Path:
     if isinstance(rel_path, str):
         rel_path = Path(rel_path)
     return (current_file.parent / rel_path).resolve()
+
+
+APP_PATH = get_absolute_path(__file__, "../ui/streamlit_app.py")
