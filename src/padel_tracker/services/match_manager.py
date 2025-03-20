@@ -11,13 +11,13 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import pandas as pd
 
-from padel_tracker.models.leagues import League
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import (
     MatchExistsError,
     MatchNotFinishedError,
     SamePlayerInBothTeamsError,
 )
+from padel_tracker.models.leagues import League
 from padel_tracker.models.players import Team, EloRatingHistory, TeamEloRatingHistory
 from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.database.db import (
@@ -26,7 +26,8 @@ from padel_tracker.database.db import (
     read_from_db,
     delete_from_db,
 )
-from padel_tracker.services import ranking_manager, league_manager
+from padel_tracker.services.common import check_players_all_in_league
+from padel_tracker.services import ranking_manager
 
 LOGGER = get_logger("matches")
 
@@ -51,9 +52,13 @@ def process_finished_match(
         LOGGER.error(err_msg)
         raise MatchNotFinishedError(err_msg)
     else:
-        league_manager.update_league_after_finished_match(
-            session=session, league=match.league, match=match
-        )
+        LOGGER.debug("starting update of league")
+        league = match.league
+        league.nb_matches += 1
+        if not league.last_match_date or (league.last_match_date < match.date):
+            league.last_match_date = match.date
+        commit_to_db(league, session=session)
+        LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
         LOGGER.notif(f"processed finished_match id={match.id}")
     # Update_players_rank in a thread
     if thread_pool:
@@ -136,7 +141,7 @@ def create_match(
         teams[1].players[1],
     ]
     logger.debug("checking all players in league")
-    league_manager.check_players_all_in_league(players=players, league=league)
+    check_players_all_in_league(players=players, league=league)
 
     # Create match
     logger.debug("creating match")

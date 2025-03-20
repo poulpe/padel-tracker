@@ -6,8 +6,7 @@ import pandas as pd
 import sqlalchemy
 import pydantic
 
-from padel_tracker.models.links import LinkPlayerLeague
-from padel_tracker.services import user_manager
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import (
     LeagueNotFoundError,
     LeagueExistsError,
@@ -15,17 +14,18 @@ from padel_tracker.utils.errors import (
     PlayerNotInLeagueError,
     PlayerAlreadyInLeagueError,
 )
-from padel_tracker.utils.logs import get_logger
-from padel_tracker.models.players import Player
-from padel_tracker.models.matches import Match
-from padel_tracker.models.leagues import League
-from padel_tracker.models.users import User
 from padel_tracker.database.db import (
     Session,
     commit_to_db,
     read_from_db,
     delete_from_db,
 )
+from padel_tracker.models.links import LinkPlayerLeague
+from padel_tracker.models.players import Player
+from padel_tracker.models.matches import Match
+from padel_tracker.models.leagues import League
+from padel_tracker.models.users import User
+from padel_tracker.services import user_manager, match_manager
 
 LOGGER = get_logger("leagues")
 
@@ -252,29 +252,10 @@ def create_league(
     return league
 
 
-# UTILS
-def check_players_all_in_league(
-    # session: Session,
-    players: list[Player],
-    league: League,
-    # logger: logging.Logger,
-) -> None:
-    """Raises PlayerNotInLeagueError"""
-    list_is_in = []
-    for player in players:
-        is_in = False
-        for link in player.league_links:
-            if link.league == league:
-                is_in = True
-                break
-        list_is_in.append(is_in)
-    if not all(list_is_in):
-        raise PlayerNotInLeagueError
-
-
 # DELETE
 def delete_league(session: Session, name: str) -> None:
     logger = LOGGER.getChild("delete")
+
     # Fetch league
     try:
         league = get_league_from_name(session=session, name=name)
@@ -301,7 +282,10 @@ def delete_league(session: Session, name: str) -> None:
             user.default_league_name = None
         commit_to_db(*users, session=session)
 
-    # /!\ Do NOT delete matches, can keep. Can be checked later...
+    # Delete all matches (solving dependencies with eloratinghistory)
+    logger.info("deleting all matches from league before deleting it")
+    for match in league.matches:
+        match_manager.delete_match(session=session, match_id=match.id)
 
     # Delete
     delete_from_db(league, session=session)
