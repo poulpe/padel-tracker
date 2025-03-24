@@ -5,7 +5,7 @@ name: wakeup_app
 on:
   workflow_dispatch:  # Manually
   schedule:
-    - cron: "0 */22 * * *" # Each 22h
+    - cron: "0 */12 * * *" # Each 12h
 
 jobs:
   wakeup:
