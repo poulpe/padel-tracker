@@ -17,4 +17,4 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Wakeup Streamlit app (Community Cloud)
-        run: uv run --with "selenium>=4.29" ./scripts/wakeup_app.py
+        run: uv run --no-project --with "selenium>=4.29" ./scripts/wakeup_app.py
