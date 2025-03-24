@@ -39,9 +39,13 @@ else:
     is_private_icon = "🤗"
 write_subheader(f"{is_private_str} {is_private_icon}", bold=False)
 write_subheader(translator("description"), extra_line=False)
-description = df_league["description"][0]
-if not description:
+try:
+    description = df_league["description"][0]
+except KeyError:
     description = translator("no_description_yet")
+else:
+    if not description:
+        description = translator("no_description_yet")
 write_subheader(description, bold=False)
 
 ## Display league_overview_table

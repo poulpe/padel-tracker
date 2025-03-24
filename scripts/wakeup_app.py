@@ -37,7 +37,7 @@ except NoSuchElementException:
     browser.quit()
     exit(0)
 else:
-    logging.info("App is inactive, awakening in progress (clicked button)")
+    logging.warning("App is inactive, awakening in progress (clicked button)")
     wakeup_button.click()
     time.sleep(30)
     try:

@@ -53,7 +53,7 @@ The application is hosted on **Streamlit Community Cloud** and can be used on we
     - [x] Like select player, it shows these analytics
 - Leagues
   - [x] Allow several league
-  - [ ] League description ?
+  - [x] League description ?
   - [ ] Manage league ? (i.e: league admin to add/remove players, rename league)
 - Tests
   - [ ] Not the funniest part, but, eh...

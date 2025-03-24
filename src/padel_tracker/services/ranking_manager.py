@@ -14,7 +14,6 @@ from padel_tracker.models.ranking import calc_player_elo_rating_gain, calc_k_val
 from padel_tracker.models.links import LinkPlayerLeague
 from padel_tracker.database.db import Session, commit_to_db, read_from_db, DB
 from padel_tracker.services.player_manager import get_all_players_from_league
-from padel_tracker.services.league_manager import get_league_from_name
 
 LOGGER = get_logger("ranking")
 
@@ -195,7 +194,7 @@ def update_players_results_after_finished_match(
 
 
 def update_players_rank(
-    league_name: str, league_id: UUID = None, session: Session = None
+    league_name: str, league_id: UUID, session: Session = None
 ) -> None:
     """Calc ranks and updated database
     Notes
@@ -214,9 +213,6 @@ def update_players_rank(
         is_session_provided = True
 
     try:
-        # Fetch league_id if not given
-        if league_id is None:
-            league_id = get_league_from_name(session=session, name=league_name).id
         # Fetch players
         logger_debug.debug("starting rank update, fetching sorted_players")
         sorted_players = get_all_players_from_league(
