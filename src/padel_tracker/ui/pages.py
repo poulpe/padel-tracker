@@ -48,11 +48,24 @@ class PagesCollection:
             url_path="manage_account",
             icon="⚙️",
         )
+        ## League pages
         page_manage_league = st.Page(
             "page_manage_league.py",
             title=translator("manage_league"),
             url_path="manage_league",
             icon="🏆",
+        )
+        page_add_player_in_league = st.Page(
+            "page_add_player_in_league.py",
+            title=translator("add_player"),
+            url_path="add_player_in_league",
+            icon="🆕",
+        )
+        page_add_league = st.Page(
+            "page_add_league.py",
+            title=translator("add_league"),
+            url_path="add_league",
+            icon="📋",
         )
         ## Admin pages
         page_add_player = st.Page(
@@ -72,12 +85,6 @@ class PagesCollection:
             title=translator("delete_match"),
             url_path="delete_match",
             icon="❌",
-        )
-        page_add_league = st.Page(
-            "page_add_league.py",
-            title=translator("add_league"),
-            url_path="add_league",
-            icon="📋",
         )
         page_check_logs = st.Page(
             "page_check_logs.py",
@@ -100,37 +107,40 @@ class PagesCollection:
             "Padel Tracker": [page_overview],
             translator("matches"): [page_add_match],
             translator("players_teams"): [page_check_player, page_check_team],
-            translator("my_account"): [page_join_league, page_manage_account],
-            translator("my_league"): [page_manage_league],
-            translator("administration"): [
+            translator("my_league"): [
+                page_manage_league,
+                page_add_player_in_league,
                 page_add_league,
-                page_add_player,
             ],
+            translator("my_account"): [page_join_league, page_manage_account],
         }
         self.TRUSTEDPLAYER = {
             "Padel Tracker": [page_overview],
             translator("matches"): [page_add_match],
             translator("players_teams"): [page_check_player, page_check_team],
-            translator("my_account"): [page_join_league, page_manage_account],
-            translator("my_league"): [page_manage_league],
-            translator("administration"): [
+            translator("my_league"): [
+                page_manage_league,
+                page_add_player_in_league,
                 page_add_league,
-                page_add_player,
-                page_assign_league,
             ],
+            translator("my_account"): [page_join_league, page_manage_account],
+            # TODO: cool form #translator("administration"): [page_delete_match],
         }
         self.ADMIN = {
             "Padel Tracker": [page_overview],
             translator("matches"): [page_add_match],
             translator("players_teams"): [page_check_player, page_check_team],
-            translator("my_account"): [page_join_league, page_manage_account],
-            translator("my_league"): [page_manage_league],
-            translator("administration"): [
+            translator("my_league"): [
+                page_manage_league,
+                page_add_player_in_league,
                 page_add_league,
+            ],
+            translator("my_account"): [page_join_league, page_manage_account],
+            translator("administration"): [
+                page_check_logs,
+                page_delete_match,
                 page_add_player,
                 page_assign_league,
                 page_delete_player,
-                page_delete_match,
-                page_check_logs,
             ],
         }
