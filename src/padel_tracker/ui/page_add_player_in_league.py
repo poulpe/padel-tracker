@@ -6,7 +6,6 @@ from padel_tracker.services import player_manager, league_manager
 from padel_tracker.ui.cache import refresh_cache
 from padel_tracker.ui.headers import write_header
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
-from padel_tracker.ui.inputs import make_league_selectbox
 
 st.write("")
 
@@ -21,7 +20,6 @@ with form:
     _, center_col, _ = st.columns([1, 5, 1])
     with center_col:
         player_name = st.text_input(translator("name"))
-        league_name = make_league_selectbox()
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
@@ -34,7 +32,7 @@ if submit_button:
         with DB.get_session() as session:
             # Fetch league
             league = league_manager.get_league_from_name(
-                session=session, name=league_name
+                session=session, name=st.session_state.league_name
             )
             player_manager.create_player(
                 session=session, name=player_name, league=league
@@ -47,4 +45,4 @@ if submit_button:
     except Exception as exc:
         st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
     else:
-        refresh_cache(threaded=False)
+        refresh_cache(threaded=True)
