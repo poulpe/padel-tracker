@@ -148,13 +148,20 @@ def display_match_card(
 
 
 def make_match_cards(
-    df_matches: pd.DataFrame = None, limit_last: int | None = 15
+    df_matches: pd.DataFrame = None,
+    limit_last: int | None = 15,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
 ) -> None:
     if df_matches is None:
         with DB.get_session() as session:
             df_matches = get_all_matches(session=session, as_df=True)
     else:
         df_matches = df_matches.copy()
+
+    # Handle empty df_matches
+    if df_matches.empty:
+        st.warning(translator("no_match_database_error"), icon="💢")
+        return
 
     if limit_last:
         df_matches = df_matches.tail(limit_last)
