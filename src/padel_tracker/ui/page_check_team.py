@@ -6,6 +6,7 @@ from padel_tracker.services.player_manager import (
 )
 from padel_tracker.ui.cache import check_not_empty_database_matches
 from padel_tracker.ui.cards import make_match_cards, display_team_relationships
+from padel_tracker.ui.charts import make_team_metric_history_chart
 from padel_tracker.ui.tables import make_team_overview_table
 from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
 from padel_tracker.ui.headers import write_header, write_subheader
@@ -19,7 +20,7 @@ translator = st.session_state.translator
 
 write_header(translator("check_team"))
 
-# Team selectbox
+# Team selectform
 form = st.form("check_team")
 with form:
     _, col1, col2, _ = st.columns([1, 2, 2, 1])
@@ -40,35 +41,37 @@ with form:
     _, col_center, _ = st.columns([1, 3, 1])
     with col_center:
         submit_button = st.form_submit_button(
-            label=translator("submit"), use_container_width=True
+            label=translator("submit"),
+            use_container_width=True,
         )
 
-is_players_all_fulfilled = True
+# Checks and store selected_team in session_state
 if submit_button:
     if (not player1_name) or (not player2_name):
         st.error(translator("player_not_selected_error"), icon="💢")
-        is_players_all_fulfilled = False
-
-# Checks team exist (and fetch all df needed if OK)
-# TODO (prio2): make df_teams and df_matches from all leagues ?
-is_team_exists = False
-if submit_button and is_players_all_fulfilled:
+        st.stop()
     if player1_name == player2_name:
         st.error(translator("team_same_player_error"), icon="💢")
-    else:
-        team_name = Team.get_name_from_players_name(player1_name, player2_name)
-        df_teams = st.session_state.df_teams.copy()
-        df_team = df_teams.query(f"name == '{team_name}'")
-        if len(df_team) == 0:
-            st.error(translator("team_not_found_error"), icon="💢")
-        else:
-            is_team_exists = True
-            df_matches = st.session_state.df_matches.copy()
-            df_matches = df_matches[df_matches["name"].str.contains(team_name)]
+        st.stop()
+    # OK, create team
+    team_name = Team.get_name_from_players_name(player1_name, player2_name)
+    st.session_state["selected_team_name"] = team_name
 
 # Display page
 st.write("")
-if submit_button and is_players_all_fulfilled and is_team_exists:
+if "selected_team_name" in st.session_state and st.session_state["selected_team_name"]:
+    # Prepare data
+    team_name = st.session_state["selected_team_name"]
+    df_teams = st.session_state.df_teams.copy()
+    df_team = df_teams.query(f"name == '{team_name}'")
+    if len(df_team) == 0:
+        st.error(translator("team_not_found_error"), icon="💢")
+        st.stop()
+    else:
+        df_matches = st.session_state.df_matches.copy()
+        df_matches = df_matches[df_matches["name"].str.contains(team_name)]
+
+    # Go display page
     write_header(team_name)
 
     # Checks data not empty
@@ -104,8 +107,14 @@ if submit_button and is_players_all_fulfilled and is_team_exists:
         translator=translator,
     )
 
-    # TODO: Team graph (team_elo_history)
+    # Team graph (team_elo_history)
     write_subheader(translator("evolution"))
+    make_team_metric_history_chart(
+        team_name=team_name,
+        df_matches=df_matches,
+        translator=translator,
+        limit_last_matches=None,
+    )
 
     # Matches history
     write_subheader(translator("match_history"))

@@ -3,6 +3,7 @@ import pandas as pd
 import altair as alt
 
 from padel_tracker.database.db import DB
+from padel_tracker.services.ranking_manager import get_team_elo_rating_histories
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 from padel_tracker.services import ranking_manager
 
@@ -114,6 +115,24 @@ def _apply_determine_match_result(
     return row
 
 
+def _apply_determine_team_match_result(
+    row: pd.Series, team_name: str, translator: LanguageTranslator
+) -> pd.Series:
+    """To apply on df_matches for a player"""
+    team1, team2 = row["name"].replace(" vs ", "|").split("|")
+    if team_name == team1:
+        if row["team1_won"]:
+            row["result"] = translator("victory")
+        else:
+            row["result"] = translator("defeat")
+    elif team_name == team2:
+        if row["team1_won"]:
+            row["result"] = translator("defeat")
+        else:
+            row["result"] = translator("victory")
+    return row
+
+
 @st.cache_data(max_entries=32)
 def _generate_player_metric_history_chart(
     player_name: str,
@@ -212,12 +231,6 @@ def make_player_metric_history_chart(
         options=[translator("elo_rating"), translator("nb_won_games_diff")],
         default=translator("nb_won_games_diff"),
     )
-    # # Button time scale
-    # _, right_col = st.columns([2.5,1])
-    # temporal_time_scale = right_col.toggle(
-    #     translator("time_scale"),
-    #     help=translator("time_scale_help_message")
-    # )
     # Gen chart
     chart = _generate_player_metric_history_chart(
         player_name=player_name,
@@ -226,7 +239,121 @@ def make_player_metric_history_chart(
         df_matches=df_matches,
         translator=translator,
         limit_last_matches=limit_last_matches,
-        # temporal_time_scale=temporal_time_scale,
+    )
+    # Plug it to Streamlit
+    st.altair_chart(chart, use_container_width=True)
+
+
+@st.cache_data(max_entries=32)
+def _generate_team_metric_history_chart(
+    team_name: str,
+    df_matches: pd.DataFrame,
+    metric: str = None,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    limit_last_matches: int | None = 15,
+    temporal_time_scale: bool = False,
+) -> alt.Chart:
+    # Metric selection
+    if metric is None:
+        metric = translator("elo_rating")
+
+    # Fetch data
+    col_to_keep = ["date", "match_name", "result"]
+    extra_tooltip = []
+    if metric == translator("elo_rating"):
+        # Fetch team elo history from DB
+        with DB.get_session() as session:
+            df_elo_hist = get_team_elo_rating_histories(
+                session=session,
+                team_name=team_name,
+                as_df=True,
+            )
+        df_hist = df_elo_hist.copy()  # .query(f"team_name == '{team_name}'").copy()
+        if limit_last_matches:
+            df_hist = df_hist.tail(limit_last_matches)
+        ## Determine result
+        df_hist["result"] = df_hist["elo_rating_gain"].apply(
+            lambda x: translator("victory") if x > 0 else translator("defeat")
+        )
+        ## Keep only useful columns
+        col_to_keep += ["elo_rating", "elo_rating_gain"]
+        extra_tooltip += [translator("elo_rating_gain")]
+    elif metric == translator("nb_won_games_diff"):
+        df_hist = df_matches[df_matches["name"].str.contains(team_name)].copy()
+        if limit_last_matches:
+            df_hist = df_hist.tail(limit_last_matches)
+        ## Determine result
+        df_hist = df_hist.apply(
+            _apply_determine_team_match_result,
+            team_name=team_name,
+            translator=translator,
+            axis=1,
+        )
+        ## Keep only useful
+        df_hist = df_hist.rename(columns={"name": "match_name"})
+        col_to_keep += ["nb_won_games_diff", "score"]
+        extra_tooltip += [translator("score")]
+    else:
+        raise NotImplementedError(f"{metric=} not supported")
+
+    ## Keep only useful columns
+    df_hist = df_hist[col_to_keep]
+    df_hist["date"] = pd.to_datetime(df_hist["date"])
+    ## Rename to use user friendly/language names
+    df_hist = df_hist.rename(columns=translator.dict_lang)
+
+    # Create chart
+    x_param = translator("date")
+    y_param = metric
+    color_param = translator("result")
+    tooltip = [x_param, y_param, f"{color_param}:N", translator("match_name")]
+    if metric == translator("elo_rating"):
+        base_chart = alt.Chart(df_hist).mark_bar()
+        y_domain = (df_hist[y_param].min() * 0.95, df_hist[y_param].max() * 1.05)
+    elif metric == translator("nb_won_games_diff"):
+        base_chart = alt.Chart(df_hist).mark_bar()
+        y_domain = (0, df_hist[y_param].max() * 1.2)
+    x_type = "temporal" if temporal_time_scale else "ordinal"
+    chart = base_chart.encode(
+        x=alt.X(
+            x_param,
+            type=x_type,
+            timeUnit="yearmonthdatehoursminutes",
+            title=translator("date"),
+        ),
+        y=alt.Y(y_param, scale=alt.Scale(domain=y_domain)),
+        color=alt.Color(
+            color_param,
+            type="nominal",
+            scale=alt.Scale(
+                domain=[translator("victory"), translator("defeat")], scheme="tableau10"
+            ),
+        ),
+        # shape=alt.Shape(color_param),
+        tooltip=list(set(tooltip + extra_tooltip)),
+    ).interactive()
+    return chart
+
+
+def make_team_metric_history_chart(
+    team_name: str,
+    df_matches: pd.DataFrame,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    limit_last_matches: int | None = 15,
+) -> None:
+    # Metric selection
+    metric = st.pills(
+        label=translator("metric"),
+        options=[translator("elo_rating"), translator("nb_won_games_diff")],
+        default=translator("elo_rating"),
+    )
+    # Gen chart
+    chart = _generate_team_metric_history_chart(
+        team_name=team_name,
+        metric=metric,
+        df_matches=df_matches,
+        translator=translator,
+        limit_last_matches=limit_last_matches,
     )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
