@@ -124,6 +124,7 @@ def make_player_overview_table(
         translator("creation_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
         translator("ratio_vd"): st.column_config.NumberColumn(format="%.3f"),
         translator("rank"): st.column_config.NumberColumn(format="%i"),
+        translator("best_rank"): st.column_config.NumberColumn(format="%i"),
     }
     if highlight_player_name:
         df_plot = df_players.style.apply(

@@ -58,7 +58,7 @@ if player_name:
         st.warning(translator("no_match_database_error"), icon="💢")
         st.stop()
 
-    # Overview card TODO (prio3): Cool display card ?
+    # Overview card
     write_subheader(translator("overview"))
     make_player_overview_table(
         df_players=df_player,
@@ -112,6 +112,23 @@ if player_name:
         limit_last_matches=None,
     )
 
+    # Show players in your category (i.e: elo +/- 300)
+    write_subheader(translator("players_same_category"), extra_line=False)
+    write_subheader(translator("players_same_category_help_message"), bold=False)
+    player_elo = df_player.reset_index()["elo_rating"][0]
+    query_same_level = (
+        f"elo_rating >= {player_elo-300} and elo_rating <= {player_elo+300}"
+    )
+    df_players_same_level = st.session_state.df_players.query(query_same_level)
+    make_player_overview_table(
+        df_players_same_level.head(12),
+        df_linkplayerleague=st.session_state.df_linkplayerleague,
+        translator=translator,
+        extra_col=["best_elo_rating", "best_rank"],
+        use_container_width=False,
+        highlight_player_name=player_name,
+    )
+
     # Matches history
     write_subheader(translator("match_history"))
     _, col_matches_cont, _ = st.columns([1, 4, 1])
@@ -119,5 +136,3 @@ if player_name:
         matches_cont = st.container(border=True, height=900)
     with matches_cont:
         make_match_cards(df_matches=df_matches, limit_last=None)
-
-    # TODO (prio3) : feature suggest/show players in your category (i.e: elo +/- 300)
