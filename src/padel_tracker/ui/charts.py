@@ -49,7 +49,7 @@ def _generate_overview_elo_history_chart(
     base_chart = alt.Chart(df_elo_hist).mark_line(point=True)
     if temporal_time_scale:
         chart = base_chart.encode(
-            x=alt.X(x_param+":T", title=x_param, timeUnit="yearmonthdate"),
+            x=alt.X(x_param + ":T", title=x_param, timeUnit="yearmonthdate"),
             y=alt.Y(f"mean({y_param})", scale=alt.Scale(zero=False)),
             color=alt.Color(color_param),
             tooltip=[
@@ -58,14 +58,16 @@ def _generate_overview_elo_history_chart(
                 alt.Tooltip(f"mean({y_param})", title=y_param),
                 alt.Tooltip(
                     f"mean({translator("elo_rating_gain")})",
-                    title=translator("elo_rating_gain")
+                    title=translator("elo_rating_gain"),
                 ),
             ],
         )
     else:
         chart = base_chart.encode(
             x=alt.X(
-                x_param+":O", title=x_param, timeUnit="yearmonthdatehoursminutes",
+                x_param + ":O",
+                title=x_param,
+                timeUnit="yearmonthdatehoursminutes",
             ),
             y=alt.Y(y_param, scale=alt.Scale(zero=False)),
             color=alt.Color(color_param),
