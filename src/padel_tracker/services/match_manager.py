@@ -189,6 +189,7 @@ def get_all_matches_from_league(
         Match, where=Match.league_name == league_name, session=session, as_df=as_df
     )
 
+
 def check_match_not_already_created(
     session: Session,
     teams: list[Team],
