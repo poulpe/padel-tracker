@@ -55,7 +55,7 @@ st.write("")
 st.write("")
 
 # Overview chart
-nb_last_matches = 20
+nb_last_matches = 50
 subtitle = translator("ranking_evolution_over_x_last_matches").format(x=nb_last_matches)
 write_header("Billboard", subtitle, bold_subheader=False)
 make_overview_elo_history_chart(

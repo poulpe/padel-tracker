@@ -112,14 +112,17 @@ if player_name:
         limit_last_matches=None,
     )
 
-    # Show players in your category (i.e: elo +/- 300)
+    # Show players in your category (i.e: elo +/- 200)
     write_subheader(translator("players_same_category"), extra_line=False)
-    write_subheader(translator("players_same_category_help_message"), bold=False)
-    player_elo = df_player.reset_index()["elo_rating"][0]
-    query_same_level = (
-        f"elo_rating >= {player_elo-300} and elo_rating <= {player_elo+300}"
+    ELO_SAME_CAT = 200
+    write_subheader(
+        translator("players_same_category_message_x_points").format(x=ELO_SAME_CAT),
+        bold=False,
     )
-    df_players_same_level = st.session_state.df_players.query(query_same_level)
+    player_elo = df_player.reset_index()["elo_rating"][0]
+    df_players_same_level = st.session_state.df_players.query(
+        f"elo_rating >= {player_elo-ELO_SAME_CAT} and elo_rating <= {player_elo+ELO_SAME_CAT}"
+    )
     make_player_overview_table(
         df_players_same_level.head(12),
         df_linkplayerleague=st.session_state.df_linkplayerleague,
