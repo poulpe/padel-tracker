@@ -360,19 +360,3 @@ def get_player_elo_rating_histories_in_league(
         as_df=as_df,
         limit_last=limit_last,
     )
-
-
-def get_team_elo_rating_histories(
-    session: Session,
-    team_name: str,
-    as_df: bool = False,
-    limit_last: int = None,
-) -> list[EloRatingHistory] | pd.DataFrame:
-    return read_from_db(
-        TeamEloRatingHistory,
-        where=TeamEloRatingHistory.team_name == team_name,
-        session=session,
-        order_by=TeamEloRatingHistory.date,
-        as_df=as_df,
-        limit_last=limit_last,
-    )

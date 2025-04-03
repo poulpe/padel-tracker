@@ -18,7 +18,7 @@ translator = st.session_state.translator
 
 write_header(translator("delete_match"))
 
-# TODO (prio 1) : UI to fetch match to delete
+# TODO : UI to fetch match to delete
 # Match is: players, date/time
 st.write("TODO, SOON")
 # st.stop()

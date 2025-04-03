@@ -58,7 +58,7 @@ if player_name:
         st.warning(translator("no_match_database_error"), icon="💢")
         st.stop()
 
-    # Overview card
+    # Overview card TODO (prio3): Cool display card ?
     write_subheader(translator("overview"))
     make_player_overview_table(
         df_players=df_player,
@@ -139,3 +139,4 @@ if player_name:
         matches_cont = st.container(border=True, height=900)
     with matches_cont:
         make_match_cards(df_matches=df_matches, limit_last=None)
+

@@ -111,8 +111,8 @@ If you set `db_mode` to `local`, it will just create/read/update a local databas
 
 Note: secret management for the streamlit hosted app is done via the dedicated
 [streamlit secret management method](https://docs.streamlit.io/develop/concepts/connections/secrets-management).  
-The app is looking in priority if any `.env` file is defined,
-otherwise it falls back to checking if an `.streamlit/secrets.toml` file is there.
+The app is looking in priority if any `.streamlit/secrets.toml` file is defined,
+otherwise it falls back to checking if an `.env` file is there.
 
 ### Run locally
 1) Clone the repository
