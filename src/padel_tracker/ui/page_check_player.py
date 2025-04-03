@@ -112,6 +112,27 @@ if player_name:
         limit_last_matches=None,
     )
 
+<<<<<<< Updated upstream
+=======
+    # Show players in your category (i.e: elo +/- 200)
+    write_subheader(translator("players_same_category"), extra_line=False)
+    ELO_SAME_CAT = 200
+    write_subheader(translator("players_same_category_help_message_x_points".format(x=ELO_SAME_CAT)), bold=False)
+    player_elo = df_player.reset_index()["elo_rating"][0]
+    query_same_level = (
+        f"elo_rating >= {ELO_SAME_CAT-200} and elo_rating <= {ELO_SAME_CAT+200}"
+    )
+    df_players_same_level = st.session_state.df_players.query(query_same_level)
+    make_player_overview_table(
+        df_players_same_level.head(12),
+        df_linkplayerleague=st.session_state.df_linkplayerleague,
+        translator=translator,
+        extra_col=["best_elo_rating", "best_rank"],
+        use_container_width=False,
+        highlight_player_name=player_name,
+    )
+
+>>>>>>> Stashed changes
     # Matches history
     write_subheader(translator("match_history"))
     _, col_matches_cont, _ = st.columns([1, 4, 1])
