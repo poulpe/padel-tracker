@@ -185,7 +185,7 @@ _DICT_TO_FR = {
     "description_updated_success": "La description a bien été modifiée",
     "unknown_error_update": "Erreur inconnue pendant la modification: ",
     "players_same_category": "Joueurs dans la même catégorie",
-    "players_same_category_help_message": "Joueurs de la ligue avec un Elo similaire (+/- 300 points)",
+    "players_same_category_message_x_points": "Joueurs de la ligue avec un Elo similaire (+/- {x} points)",
 }
 
 _DICT_TO_EN = {
@@ -361,7 +361,7 @@ _DICT_TO_EN = {
     "description_updated_success": "The description has been successfully updated",
     "unknown_error_update": "Unknown error while updating: ",
     "players_same_category": "Similar players",
-    "players_same_category_help_message": "Players from the league with a similar Elo rating (+/- 300)",
+    "players_same_category_message_x_points": "Players from the league with a similar Elo rating (+/- {x})",
 }
 
 _DICT_TO_ES = {
@@ -538,7 +538,7 @@ _DICT_TO_ES = {
     "description_updated_success": "La descripción se ha actualizado correctamente",
     "unknown_error_update": "Error desconocido al actualizar: ",
     "players_same_category": "Jugadores similares",
-    "players_same_category_help_message": "Jugadores de la liga con un Elo similar (+/- 300 puntos)",
+    "players_same_category_message_x_points": "Jugadores de la liga con un Elo similar (+/- {x} puntos)",
 }
 
 
