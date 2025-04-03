@@ -112,8 +112,6 @@ if player_name:
         limit_last_matches=None,
     )
 
-<<<<<<< Updated upstream
-=======
     # Show players in your category (i.e: elo +/- 200)
     write_subheader(translator("players_same_category"), extra_line=False)
     ELO_SAME_CAT = 200
@@ -132,7 +130,6 @@ if player_name:
         highlight_player_name=player_name,
     )
 
->>>>>>> Stashed changes
     # Matches history
     write_subheader(translator("match_history"))
     _, col_matches_cont, _ = st.columns([1, 4, 1])
