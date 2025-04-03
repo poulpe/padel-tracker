@@ -79,7 +79,7 @@ if "selected_team_name" in st.session_state and st.session_state["selected_team_
         st.warning(translator("no_match_database_error"), icon="💢")
         st.stop()
 
-    # Overview card TODO (prio3): Cool display card ?
+    # Overview card
     write_subheader(translator("overview"))
     make_team_overview_table(
         df_teams=df_team,
