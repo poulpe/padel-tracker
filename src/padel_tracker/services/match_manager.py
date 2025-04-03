@@ -190,27 +190,27 @@ def get_all_matches_from_league(
     )
 
 
-# FIXME: score not included ??
 def check_match_not_already_created(
     session: Session,
     teams: list[Team],
     league_name: str,
     date: datetime,
-    # score: str | MatchScore | None = None,
     logger: logging.Logger = LOGGER,
 ) -> None:
-    """Raises MatchExistsError if already created, nothing otherwise"""
-    list_matches_same_date_score = read_from_db(
+    """Raises MatchExistsError if already created, nothing otherwise
+
+    Notes
+    -----
+    Score is not included in the search : isOK
+        because a match with the same team + same date cannot exist physically...
+    """
+    list_matches_same_date = read_from_db(
         Match,
         session=session,
-        where=(
-            Match.date == date,
-            # Match.score == score,
-            Match.league_name == league_name,
-        ),
+        where=(Match.date == date, Match.league_name == league_name),
     )
-    if list_matches_same_date_score:
-        for match in list_matches_same_date_score:
+    if list_matches_same_date:
+        for match in list_matches_same_date:
             if (teams[0] in match.teams) and (teams[1] in match.teams):
                 err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league_name=} already exists"
                 logger.error(err_msg)
