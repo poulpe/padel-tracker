@@ -27,6 +27,7 @@ from padel_tracker.ui.login import (
     determine_is_guest,
     determine_is_logged_in,
     display_sidebar_logout_button,
+    log_user_visit,
 )
 from padel_tracker.ui.feedback import make_feedback_button, make_feedback_form
 from padel_tracker.main import init_app
@@ -51,6 +52,7 @@ is_logged_in = determine_is_logged_in()
 if is_logged_in:
     if ("user" not in st.session_state) or (st.session_state.user is None):
         update_cache(only=CacheKey.user, force=True)
+        log_user_visit()
 
 is_guest = determine_is_guest()
 

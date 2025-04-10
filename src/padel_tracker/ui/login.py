@@ -1,11 +1,14 @@
 import streamlit as st
 
 from padel_tracker.utils.errors import InvalidPlayerNameError
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.database.db import DB
 from padel_tracker.services import player_manager, league_manager, user_manager
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.languages import LanguageTranslator
 from padel_tracker.ui.cache import refresh_cache, ALL_CACHE_KEYS
+
+LOGGER = get_logger("ui.login")
 
 
 def determine_is_guest() -> bool:
@@ -210,3 +213,15 @@ def display_sidebar_logout_button(translator: LanguageTranslator) -> None:
         icon="🚪",
         use_container_width=True,
     )
+
+
+def log_user_visit() -> None:
+    """Update user last_visit on db + log message in db"""
+    if ("user" in st.session_state) and (st.session_state.user is not None):
+        try:
+            auth_user_id = st.session_state.user["auth_user_id"]
+        except KeyError:
+            LOGGER.error("user logged in but without 'auth_user_id', can't log visit")
+        else:
+            with DB.get_session() as session:
+                user_manager.log_user_visit(session=session, auth_user_id=auth_user_id)
