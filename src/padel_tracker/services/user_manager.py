@@ -6,6 +6,7 @@ import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import UserNotFoundError, UserExistsError
+from padel_tracker.utils.datetime_utils import now
 from padel_tracker.database.db import Session, commit_to_db, read_from_db
 from padel_tracker.models.players import Player
 from padel_tracker.models.users import User, UserRole
@@ -114,6 +115,8 @@ def create_user_from_auth_user(
         default_league_name=default_league_name,
         default_language=default_language,
         name=username,
+        last_visit_date=now(),
+        nb_visits=1,
     )
     # Commit
     commit_to_db(user, session=session)
@@ -141,4 +144,14 @@ def assign_player_to_user(session: Session, user: User, player: Player) -> None:
     user.name = player.name
     commit_to_db(user, player, session=session)
     log_msg = f"Player(name={player.name}, id={player.id}) has been assigned to User(id={user.id}, player_id={user.player_id}, email={user.email})"
+    LOGGER.notif(log_msg)
+
+
+def log_user_visit(session: Session, auth_user_id: str) -> None:
+    """Update user last_visit on db + log message in db"""
+    user = get_user_from_auth_user_id(session=session, auth_user_id=auth_user_id)
+    user.nb_visits += 1
+    user.last_visit_date = now()
+    commit_to_db(user, session=session)
+    log_msg = f"user '{user.name}' logged in ({auth_user_id=})"
     LOGGER.notif(log_msg)

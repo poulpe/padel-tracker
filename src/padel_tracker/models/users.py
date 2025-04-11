@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from enum import StrEnum, auto
 from typing import Optional
 
-from pydantic import EmailStr
+from pydantic import EmailStr, NonNegativeInt
 from sqlmodel import Field, Relationship, Column, DateTime
 
 from padel_tracker.utils.datetime_utils import now
@@ -34,6 +34,12 @@ class User(ValidatedSQLModel, table=True):
         repr=False,
         sa_column=Column(DateTime(timezone=True)),
     )
+    last_visit_date: datetime | None = Field(
+        default=None,
+        description="Last date user logged in the web application",
+        sa_column=Column(DateTime(timezone=True)),
+    )
+    nb_visits: NonNegativeInt = Field(0, description="Total visits on the web app")
     # Personalization
     email: EmailStr | None = Field(default=None)
     email_verified: bool = Field(default=False, repr=False)
