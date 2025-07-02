@@ -96,6 +96,12 @@ class Player(ValidatedSQLModel, table=True):
     rank_history: list[RankHistory] = Relationship(back_populates="player")
     user: Optional["User"] = Relationship(back_populates="player")
 
+    @classmethod
+    def sanitize_name(cls, name: str):
+        """Capitalize 1st letter + remove leading/trailing space"""
+        name = (name[0].upper() + name[1:]).strip() if name else name
+        return name
+
 
 ##### Team #####
 class TeamEloRatingHistory(ValidatedSQLModel, table=True):
