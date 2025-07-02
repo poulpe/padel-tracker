@@ -198,7 +198,6 @@ def delete_player(session: Session, name: str) -> None:
     logger.notif(f"deleted '{name}' successfully from database")
 
 
-# TODO (prio1) : rename player
 def rename_player(session: Session, current_name: str, new_name: str) -> None:
     logger = LOGGER.getChild("rename")
     new_name = Player.sanitize_name(new_name)
@@ -211,9 +210,9 @@ def rename_player(session: Session, current_name: str, new_name: str) -> None:
         err_msg = f"{new_name=} is already taken, cannot rename player '{current_name}' to '{new_name}'"
         logger.error(err_msg)
         raise PlayerExistsError(err_msg)
-
     # Fetch player
     player = get_player_from_name(session, current_name)
+
     # Rename player + user if applicable
     player.name = new_name
     if player.user:
@@ -229,6 +228,10 @@ def rename_player(session: Session, current_name: str, new_name: str) -> None:
         ## Team elo rating history
         for team_elo_rating_history in team.elo_rating_history:
             team_elo_rating_history.team_name = new_team_name
+            new_match_name = team_elo_rating_history.match_name.replace(
+                current_name, new_name
+            )
+            team_elo_rating_history.match_name = new_match_name
             updated_team_elo_rating_histories.append(team_elo_rating_history)
     # Check links linkplayerleague
     updated_links = []
@@ -236,7 +239,7 @@ def rename_player(session: Session, current_name: str, new_name: str) -> None:
         link.player_name = new_name
         updated_links.append(link)
 
-    # TODO (prio 3) : Rename all matches occurences ?
+    # Rename all matches occurences
     ## Matches
     updated_matches = []
     for match in player.matches:
@@ -252,6 +255,8 @@ def rename_player(session: Session, current_name: str, new_name: str) -> None:
     updated_elo_rating_histories = []
     for elo_rating_history in player.elo_rating_history:
         elo_rating_history.player_name = new_name
+        new_match_name = elo_rating_history.match_name.replace(current_name, new_name)
+        elo_rating_history.match_name = new_match_name
         updated_elo_rating_histories.append(elo_rating_history)
     updated_rank_histories = []
     for rank_history in player.rank_history:
