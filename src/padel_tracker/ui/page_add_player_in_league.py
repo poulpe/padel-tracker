@@ -19,7 +19,16 @@ form = st.form("add_player")
 with form:
     _, center_col, _ = st.columns([1, 5, 1])
     with center_col:
-        player_name = st.text_input(translator("name"))
+        with DB.get_session() as session:
+            other_players = player_manager.get_all_players_names_from_other_leagues(
+                session=session,
+                league_name_exclude=st.session_state.league_name,
+            )
+        player_name = st.selectbox(
+            label=translator("player_name"),
+            options=other_players,
+            placeholder=translator("player"),
+        )
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
