@@ -46,23 +46,30 @@ def _generate_overview_elo_history_chart(
     x_param = translator("date")
     y_param = translator("elo_rating")
     color_param = translator("player_name")
-    base_chart = alt.Chart(df_elo_hist).mark_line(point=True)
+    elo_gain_param = translator("elo_rating_gain")
     if temporal_time_scale:
+        # Keep only the "final result" of the day on 'df_elo_hist'
+        df_elo_hist[x_param] = df_elo_hist[x_param].dt.date
+        df_grouped = df_elo_hist.groupby(by=[x_param, color_param])
+        df_elo_gain_sum = df_grouped[elo_gain_param].sum().reset_index()
+        df_elo_hist_last = df_grouped.tail(1)
+        df_elo_hist_last = pd.merge(
+            df_elo_hist_last,
+            df_elo_gain_sum,
+            on=[x_param, color_param],
+            suffixes=("_delete", ""),
+        )
+        df_elo_hist_last = df_elo_hist_last.drop(columns=[f"{elo_gain_param}_delete"])
+        # Gen chart
+        base_chart = alt.Chart(df_elo_hist_last).mark_line(point=True)
         chart = base_chart.encode(
             x=alt.X(x_param + ":T", title=x_param, timeUnit="yearmonthdate"),
-            y=alt.Y(f"mean({y_param})", scale=alt.Scale(zero=False)),
+            y=alt.Y(y_param, scale=alt.Scale(zero=False)),
             color=alt.Color(color_param),
-            tooltip=[
-                alt.Tooltip(f"mean({x_param})", title=x_param),
-                color_param,
-                alt.Tooltip(f"mean({y_param})", title=y_param),
-                alt.Tooltip(
-                    f"mean({translator("elo_rating_gain")})",
-                    title=translator("elo_rating_gain"),
-                ),
-            ],
+            tooltip=[x_param, color_param, y_param, elo_gain_param],
         )
     else:
+        base_chart = alt.Chart(df_elo_hist).mark_line(point=True)
         chart = base_chart.encode(
             x=alt.X(
                 x_param + ":O",
