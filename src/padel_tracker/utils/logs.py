@@ -220,7 +220,7 @@ def init_loggings(
 
     # Log starting message logging
     msg = f"init with conf: db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_file=}"
-    main_logger.getChild("init_logs").log(LOG_LEVEL_NOTIF, msg)
+    main_logger.getChild("init_logs").info(msg)
 
     return main_logger
 
