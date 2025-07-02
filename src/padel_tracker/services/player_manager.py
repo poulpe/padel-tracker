@@ -8,6 +8,7 @@ import sqlalchemy
 import pandas as pd
 import pydantic
 
+from padel_tracker.models.matches import Match
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import (
     PlayerNotFoundError,
@@ -126,7 +127,7 @@ def create_player(
     """
     logger = LOGGER.getChild("create")
     # Clean name (capitalize 1st letter + remove leading/trailing space)
-    name = (name[0].upper() + name[1:]).strip() if name else name
+    name = Player.sanitize_name(name)
     # Checks player doesn't exist
     try:
         player = get_player_from_name(session=session, name=name)
@@ -195,6 +196,86 @@ def delete_player(session: Session, name: str) -> None:
     # Finally delete player
     delete_from_db(player, session=session)
     logger.notif(f"deleted '{name}' successfully from database")
+
+
+def rename_player(session: Session, current_name: str, new_name: str) -> None:
+    logger = LOGGER.getChild("rename")
+    new_name = Player.sanitize_name(new_name)
+    # Check new_name is not already taken by existing player
+    try:
+        get_player_from_name(session, new_name)
+    except PlayerNotFoundError:
+        pass
+    else:
+        err_msg = f"{new_name=} is already taken, cannot rename player '{current_name}' to '{new_name}'"
+        logger.error(err_msg)
+        raise PlayerExistsError(err_msg)
+    # Fetch player
+    player = get_player_from_name(session, current_name)
+
+    # Rename player + user if applicable
+    player.name = new_name
+    if player.user:
+        player.user.name = new_name
+    # Rename in teams
+    updated_teams = []
+    updated_team_elo_rating_histories = []
+    for team in player.teams:
+        other_teammate_name = team.name.replace(current_name, "").replace("/", "")
+        new_team_name = Team.get_name_from_players_name(new_name, other_teammate_name)
+        team.name = new_team_name
+        updated_teams.append(team)
+        ## Team elo rating history
+        for team_elo_rating_history in team.elo_rating_history:
+            team_elo_rating_history.team_name = new_team_name
+            new_match_name = team_elo_rating_history.match_name.replace(
+                current_name, new_name
+            )
+            team_elo_rating_history.match_name = new_match_name
+            updated_team_elo_rating_histories.append(team_elo_rating_history)
+    # Check links linkplayerleague
+    updated_links = []
+    for link in player.league_links:
+        link.player_name = new_name
+        updated_links.append(link)
+
+    # Rename all matches occurences
+    ## Matches
+    updated_matches = []
+    for match in player.matches:
+        if current_name in match.team1_name:
+            other_teammate = match.team1_name.replace(current_name, "").replace("/", "")
+            match.team1_name = Team.get_name_from_players_name(new_name, other_teammate)
+        elif current_name in match.team2_name:
+            other_teammate = match.team2_name.replace(current_name, "").replace("/", "")
+            match.team2_name = Team.get_name_from_players_name(new_name, other_teammate)
+        match.name = Match.get_name_from_team_names(match.team1_name, match.team2_name)
+        updated_matches.append(match)
+    ## Elo rating history, Rank history
+    updated_elo_rating_histories = []
+    for elo_rating_history in player.elo_rating_history:
+        elo_rating_history.player_name = new_name
+        new_match_name = elo_rating_history.match_name.replace(current_name, new_name)
+        elo_rating_history.match_name = new_match_name
+        updated_elo_rating_histories.append(elo_rating_history)
+    updated_rank_histories = []
+    for rank_history in player.rank_history:
+        rank_history.player_name = new_name
+        updated_rank_histories.append(rank_history)
+
+    commit_to_db(
+        player,
+        *updated_teams,
+        *updated_team_elo_rating_histories,
+        *updated_links,
+        *updated_matches,
+        *updated_elo_rating_histories,
+        *updated_rank_histories,
+        session=session,
+    )
+    logger.notif(
+        f"renamed player '{current_name}' to new_name='{new_name}' ({player.id=})"
+    )
 
 
 ##### Team ######

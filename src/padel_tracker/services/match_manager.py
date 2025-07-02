@@ -130,7 +130,6 @@ def create_match(
         teams=teams,
         date=date,
         league_name=league_name,
-        # score=score,
         logger=logger,
     )
     # Check players all in the same league

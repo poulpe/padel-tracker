@@ -210,8 +210,13 @@ class Match(ValidatedSQLModel, table=True):
         sa_column=Column(DateTime(timezone=True)),
     )
 
+    @classmethod
+    def get_name_from_team_names(cls, team1_name: str, team2_name: str):
+        return f"{team1_name} vs {team2_name}"
+
     def _set_match_name(self) -> None:
-        self.name = f"{self.team1_name} vs {self.team2_name}"
+        self.name = self.get_name_from_team_names(self.team1_name, self.team2_name)
+        # self.name = f"{self.team1_name} vs {self.team2_name}"
 
     def _set_league_name(self) -> None:
         self.league_name = self.league.name

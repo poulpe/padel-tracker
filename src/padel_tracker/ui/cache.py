@@ -112,6 +112,7 @@ def update_cache_leagues(session: Session, force: bool = False):
 
 
 def update_cache_players(session: Session, force: bool = False):
+    # Players from current league
     key = str(CacheKey.df_players)
     if (key not in st.session_state) or force:
         st.session_state[key] = player_manager.get_all_players_from_league(
@@ -127,6 +128,12 @@ def update_cache_players(session: Session, force: bool = False):
             #     st.session_state.translator("not_enough_players_database_error"),
             #     icon="💢",
             # )
+    # # All players
+    # key = str(CacheKey.player_names_all_leagues)
+    # if (key not in st.session_state) or force:
+    #     st.session_state[key] = player_manager.get_all_players_names(
+    #         session=session,
+    #     )
 
 
 def update_cache_teams(session: Session, force: bool = False):
@@ -226,7 +233,7 @@ def apply_update_cache_standard(
 
 # THREADED TRIALS
 # Issues with threaded and writing to st.session_state
-# TODO : try threaded update_cache (i.e : this func becomes apply_update_cache and be called in "new_update_cache" below)
+# TODO (prio 3) : try threaded update_cache (i.e : this func becomes apply_update_cache and be called in "new_update_cache" below)
 
 
 def update_cache(
