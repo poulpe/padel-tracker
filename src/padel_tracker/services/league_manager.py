@@ -185,7 +185,6 @@ def assign_admin_to_league(session: Session, user: User, league: League) -> None
     LOGGER.notif(f"assigned user='{user.name}' as admin of league='{league.name}'")
 
 
-# TOCHECK: make_league_private
 def make_league_private(session: Session, league: League) -> None:
     if not league.is_private:
         league.is_private = True
@@ -195,7 +194,6 @@ def make_league_private(session: Session, league: League) -> None:
         raise ValueError(f"league '{league.name}' is already 'private'")
 
 
-# TOCHECK: make_league_public
 def make_league_public(session: Session, league: League) -> None:
     if league.is_private:
         league.is_private = False
