@@ -1,6 +1,10 @@
 import streamlit as st
 
-from padel_tracker.utils.errors import PlayerAlreadyInLeagueError
+from padel_tracker.utils.errors import (
+    PlayerAlreadyInLeagueError,
+    PlayerExistsError,
+    InvalidPlayerNameError,
+)
 from padel_tracker.database.db import DB
 from padel_tracker.models.users import UserRole
 from padel_tracker.services import player_manager, league_manager
@@ -78,56 +82,91 @@ is_user_admin = user and "role" in user.keys() and user["role"] == UserRole.ADMI
 if not (is_user_league_admin or is_user_admin):
     st.stop()
 
+# ADMINISTRATION
 write_header(translator("administration"))
-# FORM Recruit in league
-form = st.form("add_in_league")
-with form:
-    write_subheader(translator("add_in_league"))
-    _, center_col, _ = st.columns([1, 5, 1])
-    with center_col:
-        with DB.get_session() as session:
-            names = player_manager.get_all_players_names_from_other_leagues(
-                session=session, league_name_exclude=league_name
+# FORMS Add/Recruit in
+left_col, right_col = st.columns(2)
+## FORM Recruit existing in league
+with left_col:
+    form = st.form("add_existing_in_league")
+    with form:
+        write_subheader(translator("add_existing_in_league"))
+        _, center_col, _ = st.columns([1, 5, 1])
+        with center_col:
+            with DB.get_session() as session:
+                names = player_manager.get_all_players_names_from_other_leagues(
+                    session=session, league_name_exclude=league_name
+                )
+            player_name = st.selectbox(
+                label=translator("player_name"),
+                options=names,
+                placeholder=translator("player"),
+                index=None,
             )
-        player_name = st.selectbox(
-            label=translator("player_name"),
-            options=names,
-            placeholder=translator("player"),
-            index=None,
-        )
-    _, center_col, _ = st.columns([1, 2, 1])
-    with center_col:
-        add_submit_button = st.form_submit_button(
-            label=translator("submit"),
-            use_container_width=True,
-        )
-if add_submit_button:
-    try:
-        with DB.get_session() as session:
-            player = player_manager.get_player_from_name(
-                session=session, name=player_name
+        _, center_col, _ = st.columns([1, 2, 1])
+        with center_col:
+            add_submit_button = st.form_submit_button(
+                label=translator("submit"),
+                use_container_width=True,
             )
-            league = league_manager.get_league_from_name(
-                session=session,
-                name=league_name,
+    if add_submit_button:
+        try:
+            with DB.get_session() as session:
+                player = player_manager.get_player_from_name(
+                    session=session, name=player_name
+                )
+                league = league_manager.get_league_from_name(session, league_name)
+                league_manager.assign_league_to_player(
+                    session=session, player=player, league=league
+                )
+            st.success(
+                f"{player_name}{translator("assigned_league_to_player_success")}{league_name}",
+                icon="🔥",
             )
-            league_manager.assign_league_to_player(
-                session=session, player=player, league=league
+        except PlayerAlreadyInLeagueError:
+            st.error(
+                f"{player_name}{translator("player_already_in_league_error")}{league_name}",
+                icon="💢",
             )
-        st.success(
-            f"{player_name}{translator("assigned_league_to_player_success")}{league_name}",
-            icon="🔥",
-        )
-    except PlayerAlreadyInLeagueError:
-        st.error(
-            f"{player_name}{translator("player_already_in_league_error")}{league_name}",
-            icon="💢",
-        )
-    except Exception as exc:
-        st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
-    else:
-        refresh_cache(threaded=True)
+        except Exception as exc:
+            st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
+        else:
+            refresh_cache(threaded=True)
 
+## FORM Declare new player in league
+with right_col:
+    form = st.form("add_player_in_league")
+    with form:
+        write_subheader(translator("add_player_in_league"))
+        _, center_col, _ = st.columns([1, 5, 1])
+        with center_col:
+            player_name = st.text_input(translator("name"))
+        _, center_col, _ = st.columns([1, 2, 1])
+        with center_col:
+            add_new_submit_button = st.form_submit_button(
+                label=translator("submit"),
+                use_container_width=True,
+            )
+    if add_new_submit_button:
+        try:
+            with DB.get_session() as session:
+                league = league_manager.get_league_from_name(session, league_name)
+                player_manager.create_player(
+                    session=session, name=player_name, league=league
+                )
+                st.success(
+                    f"{player_name}{translator("player_added_success")}", icon="🔥"
+                )
+        except PlayerExistsError:
+            st.error(f"{player_name}{translator("player_exists_error")}", icon="💢")
+        except InvalidPlayerNameError:
+            st.error(
+                f"{player_name}{translator("player_invalid_name_error")}", icon="💢"
+            )
+        except Exception as exc:
+            st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
+        else:
+            refresh_cache(threaded=False)
 
 # FORM Remove player from league
 form = st.form("remove_from_league")
@@ -148,10 +187,7 @@ if remove_submit_button:
             player = player_manager.get_player_from_name(
                 session=session, name=player_name
             )
-            league = league_manager.get_league_from_name(
-                session=session,
-                name=league_name,
-            )
+            league = league_manager.get_league_from_name(session, league_name)
             league_manager.remove_player_from_league(
                 session=session, player=player, league=league
             )
