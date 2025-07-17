@@ -47,6 +47,9 @@ def _generate_overview_elo_history_chart(
     y_param = translator("elo_rating")
     color_param = translator("player_name")
     elo_gain_param = translator("elo_rating_gain")
+    player_selection = alt.selection_point(
+        fields=[color_param], bind="legend", toggle="event"
+    )
     if temporal_time_scale:
         # Keep only the "final result" of the day on 'df_elo_hist'
         df_elo_hist[x_param] = df_elo_hist[x_param].dt.date
@@ -64,8 +67,9 @@ def _generate_overview_elo_history_chart(
         base_chart = alt.Chart(df_elo_hist_last).mark_line(point=True)
         chart = base_chart.encode(
             x=alt.X(x_param + ":T", title=x_param, timeUnit="yearmonthdate"),
-            y=alt.Y(y_param, scale=alt.Scale(zero=False)),
+            y=alt.Y(y_param, scale=alt.Scale(zero=False), axis=alt.Axis(format="d")),
             color=alt.Color(color_param),
+            opacity=alt.condition(player_selection, alt.value(1), alt.value(0.1)),
             tooltip=[x_param, color_param, y_param, elo_gain_param],
         )
     else:
@@ -76,8 +80,9 @@ def _generate_overview_elo_history_chart(
                 title=x_param,
                 timeUnit="yearmonthdatehoursminutes",
             ),
-            y=alt.Y(y_param, scale=alt.Scale(zero=False)),
+            y=alt.Y(y_param, scale=alt.Scale(zero=False), axis=alt.Axis(format="d")),
             color=alt.Color(color_param),
+            opacity=alt.condition(player_selection, alt.value(1), alt.value(0.1)),
             tooltip=[
                 x_param,
                 color_param,
@@ -86,7 +91,7 @@ def _generate_overview_elo_history_chart(
                 translator("match_name"),
             ],
         )
-    chart = chart.interactive()
+    chart = chart.add_params(player_selection).interactive()
     return chart
 
 
