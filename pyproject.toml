@@ -1,6 +1,6 @@
 [project]
 name = "padel-tracker"
-version = "0.4.1"
+version = "0.4.2"
 description = "App to keep track of Padel matches"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,7 +8,7 @@ authors = [
     {name = "Pierre Letousey"},
 ]
 dependencies = [
-    "streamlit>=1.42", # For UI
+    "streamlit>=1.47", # For UI
     "streamlit-js-eval", # For UI
     "sqlmodel", # Combines sqlalchemy and pydantic
     "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
@@ -45,8 +45,7 @@ Repository = "https://github.com/poulpe/padel-tracker"
 
 [tool.ruff]
 lint.ignore = [
-    "E402", # Import not all on top of file
-    "E501", # Line too long : balek, managed by Black
+    "E402", # Import not all on top of file, needed for Streamlit app def
     "F821", # Must for compatibility with SQLModel Relationship ("name not defined")
 ]
 exclude = ["src/padel_tracker/database/migrations/versions/*.py"]

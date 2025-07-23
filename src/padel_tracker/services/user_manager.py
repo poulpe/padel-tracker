@@ -69,7 +69,7 @@ def create_user_from_auth_user(
     ----------
     session
     dict_auth_user
-        Typically st.experimental_user.to_dict(), containing keys:
+        Typically st.user.to_dict(), containing keys:
         - "sub", the auth_user_id
         - "email"
         - "email_verified"
