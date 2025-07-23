@@ -16,9 +16,7 @@ def determine_is_guest() -> bool:
 
 
 def determine_is_logged_in() -> bool:
-    return (
-        "is_logged_in" in st.experimental_user
-    ) and st.experimental_user.is_logged_in
+    return ("is_logged_in" in st.user) and st.user.is_logged_in
 
 
 def make_login_form(translator: LanguageTranslator) -> None:
@@ -76,7 +74,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
     ## Create if clicked
     if submit_button_existing:
         try:
-            dict_auth_user = st.experimental_user.to_dict()
+            dict_auth_user = st.user.to_dict()
             dict_auth_user["name"] = existing_player_name
             dict_auth_user["nickname"] = existing_player_name
             with DB.get_session() as session:
@@ -114,7 +112,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
         # Name
         try:
             fetched_default_name = user_manager.determine_default_username(
-                st.experimental_user.to_dict()
+                st.user.to_dict()
             )
         except Exception:
             fetched_default_name = ""
@@ -144,7 +142,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
     ## Create if clicked
     if submit_button_not_existing:
         try:
-            dict_auth_user = st.experimental_user.to_dict()
+            dict_auth_user = st.user.to_dict()
             dict_auth_user["name"] = username
             dict_auth_user["nickname"] = username
             with DB.get_session() as session:

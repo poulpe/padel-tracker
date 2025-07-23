@@ -181,8 +181,8 @@ class MatchScore(BaseModel, validate_assignment=True):
 
 class Match(ValidatedSQLModel, table=True):
     teams: list[Team] = Relationship(back_populates="matches", link_model=LinkTeamMatch)
-    team1_name: str
-    team2_name: str
+    team1_name: str = Field(repr=False)
+    team2_name: str = Field(repr=False)
     players: list[Player] = Relationship(
         back_populates="matches", link_model=LinkPlayerMatch
     )
@@ -193,13 +193,14 @@ class Match(ValidatedSQLModel, table=True):
         default_factory=now,
         description="Match execution date",
         sa_column=Column(DateTime(timezone=True)),
+        repr=False,
     )
     score: str | None = Field(None, description="string formatted as '6-4, 7-5'")
     team1_won: bool | None = Field(
-        None, description="True/False if team1_won. None for no winner"
+        None, description="True/False if team1_won. None for no winner", repr=False
     )
-    nb_won_sets_diff: NonNegativeInt | None = Field(None, le=3)
-    nb_won_games_diff: NonNegativeInt | None = Field(None, le=16)
+    nb_won_sets_diff: NonNegativeInt | None = Field(None, le=3, repr=False)
+    nb_won_games_diff: NonNegativeInt | None = Field(None, le=16, repr=False)
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str | None = Field(None, index=True, description="as 'p1/p2 vs p3/p4'")
@@ -208,6 +209,7 @@ class Match(ValidatedSQLModel, table=True):
         default_factory=now,
         description="Creation in db",
         sa_column=Column(DateTime(timezone=True)),
+        repr=False,
     )
 
     @classmethod
@@ -216,7 +218,6 @@ class Match(ValidatedSQLModel, table=True):
 
     def _set_match_name(self) -> None:
         self.name = self.get_name_from_team_names(self.team1_name, self.team2_name)
-        # self.name = f"{self.team1_name} vs {self.team2_name}"
 
     def _set_league_name(self) -> None:
         self.league_name = self.league.name
