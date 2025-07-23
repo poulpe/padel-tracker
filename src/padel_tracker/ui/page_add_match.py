@@ -32,25 +32,21 @@ translator = st.session_state.translator
 
 write_header(translator("add_match"))
 
-form = st.form("add_match")
-with form:
-    # Get players list
-    player_names = st.session_state.player_names
-
+with st.form("add_match"):
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
     with col_team1:
         write_subheader(translator("team1"), bold=True)
         team1_player1_name = st.selectbox(
             label="team1_player1_name",
-            options=player_names,
+            options=st.session_state.player_names,
             placeholder=translator("player1"),
             index=None,
             label_visibility="hidden",
         )
         team1_player2_name = st.selectbox(
             label="team1_player2_name",
-            options=player_names,
+            options=st.session_state.player_names,
             placeholder=translator("player2"),
             index=None,
             label_visibility="hidden",
@@ -59,14 +55,14 @@ with form:
         write_subheader(translator("team2"), bold=True)
         team2_player1_name = st.selectbox(
             label="team2_player1_name",
-            options=player_names,
+            options=st.session_state.player_names,
             placeholder=translator("player1"),
             index=None,
             label_visibility="hidden",
         )
         team2_player2_name = st.selectbox(
             label="team2_player2_name",
-            options=player_names,
+            options=st.session_state.player_names,
             placeholder=translator("player2"),
             index=None,
             label_visibility="hidden",
@@ -83,7 +79,7 @@ with form:
     df = df.set_index(team_word)
     # fmt: off
     column_config = {
-        team_word: st.column_config.TextColumn(pinned=True, required=True, validate=fr"^{team_word}[12]$"),
+        team_word: st.column_config.TextColumn(pinned=True, required=True, validate=fr"^{team_word}[12]$", disabled=True),
         "Set1": st.column_config.NumberColumn(default=None, width="small", format="%i", min_value=0, max_value=7, step=1, required=True),
         "Set2": st.column_config.NumberColumn(default=None, width="small", format="%i", min_value=0, max_value=7, step=1),
         "Set3": st.column_config.NumberColumn(default=None, width="small", format="%i", min_value=0, max_value=10, step=1),
@@ -120,20 +116,16 @@ with form:
             label=translator("submit"), use_container_width=True
         )
 
-# Checks Players have been fulfilled
-is_players_all_fulfilled = True
+# Launch processing once clicked
 if submit_button:
+    # Check all players have been fulfilled
     if (not team1_player1_name) or (not team1_player2_name):
         st.error(translator("player_not_selected_error"), icon="💢")
-        is_players_all_fulfilled = False
+        st.stop()
     elif (not team2_player1_name) or (not team2_player2_name):
         st.error(translator("player_not_selected_error"), icon="💢")
-        is_players_all_fulfilled = False
-
-# Checks Score have been fulfilled
-is_score_validated = False
-match_score = None
-if submit_button and is_players_all_fulfilled:
+        st.stop()
+    # Checks Score have been fulfilled
     try:
         match_score = MatchScore(
             games_set1_team1=games_set1_team1,
@@ -147,18 +139,15 @@ if submit_button and is_players_all_fulfilled:
             raise MatchNotFinishedError
     except (ValidationError, ValueError, MatchNotFinishedError):
         st.error(translator("match_not_finished_error"), icon="💢")
+        st.stop()
     except Exception as exc:
         err_msg = f"{translator("match_not_finished_error")}: {exc}"
         st.error(err_msg, icon="💢")
-    else:
-        is_score_validated = True
-
-# Create match if submitted
-if submit_button and is_players_all_fulfilled and is_score_validated:
-    # TODO: show waiting screen/animations (loading bar, anecdoctes padel, phrases à la con)
-    LOGGER.debug("launching match creation")
+        st.stop()
     # Go create match
+    LOGGER.debug("launching match creation")
     match_datetime = make_datetime_from_combi(date, time)
+    is_success = False
     with DB.get_session() as session:
         try:
             LOGGER.debug("fetching teams")
@@ -192,6 +181,7 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
                     is_finished=False,
                 )
                 st.success(translator("match_added_success"), icon="🔥")
+                # TODO (prio 3): show "wait for it, elo calc on-going" ?
                 LOGGER.debug("created match, starting processing")
                 # Processing and showing results
                 dict_elo_rating_gains, dict_updated_elo_ratings = (
@@ -220,4 +210,8 @@ if submit_button and is_players_all_fulfilled and is_score_validated:
             except Exception as exc:
                 st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
             else:
-                refresh_cache(threaded=True)
+                is_success = True
+
+    # Refresh cache outside of the previous db_session
+    if is_success:
+        refresh_cache(threaded=True)
