@@ -157,7 +157,9 @@ def create_match(
     ## Commit
     logger.debug("committing to db")
     commit_to_db(match, league, session=session)
-    logger.notif(f"created new match id={match.id}")
+    logger.notif(
+        f"created new Match({match} date='{match.date.strftime("%d/%m/%Y %H:%M")}')"
+    )
     # Process it if finished
     if is_finished:
         process_finished_match(session=session, match=match)
