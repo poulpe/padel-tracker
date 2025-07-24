@@ -8,15 +8,13 @@ from padel_tracker.ui.cache import check_not_empty_database_matches
 from padel_tracker.ui.cards import make_match_cards, display_team_relationships
 from padel_tracker.ui.charts import make_team_metric_history_chart
 from padel_tracker.ui.tables import make_team_overview_table
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.headers import write_header, write_subheader
 
 st.write("")
 check_not_empty_database_matches()
 
-if "translator" not in st.session_state.keys():
-    st.session_state.translator = DEFAULT_TRANSLATOR
-translator = st.session_state.translator
+translator = get_translator()
 
 write_header(translator("check_team"))
 

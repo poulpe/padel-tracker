@@ -578,11 +578,18 @@ class LanguageTranslator:
         return result
 
 
-def update_session_state_translator() -> None:
-    st.session_state.translator = LanguageTranslator(st.session_state.language)
-
-
 DEFAULT_LANGUAGE = Language.FR
 DEFAULT_TRANSLATOR = LanguageTranslator(DEFAULT_LANGUAGE)
 
 SUPPORTED_LANGUAGES = (Language.FR, Language.EN, Language.ES)
+
+
+def update_session_state_translator() -> None:
+    st.session_state.translator = LanguageTranslator(st.session_state.language)
+
+
+def get_translator() -> LanguageTranslator:
+    """Returns st.session_state.translator and set default one if not defined yet"""
+    if "translator" not in st.session_state.keys():
+        st.session_state.translator = DEFAULT_TRANSLATOR
+    return st.session_state.translator
