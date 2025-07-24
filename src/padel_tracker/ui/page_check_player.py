@@ -6,7 +6,7 @@ from padel_tracker.services.player_manager import (
     get_black_beast_and_favorite_victim,
 )
 from padel_tracker.ui.cards import make_match_cards, display_player_relationships
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.inputs import make_player_selectbox
 from padel_tracker.ui.charts import make_player_metric_history_chart
@@ -16,9 +16,7 @@ from padel_tracker.ui.cache import check_not_empty_database_matches
 st.write("")
 check_not_empty_database_matches()
 
-if "translator" not in st.session_state.keys():
-    st.session_state.translator = DEFAULT_TRANSLATOR
-translator = st.session_state.translator
+translator = get_translator()
 
 write_header(translator("check_player"))
 

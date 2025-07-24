@@ -10,7 +10,7 @@ from padel_tracker.models.users import UserRole
 from padel_tracker.services import player_manager, league_manager
 from padel_tracker.ui.cache import refresh_cache
 from padel_tracker.ui.headers import write_header, write_subheader
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.inputs import make_player_selectbox
 from padel_tracker.ui.tables import (
     make_player_overview_table,
@@ -19,9 +19,7 @@ from padel_tracker.ui.tables import (
 
 st.write("")
 
-if "translator" not in st.session_state.keys():
-    st.session_state.translator = DEFAULT_TRANSLATOR
-translator = st.session_state.translator
+translator = get_translator()
 
 # Fetch current league and user
 league_name = st.session_state.league_name

@@ -3,7 +3,7 @@ import streamlit as st
 from padel_tracker.ui.charts import make_overview_elo_history_chart
 from padel_tracker.ui.cards import make_match_cards
 from padel_tracker.ui.headers import write_header
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.tables import make_player_overview_table
 from padel_tracker.ui.cache import (
     check_not_empty_database_matches,
@@ -13,9 +13,7 @@ from padel_tracker.ui.login import determine_is_guest
 
 st.write("")
 
-if "translator" not in st.session_state.keys():
-    st.session_state.translator = DEFAULT_TRANSLATOR
-translator = st.session_state.translator
+translator = get_translator()
 
 check_not_empty_database_leagues()
 

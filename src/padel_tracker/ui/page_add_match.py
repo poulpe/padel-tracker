@@ -15,7 +15,7 @@ from padel_tracker.models.matches import MatchScore
 from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import get_team_from_players_name
 from padel_tracker.services.match_manager import create_match, process_finished_match
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.cache import refresh_cache, check_not_empty_database_players
@@ -26,46 +26,71 @@ LOGGER = get_logger("ui.page_add_match")
 st.write("")
 check_not_empty_database_players()
 
-if "translator" not in st.session_state.keys():
-    st.session_state.translator = DEFAULT_TRANSLATOR
-translator = st.session_state.translator
+translator = get_translator()
 
 write_header(translator("add_match"))
+
+# Init add match player names variables in st.session_state
+for var in ["add_match_t1_p1", "add_match_t1_p2", "add_match_t2_p1", "add_match_t2_p2"]:
+    if var not in st.session_state:
+        st.session_state[var] = None
+
+player_names = st.session_state.player_names
 
 with st.form("add_match"):
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
     with col_team1:
         write_subheader(translator("team1"), bold=True)
-        team1_player1_name = st.selectbox(
+        st.selectbox(
             label="team1_player1_name",
-            options=st.session_state.player_names,
+            options=player_names,
             placeholder=translator("player1"),
-            index=None,
             label_visibility="hidden",
+            key="add_match_t1_p1",
+            index=(
+                player_names.index(st.session_state["add_match_t1_p1"])
+                if st.session_state["add_match_t1_p1"]
+                else None
+            ),
         )
-        team1_player2_name = st.selectbox(
+        st.selectbox(
             label="team1_player2_name",
-            options=st.session_state.player_names,
+            options=player_names,
             placeholder=translator("player2"),
-            index=None,
             label_visibility="hidden",
+            key="add_match_t1_p2",
+            index=(
+                player_names.index(st.session_state["add_match_t1_p2"])
+                if st.session_state["add_match_t1_p2"]
+                else None
+            ),
         )
     with col_team2:
         write_subheader(translator("team2"), bold=True)
-        team2_player1_name = st.selectbox(
+        st.selectbox(
             label="team2_player1_name",
-            options=st.session_state.player_names,
+            options=player_names,
             placeholder=translator("player1"),
-            index=None,
             label_visibility="hidden",
+            key="add_match_t2_p1",
+            index=(
+                player_names.index(st.session_state["add_match_t2_p1"])
+                if st.session_state["add_match_t2_p1"]
+                else None
+            ),
         )
-        team2_player2_name = st.selectbox(
+        st.selectbox(
             label="team2_player2_name",
-            options=st.session_state.player_names,
+            options=player_names,
             placeholder=translator("player2"),
-            index=None,
             label_visibility="hidden",
+            key="add_match_t2_p2",
+            index=(
+                player_names.index(st.session_state["add_match_t2_p2"])
+                if st.session_state["add_match_t2_p2"]
+                else None
+            ),
         )
 
     # Score input as df
@@ -118,6 +143,10 @@ with st.form("add_match"):
 
 # Launch processing once clicked
 if submit_button:
+    team1_player1_name = st.session_state["add_match_t1_p1"]
+    team1_player2_name = st.session_state["add_match_t1_p2"]
+    team2_player1_name = st.session_state["add_match_t2_p1"]
+    team2_player2_name = st.session_state["add_match_t2_p2"]
     # Check all players have been fulfilled
     if (not team1_player1_name) or (not team1_player2_name):
         st.error(translator("player_not_selected_error"), icon="💢")
@@ -181,24 +210,19 @@ if submit_button:
                     is_finished=False,
                 )
                 st.success(translator("match_added_success"), icon="🔥")
-                # TODO (prio 3): show "wait for it, elo calc on-going" ?
                 LOGGER.debug("created match, starting processing")
                 # Processing and showing results
-                dict_elo_rating_gains, dict_updated_elo_ratings = (
-                    process_finished_match(
-                        session=session,
-                        match=match,
-                        delete_on_error=True,
-                        thread_pool=get_thread_pool(),
-                    )
-                )
-                LOGGER.debug("finished processing")
                 _, center_col, _ = st.columns(3)
                 with center_col:
                     st.write(translator("see_updated_elo_below"))
-                display_elo_rating_gains_metrics(
-                    dict_elo_rating_gains, dict_updated_elo_ratings
+                dict_gains, dict_updated_ratings = process_finished_match(
+                    session=session,
+                    match=match,
+                    delete_on_error=True,
+                    thread_pool=get_thread_pool(),
                 )
+                display_elo_rating_gains_metrics(dict_gains, dict_updated_ratings)
+                LOGGER.debug("finished processing")
             except MatchExistsError:
                 st.error(translator("match_exists_error"), icon="💢")
             except MatchNotFinishedError:

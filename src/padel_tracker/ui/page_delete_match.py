@@ -6,15 +6,13 @@ from padel_tracker.database.db import DB
 from padel_tracker.services.match_manager import delete_match
 from padel_tracker.ui.cache import refresh_cache
 from padel_tracker.ui.headers import write_header
-from padel_tracker.ui.languages import DEFAULT_TRANSLATOR
+from padel_tracker.ui.languages import get_translator
 
 # from padel_tracker.ui.inputs import make_match_selectbox
 
 st.write("")
 
-if "translator" not in st.session_state.keys():
-    st.session_state.translator = DEFAULT_TRANSLATOR
-translator = st.session_state.translator
+translator = get_translator()
 
 write_header(translator("delete_match"))
 
