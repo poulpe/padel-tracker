@@ -98,10 +98,24 @@ class PagesCollection:
             url_path="assign_league",
             icon="🔗",
         )
+        ## About pages
+        page_about = st.Page(
+            "page_about.py",
+            title=translator("about"),
+            url_path="about",
+            icon="ℹ️",
+        )
+        page_feedback = st.Page(
+            "page_feedback.py",
+            title=translator("feedback_button"),
+            url_path="feedback",
+            icon="🐞",
+        )
         # Define pages dict
         self.GUEST = {
             "Padel Tracker": [page_overview],
             translator("players_teams"): [page_check_player, page_check_team],
+            translator("about_and_feedback"): [page_about, page_feedback],
         }
         self.PLAYER = {
             "Padel Tracker": [page_overview],
@@ -112,6 +126,7 @@ class PagesCollection:
                 page_add_league,
             ],
             translator("my_account"): [page_join_league],  # , page_manage_account],
+            translator("about_and_feedback"): [page_about, page_feedback],
         }
         self.TRUSTEDPLAYER = {
             "Padel Tracker": [page_overview],
@@ -124,6 +139,7 @@ class PagesCollection:
             ],
             translator("my_account"): [page_join_league],  # , page_manage_account],
             # TODO: cool form #translator("administration"): [page_delete_match],
+            translator("about_and_feedback"): [page_about, page_feedback],
         }
         self.ADMIN = {
             "Padel Tracker": [page_overview],
@@ -142,4 +158,5 @@ class PagesCollection:
                 page_assign_league,
                 page_delete_player,
             ],
+            translator("about_and_feedback"): [page_about, page_feedback],
         }
