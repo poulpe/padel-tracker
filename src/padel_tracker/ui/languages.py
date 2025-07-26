@@ -188,6 +188,9 @@ _DICT_TO_FR = {
     "unknown_error_update": "Erreur inconnue pendant la modification: ",
     "players_same_category": "Joueurs dans la même catégorie",
     "players_same_category_message_x_points": "Joueurs de la ligue avec un Elo similaire (+/- {x} points)",
+    "about_and_feedback": "À propos & Feedback",
+    "about": "À propos de l'appli",
+    "feedback_inputs_error": "Assure toi d'avoir rempli le Titre et la Description",
 }
 
 _DICT_TO_EN = {
@@ -366,6 +369,9 @@ _DICT_TO_EN = {
     "unknown_error_update": "Unknown error while updating: ",
     "players_same_category": "Similar players",
     "players_same_category_message_x_points": "Players from the league with a similar Elo rating (+/- {x})",
+    "about_and_feedback": "About & Feedback",
+    "about": "About Padel Tracker",
+    "feedback_inputs_error": "Ensure 'Title' and 'Description' are well fulfilled",
 }
 
 _DICT_TO_ES = {
@@ -545,6 +551,9 @@ _DICT_TO_ES = {
     "unknown_error_update": "Error desconocido al actualizar: ",
     "players_same_category": "Jugadores similares",
     "players_same_category_message_x_points": "Jugadores de la liga con un Elo similar (+/- {x} puntos)",
+    "about_and_feedback": "About & Feedback",
+    "about": "Sobre Padel Tracker",
+    "feedback_inputs_error": "Asegurarse de que 'Título' y 'Descripción' están bien cumplidos",
 }
 
 
