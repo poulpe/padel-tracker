@@ -231,6 +231,7 @@ if submit_button:
                 st.error(translator("same_player_in_both_teams_error"), icon="💢")
             except PlayerNotInLeagueError:
                 st.error(translator("all_players_not_in_league_error"), icon="💢")
+                refresh_cache()
             except Exception as exc:
                 st.error(f"{translator("match_added_error")}: {exc}", icon="💥")
             else:
