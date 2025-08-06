@@ -14,6 +14,7 @@ from padel_tracker.services import (
     ranking_manager,
     league_manager,
     user_manager,
+    event_manager,
 )
 
 LOGGER = get_logger("ui.cache")
@@ -34,6 +35,7 @@ class CacheKey(StrEnum):
     df_matches_all_leagues = "df_matches_all_leagues"
     df_elo_hist = "df_elo_hist"
     df_linkplayerleague = "df_linkplayerleague"
+    df_events = "df_events"
 
 
 ALL_CACHE_KEYS = tuple(CacheKey)
@@ -197,6 +199,16 @@ def update_cache_league_admins(session: Session, force: bool = False):
         )
 
 
+def update_cache_events(session: Session, force: bool = False):
+    key = str(CacheKey.df_events)
+    if (key not in st.session_state) or force:
+        st.session_state[key] = event_manager.get_all_events_from_league(
+            session=session,
+            league_name=st.session_state.league_name,
+            as_df=True,
+        )
+
+
 DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.user: update_cache_user,
     CacheKey.df_leagues: update_cache_leagues,
@@ -210,6 +222,7 @@ DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.df_elo_hist: update_cache_elo_hist,
     CacheKey.df_linkplayerleague: update_cache_linkplayerleague,
     CacheKey.league_admins: update_cache_league_admins,
+    CacheKey.df_events: update_cache_events,
     # CacheKey.df_players_all_leagues:update_cache_players,
     # CacheKey.player_names_all_leagues:update_cache_players,
 }

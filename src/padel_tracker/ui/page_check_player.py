@@ -108,6 +108,7 @@ if player_name:
         df_matches=df_matches,
         translator=translator,
         limit_last_matches=None,
+        df_events=st.session_state.df_events,
     )
 
     # Show players in your category (i.e: elo +/- 200)

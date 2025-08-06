@@ -112,6 +112,7 @@ if "selected_team_name" in st.session_state and st.session_state["selected_team_
         df_matches=df_matches,
         translator=translator,
         limit_last_matches=None,
+        df_events=st.session_state.df_events,
     )
 
     # Matches history
