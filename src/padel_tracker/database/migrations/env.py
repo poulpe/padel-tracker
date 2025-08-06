@@ -1,4 +1,5 @@
-from logging.config import fileConfig
+import sys
+import logging
 
 from sqlmodel import SQLModel
 from alembic import context
@@ -9,9 +10,25 @@ from padel_tracker.database.db import DB, DICT_CONF
 DB_MODE = DICT_CONF["general"]["db_mode"]
 RUN_MODE = DICT_CONF["general"]["run_mode"]
 
-# this is the Alembic Config object, which provides
-if context.config.config_file_name is not None:
-    fileConfig(context.config.config_file_name)
+# Configure loggings
+## Formatter
+formatter = logging.Formatter(
+    "%(levelname)-5.5s [%(name)s] %(message)s", datefmt="%H:%M:%S"
+)
+## Handler
+console_handler = logging.StreamHandler(sys.stderr)
+console_handler.setLevel(logging.NOTSET)
+console_handler.setFormatter(formatter)
+## Root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.WARNING)
+root_logger.addHandler(console_handler)
+## SQLAlchemy logger (without handler, will propagate to root)
+sqlalchemy_logger = logging.getLogger("sqlalchemy.engine")
+sqlalchemy_logger.setLevel(logging.WARNING)
+## Alembic logger (without handler, will propagate to root)
+alembic_logger = logging.getLogger("alembic")
+alembic_logger.setLevel(logging.INFO)
 
 
 def include_object(object, name, type_, reflected, compare_to):

@@ -22,7 +22,7 @@ dependencies = [
 dev = [
     "black",
     "ruff",
-    "alembic", # For database migrations
+    "alembic>=1.16.0", # For database migrations
     "pytest",
     "coverage",
 ]
@@ -40,9 +40,6 @@ padel-tracker = "padel_tracker.main:run_streamlit_app"
 [project.urls]
 Repository = "https://github.com/poulpe/padel-tracker"
 
-#[tool.black]
-#extend-exclude = "src/padel_tracker/database/migrations/versions/.*"
-
 [tool.ruff]
 lint.ignore = [
     "E402", # Import not all on top of file, needed for Streamlit app def
@@ -50,8 +47,10 @@ lint.ignore = [
 ]
 exclude = ["src/padel_tracker/database/migrations/versions/*.py"]
 
-[tool.pytest.ini_options]
-addopts = "--ignore=examples/"
-
-[tool.coverage.run]
-source = ["src"]
+[tool.alembic]
+script_location = "src/padel_tracker/database/migrations"
+prepend_sys_path = ["."]
+[[tool.alembic.post_write_hooks]]
+name = "black"
+type = "console_scripts"
+entrypoint = "black"
