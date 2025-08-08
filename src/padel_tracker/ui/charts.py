@@ -8,7 +8,6 @@ from padel_tracker.services import ranking_manager
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
-# TODO (prio 1): fix chart cosmetic + color scale vs categ + transparence + rule width + label placement
 @st.cache_data(max_entries=32)
 def _generate_events_chart(
     df_events: pd.DataFrame, translator: LanguageTranslator = DEFAULT_TRANSLATOR
@@ -28,25 +27,16 @@ def _generate_events_chart(
     # Declare charts
     date_param = translator("date")
     name_param = translator("name")
-    category_param = translator("category")
-    chart_rules = (
-        alt.Chart(df_events)
-        .mark_rule()
-        .encode(
-            x=alt.X(date_param + ":T", timeUnit="yearmonthdatehoursminutes"),
-            color=alt.Color(category_param + ":N", legend=None),
-            tooltip=[name_param, category_param, date_param, translator("description")],
-        )
+    categ_param = translator("category")
+    base_chart = alt.Chart(df_events).mark_rule(strokeWidth=2)
+    chart_rules = base_chart.encode(
+        x=alt.X(date_param + ":T", timeUnit="yearmonthdatehoursminutes"),
+        color=alt.Color(categ_param + ":N", legend=None).scale(scheme="pastel1"),
+        tooltip=[name_param, categ_param, date_param, translator("description")],
     )
     chart_labels = chart_rules.mark_text(
-        align="right",
-        baseline="top",
-        dx=-5,
-        dy=120,  # 125 also OK
-    ).encode(
-        text=name_param + ":N",
-        color=alt.Color(category_param + ":N", legend=None),
-    )
+        align="right", baseline="top", dx=-5, dy=120  # dy=125 also OK
+    ).encode(text=name_param + ":N", color=alt.Color(categ_param + ":N", legend=None))
     chart = chart_rules + chart_labels
     return chart
 
@@ -54,46 +44,42 @@ def _generate_events_chart(
 def add_events_to_chart(
     chart: alt.Chart,
     df_events: pd.DataFrame,
+    df_main: pd.DataFrame = None,
+    limit_last_matches: int = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
 ) -> alt.Chart:
     """
     Add event_rules chart to a time chart if df_events has events.
     If None, will just return chart as is
+
+    Parameters
+    ----------
+    df_main:pd.DataFrame
+        The main dataframe of the chart (i.e: df_elo_hist, df_matches...)
     """
     if (df_events is not None) and (not df_events.empty):
-        chart += _generate_events_chart(df_events=df_events, translator=translator)
-        chart = chart.resolve_scale(color="independent")
+        # Fetch last df_main date, don't plot event prior last match
+        if limit_last_matches:
+            df_main = df_main.tail(limit_last_matches * 4)
+            oldest_date = df_main["date"].min()
+            df_events = df_events[df_events["date"] >= oldest_date]
+        if not df_events.empty:
+            chart += _generate_events_chart(df_events=df_events, translator=translator)
+            chart = chart.resolve_scale(color="independent")
     return chart
 
 
 @st.cache_data(max_entries=32)
 def _generate_overview_elo_history_chart(
-    df_elo_hist: pd.DataFrame = None,
+    df_elo_hist: pd.DataFrame,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
-    league_name: str = None,
     temporal_time_scale: bool = True,
 ) -> alt.Chart:
-    # Fetch data if not given
-    if df_elo_hist is None:
-        # Resolve league
-        if not league_name:
-            league_name = st.session_state.league_name
-        # Get db_data as df (and manage limit (4 players per match...))
-        limit_last_histories = limit_last_matches * 4 if limit_last_matches else None
-        with DB.get_session() as session:
-            df_elo_hist = (
-                ranking_manager.get_all_elo_rating_histories_from_players_in_league(
-                    session,
-                    league_name=league_name,
-                    as_df=True,
-                    limit_last=limit_last_histories,
-                ).copy()
-            )
-    else:
-        df_elo_hist = df_elo_hist.copy()
-        if limit_last_matches:
-            df_elo_hist = df_elo_hist.tail(limit_last_matches * 4)
+    # Clean df
+    df_elo_hist = df_elo_hist.copy()
+    if limit_last_matches:
+        df_elo_hist = df_elo_hist.tail(limit_last_matches * 4)
     ## Keep only useful columns
     col_to_keep = ["date", "elo_rating", "player_name", "elo_rating_gain", "match_name"]
     df_elo_hist = df_elo_hist[col_to_keep]
@@ -134,9 +120,7 @@ def _generate_overview_elo_history_chart(
         base_chart = alt.Chart(df_elo_hist).mark_line(point=True)
         chart = base_chart.encode(
             x=alt.X(
-                x_param + ":O",
-                title=x_param,
-                timeUnit="yearmonthdatehoursminutes",
+                f"{x_param}:O", title=x_param, timeUnit="yearmonthdatehoursminutes"
             ),
             y=alt.Y(y_param, scale=alt.Scale(zero=False), axis=alt.Axis(format="d")),
             color=alt.Color(color_param),
@@ -157,7 +141,6 @@ def make_overview_elo_history_chart(
     df_elo_hist: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
-    league_name: str = None,
     df_events: pd.DataFrame = None,
 ) -> None:
     # Button time scale
@@ -170,10 +153,15 @@ def make_overview_elo_history_chart(
         df_elo_hist=df_elo_hist,
         translator=translator,
         limit_last_matches=limit_last_matches,
-        league_name=league_name,
         temporal_time_scale=temporal_time_scale,
     )
-    chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
+    chart = add_events_to_chart(
+        chart=chart,
+        df_events=df_events,
+        df_main=df_elo_hist,
+        limit_last_matches=limit_last_matches,
+        translator=translator,
+    )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
 
@@ -324,7 +312,13 @@ def make_player_metric_history_chart(
         translator=translator,
         limit_last_matches=limit_last_matches,
     )
-    chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
+    chart = add_events_to_chart(
+        chart=chart,
+        df_events=df_events,
+        df_main=df_elo_hist,
+        limit_last_matches=limit_last_matches,
+        translator=translator,
+    )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
 
@@ -441,6 +435,12 @@ def make_team_metric_history_chart(
         translator=translator,
         limit_last_matches=limit_last_matches,
     )
-    chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
+    chart = add_events_to_chart(
+        chart=chart,
+        df_events=df_events,
+        df_main=df_matches,
+        limit_last_matches=limit_last_matches,
+        translator=translator,
+    )
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
