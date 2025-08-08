@@ -11,6 +11,8 @@ ELO_RATIO_RATING = 400
 ELO_BASE_K = 50  # Base value for K
 ELO_RATIO_K = 100  # Number of games to play for stabilizing Elo score
 
+SEASON_RESET_RATE = 0.25  # Rate to adjust towards ELO_BASE_RATING during seasonal reset
+
 
 def calc_player_expected_elo_score(
     player_elo_rating: int, opponent1_elo_rating: int, opponent2_elo_rating: int
@@ -43,7 +45,28 @@ def calc_k_value(nb_matches: int) -> float:
 
 
 def calc_points_factor(diff_nb_sets: int, diff_nb_games: int) -> float:
-    """Calc factor for adjusting vs score difference"""
+    """Calc bonus Elo rating gain factor for adjusting vs score difference
+
+    Notes
+    -----
+    Determined custom formula as
+    `games_factor_percent = 0.5 * diff_nb_games**2 + 2.5 * diff_nb_games - 6`
+
+    | diff_nb_games | games_factor_percent |
+    |---------------|----------------------|
+    | 1             | 0                    |
+    | 2             | 1                    |
+    | 3             | 6                    |
+    | 4             | 12                   |
+    | 5             | 19                   |
+    | 6             | 27                   |
+    | 7             | 36                   |
+    | 8             | 46                   |
+    | 9             | 57                   |
+    | 10            | 69                   |
+    | 11            | 82                   |
+    | 12            | 100                  |
+    """
     # Games factor
     if diff_nb_games <= 1:
         games_factor_percent = 0
@@ -109,3 +132,17 @@ def calc_player_elo_rating_gain(
     )
     elo_rating_gain = int(2 * k * point_factor * (win_factor - team_expected_elo_score))
     return elo_rating_gain
+
+
+def calc_season_reset_elo_rating_gain(
+    player_elo_rating: int, reset_rate: float = SEASON_RESET_RATE
+) -> int:
+    """Calc elo rating gain to apply to adjust towards ELO_BASE_RATING during seasonal reset
+
+    Notes
+    -----
+    This proportional method preserves the ranking, while re-equalizing a bit the league and avoid "Elo inflation".
+    Players above the BASE_ELO will lose points, and players below will gain.
+    But it will not modify the order/ranking.
+    """
+    return int((ELO_BASE_RATING - player_elo_rating) * reset_rate)

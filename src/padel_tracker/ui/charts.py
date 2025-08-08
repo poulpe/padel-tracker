@@ -3,9 +3,67 @@ import pandas as pd
 import altair as alt
 
 from padel_tracker.database.db import DB
-from padel_tracker.services.ranking_manager import get_team_elo_rating_histories
-from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
+from padel_tracker.models.events import EventCategory
 from padel_tracker.services import ranking_manager
+from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
+
+
+# TODO (prio 1): fix chart cosmetic + color scale vs categ + transparence + rule width + label placement
+@st.cache_data(max_entries=32)
+def _generate_events_chart(
+    df_events: pd.DataFrame, translator: LanguageTranslator = DEFAULT_TRANSLATOR
+) -> alt.Chart:
+    """As vertical lines, with color determined from event category + name label"""
+    # Clean df
+    ## Keep only useful columns
+    col_to_keep = ["name", "date", "category", "description", "end_date"]
+    df_events = df_events[col_to_keep].copy()
+    df_events["date"] = pd.to_datetime(df_events["date"], errors="coerce")
+    df_events["end_date"] = pd.to_datetime(df_events["end_date"], errors="coerce")
+    ## Rename to use user friendly/language names
+    dict_translated_categ = {cat.value: translator(cat.value) for cat in EventCategory}
+    df_events["category"] = df_events["category"].replace(dict_translated_categ)
+    df_events = df_events.rename(columns=translator.dict_lang)
+
+    # Declare charts
+    date_param = translator("date")
+    name_param = translator("name")
+    category_param = translator("category")
+    chart_rules = (
+        alt.Chart(df_events)
+        .mark_rule()
+        .encode(
+            x=alt.X(date_param + ":T", timeUnit="yearmonthdatehoursminutes"),
+            color=alt.Color(category_param + ":N", legend=None),
+            tooltip=[name_param, category_param, date_param, translator("description")],
+        )
+    )
+    chart_labels = chart_rules.mark_text(
+        align="right",
+        baseline="top",
+        dx=-5,
+        dy=120,  # 125 also OK
+    ).encode(
+        text=name_param + ":N",
+        color=alt.Color(category_param + ":N", legend=None),
+    )
+    chart = chart_rules + chart_labels
+    return chart
+
+
+def add_events_to_chart(
+    chart: alt.Chart,
+    df_events: pd.DataFrame,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+) -> alt.Chart:
+    """
+    Add event_rules chart to a time chart if df_events has events.
+    If None, will just return chart as is
+    """
+    if (df_events is not None) and (not df_events.empty):
+        chart += _generate_events_chart(df_events=df_events, translator=translator)
+        chart = chart.resolve_scale(color="independent")
+    return chart
 
 
 @st.cache_data(max_entries=32)
@@ -100,6 +158,7 @@ def make_overview_elo_history_chart(
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
     league_name: str = None,
+    df_events: pd.DataFrame = None,
 ) -> None:
     # Button time scale
     _, right_col = st.columns([3.3, 1])
@@ -114,6 +173,7 @@ def make_overview_elo_history_chart(
         league_name=league_name,
         temporal_time_scale=temporal_time_scale,
     )
+    chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
 
@@ -247,6 +307,7 @@ def make_player_metric_history_chart(
     df_matches: pd.DataFrame,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
+    df_events: pd.DataFrame = None,
 ) -> None:
     # Metric selection
     metric = st.pills(
@@ -263,6 +324,7 @@ def make_player_metric_history_chart(
         translator=translator,
         limit_last_matches=limit_last_matches,
     )
+    chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
 
@@ -286,7 +348,7 @@ def _generate_team_metric_history_chart(
     if metric == translator("elo_rating"):
         # Fetch team elo history from DB
         with DB.get_session() as session:
-            df_elo_hist = get_team_elo_rating_histories(
+            df_elo_hist = ranking_manager.get_team_elo_rating_histories(
                 session=session,
                 team_name=team_name,
                 as_df=True,
@@ -363,6 +425,7 @@ def make_team_metric_history_chart(
     df_matches: pd.DataFrame,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     limit_last_matches: int | None = 15,
+    df_events: pd.DataFrame = None,
 ) -> None:
     # Metric selection
     metric = st.pills(
@@ -378,5 +441,6 @@ def make_team_metric_history_chart(
         translator=translator,
         limit_last_matches=limit_last_matches,
     )
+    chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)

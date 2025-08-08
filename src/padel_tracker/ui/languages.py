@@ -191,6 +191,11 @@ _DICT_TO_FR = {
     "about_and_feedback": "À propos & Feedback",
     "about": "À propos de l'appli",
     "feedback_inputs_error": "Assure toi d'avoir rempli le Titre et la Description",
+    "season_reset": "Reset de fin de saison",
+    "category": "Type",
+    "end_date": "Fin",
+    "misc": "Autre",
+    "tournament": "Tournoi",
 }
 
 _DICT_TO_EN = {
@@ -372,6 +377,11 @@ _DICT_TO_EN = {
     "about_and_feedback": "About & Feedback",
     "about": "About Padel Tracker",
     "feedback_inputs_error": "Ensure 'Title' and 'Description' are well fulfilled",
+    "season_reset": "Season reset",
+    "category": "Type",
+    "end_date": "End",
+    "misc": "Misc",
+    "tournament": "Tournament",
 }
 
 _DICT_TO_ES = {
@@ -554,6 +564,11 @@ _DICT_TO_ES = {
     "about_and_feedback": "About & Feedback",
     "about": "Sobre Padel Tracker",
     "feedback_inputs_error": "Asegurarse de que 'Título' y 'Descripción' están bien cumplidos",
+    "season_reset": "Reinicio de temporada",
+    "category": "Tipo",
+    "end_date": "Final",
+    "misc": "Misceláneo",
+    "tournament": "Torneo",
 }
 
 

@@ -1,0 +1,32 @@
+name: season_reset
+
+on:
+  workflow_dispatch:  # Manually
+  schedule:
+    - cron: "0 12 3 10 *"  # October 3rd (12:00 UTC) every year (anniversary date)
+
+jobs:
+  season_reset:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Launch Python script
+        run: uv run ./scripts/season_reset.py
+        env:
+          db_mode: ${{ secrets.DB_MODE }}
+          run_mode: ${{ secrets.RUN_MODE }}
+          dbname: ${{ secrets.DBNAME }}
+          password : ${{ secrets.PASSWORD }}
+          supabase_api_url : ${{ secrets.SUPABASE_API_URL }}
+          supabase_api_key : ${{ secrets.SUPABASE_API_KEY }}
+          user : ${{ secrets.USER }}
+          host : ${{ secrets.HOST }}
+          port : ${{ secrets.PORT }}

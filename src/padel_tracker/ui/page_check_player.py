@@ -21,11 +21,8 @@ translator = get_translator()
 write_header(translator("check_player"))
 
 # Player select box
-# TODO : pass "clicked_player_name" when player is clicked from link (before switch_page)
 player_name = None
-if "clicked_player_name" in st.session_state:
-    player_name = st.session_state["clicked_player_name"]
-elif ("user" in st.session_state) and (st.session_state.user):
+if ("user" in st.session_state) and (st.session_state.user):
     # Default from user
     try:
         player_id = st.session_state.user["player_id"]
@@ -108,6 +105,7 @@ if player_name:
         df_matches=df_matches,
         translator=translator,
         limit_last_matches=None,
+        df_events=st.session_state.df_events,
     )
 
     # Show players in your category (i.e: elo +/- 200)

@@ -8,7 +8,6 @@ import sqlalchemy
 import pandas as pd
 import pydantic
 
-from padel_tracker.models.matches import Match
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import (
     PlayerNotFoundError,
@@ -24,9 +23,9 @@ from padel_tracker.database.db import (
     delete_from_db,
 )
 from padel_tracker.models.leagues import League
-from padel_tracker.models.links import LinkPlayerLeague, LinkTeamLeague
 from padel_tracker.models.players import Player, Team
-
+from padel_tracker.models.matches import Match
+from padel_tracker.models.links import LinkPlayerLeague, LinkTeamLeague
 
 LOGGER = get_logger("players")
 

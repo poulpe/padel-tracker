@@ -11,6 +11,7 @@ from padel_tracker.models.links import (
     LinkLeagueMatch,
     LinkTeamLeague,
     LinkLeagueadminUser,
+    LinkEventLeague,
 )
 from padel_tracker.models.players import RankHistory
 
@@ -51,4 +52,8 @@ class League(ValidatedSQLModel, table=True):
     )
     admin_users: list["User"] = Relationship(
         back_populates="admin_leagues", link_model=LinkLeagueadminUser
+    )
+    events: list["Event"] = Relationship(
+        back_populates="leagues",
+        link_model=LinkEventLeague,
     )

@@ -60,6 +60,7 @@ make_overview_elo_history_chart(
     df_elo_hist=st.session_state.df_elo_hist,
     translator=translator,
     limit_last_matches=nb_last_matches,
+    df_events=st.session_state.df_events,
 )
 
 # Player data table overview
