@@ -21,14 +21,12 @@ from padel_tracker.services import league_manager
 
 LOGGER = get_logger("events")
 
-# TODO (prio 1) : event_manager
-
 
 def create_event(
     session: Session,
     name: str,
     date: datetime,
-    category: EventCategory = None,
+    category: EventCategory | str = None,
     description: str = "",
     end_date: datetime = None,
     league_name: str = "",
@@ -39,6 +37,8 @@ def create_event(
     logger = LOGGER.getChild("create")
 
     # Create and commit it to get ID
+    if category and not isinstance(category, EventCategory):
+        category = EventCategory(category)
     event = Event(
         name=name,
         date=date,
