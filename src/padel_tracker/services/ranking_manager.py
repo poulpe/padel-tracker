@@ -1,23 +1,26 @@
 from uuid import UUID
+from datetime import datetime
 
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
+from padel_tracker.utils.datetime_utils import now
 from padel_tracker.models.players import (
     Player,
     EloRatingHistory,
     RankHistory,
     TeamEloRatingHistory,
 )
-from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.models.ranking import (
     calc_player_elo_rating_gain,
     calc_k_value,
     calc_season_reset_elo_rating_gain,
 )
+from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.models.links import LinkPlayerLeague
+from padel_tracker.models.events import EventCategory
 from padel_tracker.database.db import Session, commit_to_db, read_from_db, DB
-from padel_tracker.services import player_manager
+from padel_tracker.services import player_manager, event_manager
 
 LOGGER = get_logger("ranking")
 
@@ -260,44 +263,68 @@ def update_players_rank(
             logger_debug.debug(f"created rank_history_entry for {player.name=}")
         # Commit
         commit_to_db(*playerleague_links, *rank_history_entries, session=session)
-        logger.notif("updated players ranking")
+        logger.notif(f"updated players ranking in league={league_name}")
     finally:
         if not is_session_provided:
             session.close()
 
 
-# TODO (prio 1): apply_season_reset_to_league
-def apply_season_reset_to_all_players(session: Session, season_name: str) -> None:
+def apply_season_reset_to_all_players(
+    session: Session,
+    season_name: str,
+    event_date: datetime = None,
+    event_description: str = "",
+) -> None:
     """
-
     Notes
     -----
     Must perform this on ALL players at same time, to avoid issues with players belonging
     to several leagues
-
     """
     logger = LOGGER.getChild("season_reset")
     logger.info("initiating Elo season reset")
+
+    # Manage optional date
+    if not event_date:
+        event_date = now()
 
     list_objects_to_commit = []
     # Fetch all players
     list_players = player_manager.get_all_players(session=session)
     for player in list_players:
         ## Calc gain
-        elo_gain = calc_season_reset_elo_rating_gain(player.elo_rating)
-        ## TODO : Create EloRatingHistory
-        elo_rating_history = 12
-        list_objects_to_commit.append(elo_rating_history)
+        elo_rating_gain = calc_season_reset_elo_rating_gain(player.elo_rating)
+        updated_elo_rating = player.elo_rating + elo_rating_gain
         ## Update player elo
-        player.elo_rating += elo_gain
-        ## Append to stuff to commit
+        player.elo_rating = updated_elo_rating
         list_objects_to_commit.append(player)
-
-    # TODO : apply_season_reset_to_league, Declare this as an event
-
+        ## Create EloRatingHistory
+        elo_rating_history = EloRatingHistory(
+            date=event_date,
+            player_id=player.id,
+            player_name=player.name,
+            elo_rating=updated_elo_rating,
+            elo_rating_gain=elo_rating_gain,
+            match_id=None,  # match.id,
+            match_name=f"{season_name} reset",
+            league_id=None,  # match.league.id,
+            league_name=None,  # match.league_name,
+        )
+        list_objects_to_commit.append(elo_rating_history)
     # Commit
     commit_to_db(*list_objects_to_commit, session=session)
-    logger.notif("performed season reset successfully")
+
+    # Declare this as an event
+    event_manager.create_event(
+        session=session,
+        name=season_name,
+        date=event_date,
+        category=EventCategory.SEASON_RESET,
+        description=event_description,
+    )
+    logger.notif(
+        f"successfully performed season reset of {season_name=} ({event_description=})"
+    )
 
 
 def get_all_elo_rating_histories(
