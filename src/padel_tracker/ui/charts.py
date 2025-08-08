@@ -8,7 +8,7 @@ from padel_tracker.services import ranking_manager
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
-# TODO : fix chart cosmetic + color scale vs categ + transparence + rule width + label placement
+# TODO (prio 1): fix chart cosmetic + color scale vs categ + transparence + rule width + label placement
 @st.cache_data(max_entries=32)
 def _generate_events_chart(
     df_events: pd.DataFrame, translator: LanguageTranslator = DEFAULT_TRANSLATOR
@@ -33,7 +33,7 @@ def _generate_events_chart(
         alt.Chart(df_events)
         .mark_rule()
         .encode(
-            x=alt.X(date_param + ":T"),
+            x=alt.X(date_param + ":T", timeUnit="yearmonthdatehoursminutes"),
             color=alt.Color(category_param + ":N", legend=None),
             tooltip=[name_param, category_param, date_param, translator("description")],
         )
@@ -324,7 +324,6 @@ def make_player_metric_history_chart(
         translator=translator,
         limit_last_matches=limit_last_matches,
     )
-    # TOTEST : combine with generate event chart
     chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
@@ -442,7 +441,6 @@ def make_team_metric_history_chart(
         translator=translator,
         limit_last_matches=limit_last_matches,
     )
-    # TOTEST : combine with generate event chart
     chart = add_events_to_chart(chart=chart, df_events=df_events, translator=translator)
     # Plug it to Streamlit
     st.altair_chart(chart, use_container_width=True)
