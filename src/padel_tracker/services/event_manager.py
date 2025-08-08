@@ -93,6 +93,20 @@ def get_all_events_from_league(
     )
 
 
+def get_last_season_reset_event(session: Session) -> Event:
+    event = read_from_db(
+        Event,
+        where=Event.category == EventCategory.SEASON_RESET,
+        order_by=Event.date,
+        order_descending=True,
+        limit_first=1,
+        unique=True,
+        session=session,
+    )
+    # TODO (prio2) : sanity check on event (exists, ...)
+    return event
+
+
 def delete_event(session: Session, event_id: UUID | str) -> None:
     logger = LOGGER.getChild("delete")
 
@@ -101,7 +115,9 @@ def delete_event(session: Session, event_id: UUID | str) -> None:
 
     # Fetch event
     try:
-        event = read_from_db(Event, where=Event.id == event_id, unique=True)
+        event = read_from_db(
+            Event, where=Event.id == event_id, unique=True, session=session
+        )
     except Exception as exc:
         logger.exception(exc)
         raise (exc)

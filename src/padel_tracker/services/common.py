@@ -4,10 +4,7 @@ from padel_tracker.models.leagues import League
 
 
 # UTILS
-def check_players_all_in_league(
-    players: list[Player],
-    league: League,
-) -> None:
+def check_players_all_in_league(players: list[Player], league: League) -> None:
     """Raises PlayerNotInLeagueError if not"""
     list_is_in = []
     for player in players:

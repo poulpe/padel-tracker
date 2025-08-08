@@ -8,17 +8,14 @@ on:
 jobs:
   season_reset:
     runs-on: ubuntu-latest
-    environment: test
+    environment: prod
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install UV
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
-      - name: Launch Python script
+      - name: Launch season_reset Python script
         run: uv run ./scripts/season_reset.py
         env:
           db_mode: ${{ secrets.DB_MODE }}

@@ -278,11 +278,11 @@ def apply_season_reset_to_all_players(
     """
     Notes
     -----
-    Must perform this on ALL players at same time, to avoid issues with players belonging
+    Must perform it on ALL players at same time, to avoid issues with players belonging
     to several leagues
     """
     logger = LOGGER.getChild("season_reset")
-    logger.info("initiating Elo season reset")
+    logger.notif(f"initiating Elo reset for {season_name=}")
 
     # Manage optional date
     if not event_date:
