@@ -1,7 +1,5 @@
 import streamlit as st
 
-st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
-
 from padel_tracker.models.users import UserRole
 from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.ui.headers import write_subheader
@@ -32,6 +30,7 @@ from padel_tracker.ui.login import (
 from padel_tracker.main import init_app
 
 ##### Init #####
+st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
 if ("is_app_init" not in st.session_state) or (not st.session_state.is_app_init):
     init_app(threaded_logs=True, thread_pool=get_thread_pool())
     st.session_state.is_app_init = True
