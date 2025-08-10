@@ -35,13 +35,16 @@ LOGGER = get_logger("matches")
 def process_finished_match(
     session: Session,
     match: Match,
+    is_update_elo: bool = True,
     delete_on_error: bool = True,
     thread_pool: ThreadPoolExecutor = None,
 ) -> tuple[dict[str, int], dict[str, int]]:
     try:
         dict_elo_rating_gains, dict_updated_elo_ratings = (
             ranking_manager.update_players_results_after_finished_match(
-                session=session, match=match
+                session=session,
+                match=match,
+                is_update_elo=is_update_elo,
             )
         )
     except Exception:
@@ -61,19 +64,20 @@ def process_finished_match(
         LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
         LOGGER.notif(f"processed finished_match id={match.id}")
     # Update_players_rank in a thread
-    if thread_pool:
-        thread_pool.submit(
-            ranking_manager.update_players_rank,
-            league_name=match.league.name,
-            league_id=match.league.id,
-            session=session,
-        )
-    else:
-        ranking_manager.update_players_rank(
-            league_name=match.league.name,
-            league_id=match.league.id,
-            session=session,
-        )
+    if is_update_elo:
+        if thread_pool:
+            thread_pool.submit(
+                ranking_manager.update_players_rank,
+                league_name=match.league.name,
+                league_id=match.league.id,
+                session=session,
+            )
+        else:
+            ranking_manager.update_players_rank(
+                league_name=match.league.name,
+                league_id=match.league.id,
+                session=session,
+            )
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
@@ -87,6 +91,7 @@ def create_match(
     date: datetime,
     score: str | MatchScore | None = None,
     is_finished: bool = True,
+    is_update_elo: bool = True,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
     logger = LOGGER.getChild("create")
@@ -162,7 +167,9 @@ def create_match(
     )
     # Process it if finished
     if is_finished:
-        process_finished_match(session=session, match=match)
+        process_finished_match(
+            session=session, match=match, is_update_elo=is_update_elo
+        )
     return match
 
 
@@ -238,6 +245,7 @@ def delete_match(
 
     # Update players and teams
     ## Manage players (Revert Elo gain from players from this match)
+    #TODO (prio 1): check when a match was "friendly" and doesn't have any elo history
     match_elo_rating_history = read_from_db(
         EloRatingHistory, where=EloRatingHistory.match_id == match_id, session=session
     )

@@ -28,6 +28,7 @@ LOGGER = get_logger("ranking")
 def update_players_results_after_finished_match(
     session: Session,
     match: Match,
+    is_update_elo: bool = True,
 ) -> tuple[dict[str, int], dict[str, int]]:
     """Update for each players and each teams:
     - Elo ratings
@@ -54,98 +55,96 @@ def update_players_results_after_finished_match(
     winners: list[Player] = winner_team.players
     losers: list[Player] = loser_team.players
     logger_debug.debug("determined winners/losers")
-
-    # Get once all current Elo
-    current_elo_rating_winner_player1 = winners[0].elo_rating
-    current_elo_rating_winner_player2 = winners[1].elo_rating
-    current_elo_rating_loser_player1 = losers[0].elo_rating
-    current_elo_rating_loser_player2 = losers[1].elo_rating
     match_score = MatchScore.from_string(match.score)
     match_score.calc_won_sets_and_games()
     nb_won_sets_diff = match_score.nb_won_sets_diff
     nb_won_games_diff = match_score.nb_won_games_diff
-    logger_debug.debug("determined winners/losers")
 
+    # TOTEST (friendly match) : distinction is_update_elo or not
     # Calc all new (careful not updating yet Elo, for not screwing in btw calc)
-    dict_elo_rating_gains = {}
-
-    dict_elo_rating_gains[winners[0].name] = calc_player_elo_rating_gain(
-        player_elo_rating=current_elo_rating_winner_player1,
-        teammate_elo_rating=current_elo_rating_winner_player2,
-        opponent_player1_elo_rating=current_elo_rating_loser_player1,
-        opponent_player2_elo_rating=current_elo_rating_loser_player2,
-        player_nb_matches=winners[0].nb_matches,
-        has_won=True,
-        diff_nb_sets=nb_won_sets_diff,
-        diff_nb_games=nb_won_games_diff,
-    )
-    dict_elo_rating_gains[winners[1].name] = calc_player_elo_rating_gain(
-        player_elo_rating=current_elo_rating_winner_player2,
-        teammate_elo_rating=current_elo_rating_winner_player1,
-        opponent_player1_elo_rating=current_elo_rating_loser_player1,
-        opponent_player2_elo_rating=current_elo_rating_loser_player2,
-        player_nb_matches=winners[1].nb_matches,
-        has_won=True,
-        diff_nb_sets=nb_won_sets_diff,
-        diff_nb_games=nb_won_games_diff,
-    )
-    dict_elo_rating_gains[losers[0].name] = calc_player_elo_rating_gain(
-        player_elo_rating=current_elo_rating_loser_player1,
-        teammate_elo_rating=current_elo_rating_loser_player2,
-        opponent_player1_elo_rating=current_elo_rating_winner_player1,
-        opponent_player2_elo_rating=current_elo_rating_winner_player2,
-        player_nb_matches=losers[0].nb_matches,
-        has_won=False,
-        diff_nb_sets=nb_won_sets_diff,
-        diff_nb_games=nb_won_games_diff,
-    )
-    dict_elo_rating_gains[losers[1].name] = calc_player_elo_rating_gain(
-        player_elo_rating=current_elo_rating_loser_player2,
-        teammate_elo_rating=current_elo_rating_loser_player1,
-        opponent_player1_elo_rating=current_elo_rating_winner_player1,
-        opponent_player2_elo_rating=current_elo_rating_winner_player2,
-        player_nb_matches=losers[1].nb_matches,
-        has_won=False,
-        diff_nb_sets=nb_won_sets_diff,
-        diff_nb_games=nb_won_games_diff,
-    )
-    logger_debug.debug("calculated player elo_rating gains")
-
-    # Update players elo ratings, best Elo, nb_matches, elo k
     elo_history_entries = []
+    dict_elo_rating_gains = {}
     dict_updated_elo_ratings = {}
-    logger_debug.debug("starting update of player objects")
+    if is_update_elo:
+        # Get once all current Elo
+        current_elo_rating_winner_player1 = winners[0].elo_rating
+        current_elo_rating_winner_player2 = winners[1].elo_rating
+        current_elo_rating_loser_player1 = losers[0].elo_rating
+        current_elo_rating_loser_player2 = losers[1].elo_rating
+        dict_elo_rating_gains[winners[0].name] = calc_player_elo_rating_gain(
+            player_elo_rating=current_elo_rating_winner_player1,
+            teammate_elo_rating=current_elo_rating_winner_player2,
+            opponent_player1_elo_rating=current_elo_rating_loser_player1,
+            opponent_player2_elo_rating=current_elo_rating_loser_player2,
+            player_nb_matches=winners[0].nb_matches,
+            has_won=True,
+            diff_nb_sets=nb_won_sets_diff,
+            diff_nb_games=nb_won_games_diff,
+        )
+        dict_elo_rating_gains[winners[1].name] = calc_player_elo_rating_gain(
+            player_elo_rating=current_elo_rating_winner_player2,
+            teammate_elo_rating=current_elo_rating_winner_player1,
+            opponent_player1_elo_rating=current_elo_rating_loser_player1,
+            opponent_player2_elo_rating=current_elo_rating_loser_player2,
+            player_nb_matches=winners[1].nb_matches,
+            has_won=True,
+            diff_nb_sets=nb_won_sets_diff,
+            diff_nb_games=nb_won_games_diff,
+        )
+        dict_elo_rating_gains[losers[0].name] = calc_player_elo_rating_gain(
+            player_elo_rating=current_elo_rating_loser_player1,
+            teammate_elo_rating=current_elo_rating_loser_player2,
+            opponent_player1_elo_rating=current_elo_rating_winner_player1,
+            opponent_player2_elo_rating=current_elo_rating_winner_player2,
+            player_nb_matches=losers[0].nb_matches,
+            has_won=False,
+            diff_nb_sets=nb_won_sets_diff,
+            diff_nb_games=nb_won_games_diff,
+        )
+        dict_elo_rating_gains[losers[1].name] = calc_player_elo_rating_gain(
+            player_elo_rating=current_elo_rating_loser_player2,
+            teammate_elo_rating=current_elo_rating_loser_player1,
+            opponent_player1_elo_rating=current_elo_rating_winner_player1,
+            opponent_player2_elo_rating=current_elo_rating_winner_player2,
+            player_nb_matches=losers[1].nb_matches,
+            has_won=False,
+            diff_nb_sets=nb_won_sets_diff,
+            diff_nb_games=nb_won_games_diff,
+        )
+        logger_debug.debug("calculated player elo_rating gains")
+
+        # Update players elo ratings, best Elo
+        logger_debug.debug("starting Elo updates of player objects")
+        for player in winners + losers:
+            # Updated Elo
+            elo_rating_gain = dict_elo_rating_gains[player.name]
+            updated_elo_rating = player.elo_rating + elo_rating_gain
+            player.elo_rating = updated_elo_rating
+            dict_updated_elo_ratings[player.name] = updated_elo_rating
+            # Best Elo
+            if updated_elo_rating > player.best_elo_rating:
+                player.best_elo_rating = updated_elo_rating
+            # Update EloHistory (elo history only)
+            player_elo_history_entry = EloRatingHistory(
+                date=match_date,
+                player_id=player.id,
+                player_name=player.name,
+                elo_rating=updated_elo_rating,
+                elo_rating_gain=elo_rating_gain,
+                match_id=match.id,
+                match_name=match.name,
+                league_id=match.league.id,
+                league_name=match.league_name,
+            )
+            elo_history_entries.append(player_elo_history_entry)
+            logger_debug.debug(f"created elo_history_entry for '{player.name}'")
+
+    # Update non-elo related values for Players (nb_matches, Last match date, nb victory/defeats)
     for player in winners + losers:
-        # Update player updated_date
+        player.nb_matches += 1
+        player.elo_k = calc_k_value(player.nb_matches)
         if not player.last_match_date or (player.last_match_date < match_date):
             player.last_match_date = match_date
-        # Updated Elo
-        elo_rating_gain = dict_elo_rating_gains[player.name]
-        updated_elo_rating = player.elo_rating + elo_rating_gain
-        player.elo_rating = updated_elo_rating
-        dict_updated_elo_ratings[player.name] = updated_elo_rating
-        # Best Elo
-        if updated_elo_rating > player.best_elo_rating:
-            player.best_elo_rating = updated_elo_rating
-        # Nb matches
-        player.nb_matches += 1
-        # New k Elo
-        player.elo_k = calc_k_value(player.nb_matches)
-        # Update EloHistory (elo history only)
-        player_elo_history_entry = EloRatingHistory(
-            date=match_date,
-            player_id=player.id,
-            player_name=player.name,
-            elo_rating=updated_elo_rating,
-            elo_rating_gain=elo_rating_gain,
-            match_id=match.id,
-            match_name=match.name,
-            league_id=match.league.id,
-            league_name=match.league_name,
-        )
-        elo_history_entries.append(player_elo_history_entry)
-        logger_debug.debug(f"created elo_history_entry for '{player.name}'")
-    ## Update nb victory/defeat
     for player in winners:
         player.nb_victories += 1
     for player in losers:
@@ -153,33 +152,36 @@ def update_players_results_after_finished_match(
 
     # Update Team related results
     team_elo_history_entries = []
-    logger_debug.debug("starting update of team objects")
+    if is_update_elo:
+        logger_debug.debug("starting Elo updates of team objects")
+        for team in [winner_team, loser_team]:
+            # Update Team elo (will trigger comput of self.elo_rating)
+            previous_elo_rating = team.elo_rating
+            updated_elo_rating = team.calc_team_elo_rating()
+            elo_rating_gain = updated_elo_rating - previous_elo_rating
+            # Best Elo
+            if updated_elo_rating > team.best_elo_rating:
+                team.best_elo_rating = updated_elo_rating
+            # Elo history
+            team_elo_history_entry = TeamEloRatingHistory(
+                date=match_date,
+                team_id=team.id,
+                team_name=team.name,
+                elo_rating=updated_elo_rating,
+                elo_rating_gain=elo_rating_gain,
+                match_id=match.id,
+                match_name=match.name,
+                league_id=match.league.id,
+                league_name=match.league_name,
+            )
+            team_elo_history_entries.append(team_elo_history_entry)
+            logger_debug.debug(f"created elo_history_entry for '{team.name}'")
+
+    # Update non-Elo related for Teams (nb_matches, Last match date, nb victory/defeats)
     for team in [winner_team, loser_team]:
+        team.nb_matches += 1
         if not team.last_match_date or (team.last_match_date < match_date):
             team.last_match_date = match_date
-        # Update Team elo (will trigger comput of self.elo_rating)
-        previous_elo_rating = team.elo_rating
-        updated_elo_rating = team.calc_team_elo_rating()
-        elo_rating_gain = updated_elo_rating - previous_elo_rating
-        # Best Elo
-        if updated_elo_rating > team.best_elo_rating:
-            team.best_elo_rating = updated_elo_rating
-        # Nb matches
-        team.nb_matches += 1
-        team_elo_history_entry = TeamEloRatingHistory(
-            date=match_date,
-            team_id=team.id,
-            team_name=team.name,
-            elo_rating=updated_elo_rating,
-            elo_rating_gain=elo_rating_gain,
-            match_id=match.id,
-            match_name=match.name,
-            league_id=match.league.id,
-            league_name=match.league_name,
-        )
-        team_elo_history_entries.append(team_elo_history_entry)
-        logger_debug.debug(f"created elo_history_entry for '{team.name}'")
-    # Update Team nb victory/defeats
     winner_team.nb_victories += 1
     loser_team.nb_defeats += 1
 

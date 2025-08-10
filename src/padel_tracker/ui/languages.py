@@ -196,6 +196,8 @@ _DICT_TO_FR = {
     "end_date": "Fin",
     "misc": "Autre",
     "tournament": "Tournoi",
+    "friendly_match": "Match amical",
+    "friendly_match_help": "Un match amical n'update pas le classement Elo (seulement le nombre de matchs/victoires/défaites)",
 }
 
 _DICT_TO_EN = {
@@ -382,6 +384,8 @@ _DICT_TO_EN = {
     "end_date": "End",
     "misc": "Misc",
     "tournament": "Tournament",
+    "friendly_match": "Friendly match",
+    "friendly_match_help": "A friendly match doesn't update the Elo ranking (only the number of matches/wins/losses)",
 }
 
 _DICT_TO_ES = {
@@ -569,6 +573,8 @@ _DICT_TO_ES = {
     "end_date": "Final",
     "misc": "Misceláneo",
     "tournament": "Torneo",
+    "friendly_match": "Partido amistoso",
+    "friendly_match_help": "Un partido amistoso no actualiza la clasificación Elo (solo el número de partidos/victorias/derrotas)",
 }
 
 
