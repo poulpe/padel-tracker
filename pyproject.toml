@@ -9,22 +9,21 @@ authors = [
 ]
 dependencies = [
     "streamlit>=1.47", # For UI
-    "streamlit-js-eval", # For UI
-    "sqlmodel", # Combines sqlalchemy and pydantic
-    "psycopg2-binary", # For PostgreSQL com on cloud-hosted db
-    "supabase", # For PostgreSQL com on cloud-hosted db
-    "python-dotenv", # Secret management in .env file (for cloud-hosted db)
-    "pandas",
+    "streamlit-js-eval>=0.1.7", # For UI
+    "sqlmodel>=0.0.22", # Combines sqlalchemy and pydantic
+    "psycopg2-binary>=2.9.10", # For PostgreSQL com on cloud-hosted db
+    "supabase>=2.13.0", # For PostgreSQL com on cloud-hosted db
+    "python-dotenv>=1.0.1", # Secret management in .env file (for cloud-hosted db)
+    "pandas>=2.2.3", # Manage some data/statistics as dataframe
     "authlib>=1.4.1", # For User management in UI
-    "email-validator",
 ]
 [project.optional-dependencies]
 dev = [
-    "black",
-    "ruff",
+    "black>=25.1.0",
+    "ruff>=0.9.6",
     "alembic>=1.16.0", # For database migrations
-    "pytest",
-    "coverage",
+    "pytest>=8.3.4",
+    "coverage>=7.6.11",
 ]
 wakeup = [
     "selenium>=4.29",
@@ -42,7 +41,6 @@ Repository = "https://github.com/poulpe/padel-tracker"
 
 [tool.ruff]
 lint.ignore = [
-    "E402", # Import not all on top of file, needed for Streamlit app def
     "F821", # Must for compatibility with SQLModel Relationship ("name not defined")
 ]
 exclude = ["src/padel_tracker/database/migrations/versions/*.py"]

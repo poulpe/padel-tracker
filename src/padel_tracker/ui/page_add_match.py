@@ -132,6 +132,13 @@ with st.form("add_match"):
     with time_col:
         time = st.time_input(translator("time"), value="18:30", step=1800)
 
+    # Friendly match toggle button
+    _, center_col, _ = st.columns([1, 0.8, 1])
+    with center_col:
+        is_friendly_match = st.toggle(
+            translator("friendly_match"), help=translator("friendly_match_help")
+        )
+
     st.write("")
 
     # Submit button
@@ -207,21 +214,24 @@ if submit_button:
                     league_name=st.session_state.league_name,
                     date=match_datetime,
                     score=match_score,
-                    is_finished=False,
+                    is_finished=False,  # To trigger custom "process_finished_match"
                 )
                 st.success(translator("match_added_success"), icon="🔥")
                 LOGGER.debug("created match, starting processing")
                 # Processing and showing results
-                _, center_col, _ = st.columns(3)
-                with center_col:
-                    st.write(translator("see_updated_elo_below"))
+                if not is_friendly_match:
+                    _, center_col, _ = st.columns(3)
+                    with center_col:
+                        st.write(translator("see_updated_elo_below"))
                 dict_gains, dict_updated_ratings = process_finished_match(
                     session=session,
                     match=match,
+                    is_update_elo=not is_friendly_match,
                     delete_on_error=True,
                     thread_pool=get_thread_pool(),
                 )
-                display_elo_rating_gains_metrics(dict_gains, dict_updated_ratings)
+                if not is_friendly_match:
+                    display_elo_rating_gains_metrics(dict_gains, dict_updated_ratings)
                 LOGGER.debug("finished processing")
             except MatchExistsError:
                 st.error(translator("match_exists_error"), icon="💢")

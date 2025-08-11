@@ -76,8 +76,7 @@ def test_create_get_delete_match(db_session):
     assert match.team1_won is False
     assert winner_team == t2
     assert loser_team == t1
-
-    # Check elo_rating players changed
+    ## Check elo_rating players changed
     p1 = get_player_from_name(db_session, TEST_P1_NAME)
     p2 = get_player_from_name(db_session, TEST_P2_NAME)
     p3 = get_player_from_name(db_session, TEST_P3_NAME)
@@ -94,6 +93,15 @@ def test_create_get_delete_match(db_session):
 
     # Delete match
     delete_match(db_session, match_id=match.id)
+    ## Check elo_rating players have been reverted
+    p1 = get_player_from_name(db_session, TEST_P1_NAME)
+    p2 = get_player_from_name(db_session, TEST_P2_NAME)
+    p3 = get_player_from_name(db_session, TEST_P3_NAME)
+    p4 = get_player_from_name(db_session, TEST_P4_NAME)
+    assert p1_elo_rating_before == p1.elo_rating
+    assert p2_elo_rating_before == p2.elo_rating
+    assert p3_elo_rating_before == p3.elo_rating
+    assert p4_elo_rating_before == p4.elo_rating
 
 
 def test_create_match_same_player_both_teams(db_session):
