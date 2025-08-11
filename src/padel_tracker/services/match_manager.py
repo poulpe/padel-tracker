@@ -163,7 +163,7 @@ def create_match(
     logger.debug("committing to db")
     commit_to_db(match, league, session=session)
     logger.notif(
-        f"created new Match({match} date='{match.date.strftime("%d/%m/%Y %H:%M")}')"
+        f"created new Match({match} date='{match.date.strftime("%d/%m/%Y %H:%M")}' {is_update_elo=})"
     )
     # Process it if finished
     if is_finished:
@@ -244,22 +244,15 @@ def delete_match(
     league = match.league
 
     # Update players and teams
-    ## Manage players (Revert Elo gain from players from this match)
-    #TODO (prio 1): check when a match was "friendly" and doesn't have any elo history
-    match_elo_rating_history = read_from_db(
-        EloRatingHistory, where=EloRatingHistory.match_id == match_id, session=session
-    )
-    list_players = []
-    for row in match_elo_rating_history:
-        player = row.player
-        elo_rating_gain = row.elo_rating_gain
-        player.elo_rating -= elo_rating_gain
+    list_objects_to_update = []
+    winner_team, loser_team = match.get_winners_losers()
+    ## Decrement nb_matches/wins/losses for players
+    for player in winner_team.players:
+        player.nb_victories -= 1
+    for player in loser_team.players:
+        player.nb_defeats -= 1
+    for player in match.players:
         player.nb_matches -= 1
-        if elo_rating_gain >= 0:
-            player.nb_victories -= 1
-        else:
-            player.nb_defeats -= 1
-        ### Manage player last_match_date if applicable
         if match.date == player.last_match_date:
             # Find "before the last" match date
             try:
@@ -267,24 +260,12 @@ def delete_match(
                 player.last_match_date = sorted_matches[-2].date
             except (KeyError, AttributeError, Exception):
                 player.last_match_date = None
-        list_players.append(player)
-    ## Manage teams (Revert Elo gain from players from this match)
-    match_team_elo_rating_history = read_from_db(
-        TeamEloRatingHistory,
-        where=TeamEloRatingHistory.match_id == match_id,
-        session=session,
-    )
-    list_teams = []
-    for row in match_team_elo_rating_history:
-        team = row.team
-        elo_rating_gain = row.elo_rating_gain
-        team.elo_rating -= elo_rating_gain
+        list_objects_to_update.append(player)
+    ## Decrement nb_matches/wins/losses for teams
+    winner_team.nb_victories -= 1
+    loser_team.nb_defeats -= 1
+    for team in [winner_team, loser_team]:
         team.nb_matches -= 1
-        if elo_rating_gain > 0:
-            team.nb_victories -= 1
-        else:
-            team.nb_defeats -= 1
-        ### Manage team last_match_date if applicable
         if match.date == team.last_match_date:
             # Find "before the last" match date
             try:
@@ -292,15 +273,38 @@ def delete_match(
                 team.last_match_date = sorted_matches[-2].date
             except (KeyError, AttributeError, Exception):
                 team.last_match_date = None
-        list_teams.append(team)
+        list_objects_to_update.append(team)
+
+    ## Revert elo_rating_history if applicable (= if match was not "friendly")
+    ### Players
+    match_elo_rating_history = read_from_db(
+        EloRatingHistory, where=EloRatingHistory.match_id == match_id, session=session
+    )
+    if match_elo_rating_history:
+        for row in match_elo_rating_history:
+            player = row.player
+            player.elo_rating -= row.elo_rating_gain
+            list_objects_to_update.append(player)
+    ### Teams
+    match_team_elo_rating_history = read_from_db(
+        TeamEloRatingHistory,
+        where=TeamEloRatingHistory.match_id == match_id,
+        session=session,
+    )
+    if match_team_elo_rating_history:
+        for row in match_team_elo_rating_history:
+            team = row.team
+            team.elo_rating -= row.elo_rating_gain
+            list_objects_to_update.append(team)
+
     ## Manage league
     league.nb_matches -= 1
     ## Commit updates
-    commit_to_db(*list_players, *list_teams, league, session=session)
+    commit_to_db(*list_objects_to_update, league, session=session)
     ## Delete history rows
-    delete_from_db(
-        *match_elo_rating_history, *match_team_elo_rating_history, session=session
-    )
+    histories_to_delete = match_elo_rating_history + match_team_elo_rating_history
+    if histories_to_delete:
+        delete_from_db(*histories_to_delete, session=session)
     # Finally delete
     delete_from_db(match, session=session)
     logger.notif(f"deleted {match_id=} successfully")
