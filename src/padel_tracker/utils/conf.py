@@ -29,32 +29,15 @@ def get_conf() -> dict[str, Any]:
     Fallback to None if not found.
     """
     dict_conf = {}
-    dict_conf["db_credentials"] = {}
     dict_conf["general"] = {}
+    dict_conf["db_credentials"] = {}
 
-    db_keys = [
-        "user",
-        "password",
-        "host",
-        "port",
-        "dbname",
-        "supabase_api_url",
-        "supabase_api_key",
-    ]
-    conf_keys = ["log_level_console", "db_mode", "run_mode"]
+    conf_keys = ["db_mode", "run_mode", "log_level_console"]
+    db_keys = ["db_url_cloud"]
 
     load_dotenv()
 
-    ## db stuff
-    for key in db_keys:
-        value = os.getenv(key)
-        if value is None:
-            try:
-                value = st.secrets["db_credentials"][key]
-            except (KeyError, FileNotFoundError):
-                pass
-        dict_conf["db_credentials"][key] = value
-    ## General conf
+    # General conf
     for key in conf_keys:
         value = os.getenv(key)
         if value is None:
@@ -63,6 +46,22 @@ def get_conf() -> dict[str, Any]:
             except (KeyError, FileNotFoundError):
                 value = _DEFAULT_CONF[key]
         dict_conf["general"][key] = value
+    ## Check modes are valid
+    db_mode_lowercase = dict_conf["general"]["db_mode"].lower()
+    dict_conf["general"]["db_mode"] = DBMode(db_mode_lowercase).value
+    run_mode_lowercase = dict_conf["general"]["run_mode"].lower()
+    dict_conf["general"]["run_mode"] = RunMode(run_mode_lowercase).value
+
+    # db stuff
+    for general_key in db_keys:
+        specific_key = f"{general_key}_{dict_conf["general"]["run_mode"]}"
+        value = os.getenv(specific_key)
+        if value is None:
+            try:
+                value = st.secrets["db_credentials"][specific_key]
+            except (KeyError, FileNotFoundError):
+                pass
+        dict_conf["db_credentials"][general_key] = value
 
     return dict_conf
 
