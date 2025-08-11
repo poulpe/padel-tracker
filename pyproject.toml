@@ -1,6 +1,6 @@
 [project]
 name = "padel-tracker"
-version = "0.4.3"
+version = "0.4.4"
 description = "App to keep track of Padel matches"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -12,7 +12,6 @@ dependencies = [
     "streamlit-js-eval>=0.1.7", # For UI
     "sqlmodel>=0.0.22", # Combines sqlalchemy and pydantic
     "psycopg2-binary>=2.9.10", # For PostgreSQL com on cloud-hosted db
-    "supabase>=2.13.0", # For PostgreSQL com on cloud-hosted db
     "python-dotenv>=1.0.1", # Secret management in .env file (for cloud-hosted db)
     "pandas>=2.2.3", # Manage some data/statistics as dataframe
     "authlib>=1.4.1", # For User management in UI

@@ -12,37 +12,42 @@ The application is hosted on **Streamlit Community Cloud** and can be used on we
 <img src="docs/img/screenshot_main_page_en.png" width="66%" height="66%">
 
 ## Features
-- **Player and Team Management**: Add, update, and check player and team statistics.
+- **Player and Team Management**: Add, update, and check players and teams statistics.
 - **Match History**: Record match results (date, teams, scores)
 - **Elo Ranking System**: Calculate player rankings dynamically based on match results with a bonus system vs won games difference. Every single point counts !
 - **League Management**: Ability to group players within a league, to follow/compare only your mates (player can also belong to several leagues)
-- **Data Persistence**: Uses a PostgreSQL database hosted on Supabase. Can also be used in `local` mode to avoid any need of hosting database online.
+- **Data Persistence**: Via database hosted on the provider of your choice. Can also be used in `local` mode to avoid any need of hosting database online.
 - **Interactive UI**: Built with Streamlit, providing an intuitive and responsive interface in a web browser.
 - **Visualization**: Charts and tables for ranking history and match statistics.
 - **Multilingual Support**: English, French and Español
-- **User management**: User authentification using OIDC provider
+- **User management**: User authentification using OpenID Connect (OIDC) providers. OIDC is supported by Streamlit from `v1.42`.
 
 ## Technologies used
 - **Backend**: [SQLModel](https://github.com/tiangolo/sqlmodel) (SQLAlchemy + Pydantic)
 - **Frontend**: [Streamlit](https://streamlit.io/) with modular pages and navigation
-- **Database**: PostgreSQL (Hosted on [Supabase](https://supabase.com/))
+- **Database**: PostgreSQL (Hosted on [Supabase](https://supabase.com/) for this case)
 - **Database migrations**: Managed with [Alembic](https://alembic.sqlalchemy.org/)
-- **Logging**: Logs are stored in Supabase for tracking application events
-- **User authentification**: Through the OpenID Connect (OIDC) provider [Auth0](http://www.auth0.com), supporting email/password and Google account. OIDC is supported by Streamlit from `v1.42`. 
- 
+- **User authentification**: Through the OpenID Connect (OIDC) provider [Auth0](http://www.auth0.com), supporting email/password and Google accounts.
+- **Tests** : [Pytest](https://docs.pytest.org/en/stable/) and dedicated test framework from Streamlit
+
+## Gallery
+
+| <img src="docs/img/screenshot_check_player_page_en2.png" width="90%" height="90%"> | <img src="docs/img/screenshot_main_page_dark_en.png" width="90%" height="90%"> | <img src="docs/img/screenshot_page_add_match_en.png" width="90%" height="90%"> |
+|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+
 ## Roadmap / Ideas
 - Loggings
   - [x] Overall stuff
 - UI
   - [x] Basic Streamlit tuto
   - [x] General layout
-  - [ ] Graphs
-  - [ ] Export data as .csv ?
+  - [x] Graphs
+  - [x] Export data as .csv : via the Streamlit builtin feature
 - Users
   - [x] Manage users (authentification, access...)
   - [x] User auth / login/logout in UI
 - Database
-  - [ ] Deletes
+  - [x] Deletes
   - [x] Migrations
   - [x] Get 'data' online
 - Analytics
@@ -54,20 +59,60 @@ The application is hosted on **Streamlit Community Cloud** and can be used on we
 - Leagues
   - [x] Allow several league
   - [x] League description ?
-  - [ ] Manage league ? (i.e: league admin to add/remove players, rename league)
+  - [x] Manage league ? (i.e: league admin to add/remove players, rename league)
 - Tests
-  - [ ] Not the funniest part, but, eh...
+  - [x] Basic tests on models and services
+  - [ ] UI tests
 - Feedback
   - [x] "Report bug" form
 
-## Gallery
-
-| <img src="docs/img/screenshot_check_player_page_en2.png" width="90%" height="90%"> | <img src="docs/img/screenshot_main_page_dark_en.png" width="90%" height="90%"> |
-|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-
-
 ---
 # Some specifities
+
+## Run locally and reproduce this app
+### .env
+To run the application locally, you need to set up environment variables in a .env file for secret management. 
+Below is the required structure:
+```text
+# Run parameters
+db_mode=local # "local" or "cloud"
+run_mode=test # "debug", test" or "prod"
+log_level_console=INFO
+
+# Cloud database related (not needed if you just run locally)
+db_url_cloud_debug=my_debug_db_url
+db_url_cloud_test=my_test_db_url
+db_url_cloud_prod=my_prod_db_url
+```
+If you set `db_mode` to `local`, it will just create/read/update a local database in `data/` folder, so you don't need to have a database if you want to only do locally.
+
+The used database location depends on `db_mode` and `run_mode`, as defined as below :
+
+| **db_mode** | **run_mode** | **db_url**                     |
+|-------------|--------------|--------------------------------|
+| local       | debug        | `data/database_debug.db`       |
+| local       | test         | `tests/data/database_tests.db` |
+| local       | prod         | `data/database.db`             |
+| cloud       | debug        | `db_url_cloud_debug` from env  | 
+| cloud       | test         | `db_url_cloud_test` from env   | 
+| cloud       | prod         | `db_url_cloud_prod` from env   | 
+
+Note: secret management for the streamlit hosted app is done via the dedicated
+[streamlit secret management method](https://docs.streamlit.io/develop/concepts/connections/secrets-management).  
+The app is looking in priority if any `.env` file is defined,
+otherwise it falls back to checking if a `.streamlit/secrets.toml` file is there.
+
+### Run locally
+1) Clone the repository
+2) Make sure ``uv`` is installed on your setup
+3) In a terminal, go to folder and run the project via typing this command:  
+(it will install project automatically if not already installed)
+```shell
+uv run padel-tracker
+```
+
+Note: this actually runs the following command inside a venv:  
+```streamlit run src/padel-tracker/ui/streamlit_app.py```
 
 ## Database
 ### Migrations
@@ -87,44 +132,6 @@ alembic upgrade head
 alembic revision --autogenerate -m "added new_field to Player"
 alembic upgrade head
 ```
-
-## Run locally and reproduce this app
-### .env
-To run the application locally, you need to set up environment variables in a .env file for secret management. 
-Below is the required structure:
-```text
-# Run parameters
-log_level_console=INFO
-db_mode=local # "local" or "cloud"
-run_mode=test # "test" or "prod"
-
-# Cloud database related (not needed if you just run locally)
-user=my_database_user 
-password=my_database_password 
-host=my_database_host 
-port=my_database_port 
-dbname=my_dbname
-supabase_api_url=my_api_url
-supabase_api_key=my_api_key
-```
-If you set `db_mode` to `local`, it will just create/read/update a local database in `data/` folder, so you don't need to have a database if you want to only do locally.
-
-Note: secret management for the streamlit hosted app is done via the dedicated
-[streamlit secret management method](https://docs.streamlit.io/develop/concepts/connections/secrets-management).  
-The app is looking in priority if any `.env` file is defined,
-otherwise it falls back to checking if an `.streamlit/secrets.toml` file is there.
-
-### Run locally
-1) Clone the repository
-2) Make sure ``uv`` is installed on your setup
-3) In a terminal, go to folder and run the project via typing this command:  
-(it will install project automatically if not already installed)
-```shell
-uv run padel-tracker
-```
-
-Note: this actually runs the following command inside a venv:  
-```streamlit run src/padel-tracker/ui/streamlit_app.py```
 
 ---
 © 2025 Padel Tracker

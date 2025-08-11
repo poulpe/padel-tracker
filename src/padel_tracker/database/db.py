@@ -3,7 +3,6 @@ from typing import Iterable
 import pandas as pd
 from sqlalchemy.engine.base import Engine
 from sqlmodel import SQLModel, create_engine, Session, select
-import supabase
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
@@ -11,20 +10,10 @@ from padel_tracker.utils.paths import get_absolute_path
 from padel_tracker.utils.conf import DICT_CONF, DBMode, RunMode
 
 
-def get_cloud_db_url(
-    user: str, password: str, host: str, port: str, dbname: str
-) -> str:
-    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}?sslmode=require"
-
-
 def get_db_url(
     db_mode: DBMode = DICT_CONF["general"]["db_mode"],
     run_mode: RunMode = DICT_CONF["general"]["run_mode"],
-    user: str = DICT_CONF["db_credentials"]["user"],
-    password: str = DICT_CONF["db_credentials"]["password"],
-    host: str = DICT_CONF["db_credentials"]["host"],
-    port: str = DICT_CONF["db_credentials"]["port"],
-    dbname: str = DICT_CONF["db_credentials"]["dbname"],
+    db_url_cloud: str = DICT_CONF["db_credentials"]["db_url_cloud"],
 ) -> str:
     db_mode = db_mode.lower()
     run_mode = run_mode.lower()
@@ -44,10 +33,7 @@ def get_db_url(
             db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
     elif db_mode == DBMode.CLOUD:
-        # TODO (prio 2) : manage case for DEBUG and TEST in cloud database ?
-        db_url = get_cloud_db_url(
-            user=user, password=password, host=host, port=port, dbname=dbname
-        )
+        db_url = db_url_cloud
     else:
         err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
         raise ValueError(err_msg)
@@ -57,26 +43,10 @@ def get_db_url(
 def set_db_engine(
     db_mode: DBMode = DICT_CONF["general"]["db_mode"],
     run_mode: RunMode = DICT_CONF["general"]["run_mode"],
-    user: str = DICT_CONF["db_credentials"]["user"],
-    password: str = DICT_CONF["db_credentials"]["password"],
-    host: str = DICT_CONF["db_credentials"]["host"],
-    port: str = DICT_CONF["db_credentials"]["port"],
-    dbname: str = DICT_CONF["db_credentials"]["dbname"],
+    db_url_cloud: str = DICT_CONF["db_credentials"]["db_url_cloud"],
 ) -> Engine:
     # Create url based on modes
-    try:
-        db_url = get_db_url(
-            db_mode=db_mode,
-            run_mode=run_mode,
-            user=user,
-            password=password,
-            host=host,
-            port=port,
-            dbname=dbname,
-        )
-    except ValueError:
-        err_msg = f"invalid db_mode got from config. Got {db_mode=}. Must be 'cloud' or 'local'"
-        raise ValueError(err_msg)
+    db_url = get_db_url(db_mode=db_mode, run_mode=run_mode, db_url_cloud=db_url_cloud)
     # Create engine
     if db_mode == DBMode.CLOUD:
         connect_args = {"options": "-csearch_path=public"}
@@ -93,20 +63,12 @@ class Database:
         self,
         db_mode: DBMode = DICT_CONF["general"]["db_mode"],
         run_mode: RunMode = DICT_CONF["general"]["run_mode"],
-        user: str = DICT_CONF["db_credentials"]["user"],
-        password: str = DICT_CONF["db_credentials"]["password"],
-        host: str = DICT_CONF["db_credentials"]["host"],
-        port: str = DICT_CONF["db_credentials"]["port"],
-        dbname: str = DICT_CONF["db_credentials"]["dbname"],
+        db_url_cloud: str = DICT_CONF["db_credentials"]["db_url_cloud"],
     ):
         self._engine = None
         self.db_mode = db_mode
         self.run_mode = run_mode
-        self.user = user
-        self.password = password
-        self.host = host
-        self.port = port
-        self.dbname = dbname
+        self.db_url_cloud = db_url_cloud
 
     @property
     def engine(self):
@@ -114,11 +76,7 @@ class Database:
             self._engine = set_db_engine(
                 db_mode=self.db_mode,
                 run_mode=self.run_mode,
-                user=self.user,
-                password=self.password,
-                host=self.host,
-                port=self.port,
-                dbname=self.dbname,
+                db_url_cloud=self.db_url_cloud,
             )
         return self._engine
 
@@ -134,8 +92,8 @@ def init_db_and_tables(db: Database = DB):
     SQLModel.metadata.create_all(db.engine)
 
 
-def commit_to_db_no_session(*objects, refresh: bool = True) -> None:
-    with DB.get_session() as session:
+def commit_to_db_no_session(*objects, db: Database = DB, refresh: bool = True) -> None:
+    with db.get_session() as session:
         for object in objects:
             session.add(object)
         session.commit()
@@ -310,10 +268,3 @@ def delete_from_db(*objects, session: Session) -> None:
     for object in objects:
         session.delete(object)
     session.commit()
-
-
-def create_supabase_client():
-    return supabase.create_client(
-        supabase_url=DICT_CONF["db_credentials"]["supabase_api_url"],
-        supabase_key=DICT_CONF["db_credentials"]["supabase_api_key"],
-    )
