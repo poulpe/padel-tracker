@@ -44,6 +44,7 @@ def get_db_url(
             db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
         db_url = f"sqlite:///{db_file}"
     elif db_mode == DBMode.CLOUD:
+        # TODO (prio 2) : manage case for DEBUG and TEST in cloud database ?
         db_url = get_cloud_db_url(
             user=user, password=password, host=host, port=port, dbname=dbname
         )

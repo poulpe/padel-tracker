@@ -7,6 +7,7 @@ from padel_tracker.database.db import Database, init_db_and_tables
 # Database
 DB_TEST = Database(db_mode=DBMode.LOCAL, run_mode=RunMode.TEST)
 
+
 @pytest.fixture
 def db_session():
     init_db_and_tables(DB_TEST)

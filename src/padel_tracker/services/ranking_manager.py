@@ -60,7 +60,6 @@ def update_players_results_after_finished_match(
     nb_won_sets_diff = match_score.nb_won_sets_diff
     nb_won_games_diff = match_score.nb_won_games_diff
 
-    # TOTEST (friendly match) : distinction is_update_elo or not
     # Calc all new (careful not updating yet Elo, for not screwing in btw calc)
     elo_history_entries = []
     dict_elo_rating_gains = {}
@@ -197,7 +196,7 @@ def update_players_results_after_finished_match(
         match,
         session=session,
     )
-    logger.notif(f"updated players results for match id={match.id}")
+    logger.notif(f"updated players results for match id={match.id}, {is_update_elo=}")
 
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
