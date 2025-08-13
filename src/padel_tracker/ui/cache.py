@@ -36,6 +36,7 @@ class CacheKey(StrEnum):
     df_elo_hist = "df_elo_hist"
     df_linkplayerleague = "df_linkplayerleague"
     df_events = "df_events"
+    # df_rank_hist = "df_rank_hist"
 
 
 ALL_CACHE_KEYS = tuple(CacheKey)
@@ -223,6 +224,7 @@ DICT_UPDATE_FUNC_VS_KEY = {
     CacheKey.df_linkplayerleague: update_cache_linkplayerleague,
     CacheKey.league_admins: update_cache_league_admins,
     CacheKey.df_events: update_cache_events,
+    # CacheKey.df_rank_hist: update_cache_rank_hist,
     # CacheKey.df_players_all_leagues:update_cache_players,
     # CacheKey.player_names_all_leagues:update_cache_players,
 }
@@ -269,6 +271,9 @@ def refresh_cache(
     else:
         str_only = str(only)
     LOGGER.info(f"refreshed cache for keys={str_only}")
+
+
+### Checks ###
 
 
 def check_not_empty_database_matches() -> None:
@@ -333,3 +338,15 @@ def determine_session_state_league_name() -> None:
                 # st.warning(translator("no_league_database_error"), icon="💢")
                 # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
                 st.stop()
+
+
+### Optional cache (on-demand)
+def update_cache_rank_hist_current_league(session: Session, force: bool = False):
+    """To update only on demand, not mandatory to refresh each time to save some db calls"""
+    key = "df_rank_hist"
+    if (key not in st.session_state) or force:
+        st.session_state[key] = ranking_manager.get_all_rank_histories_from_league(
+            session=session,
+            as_df=True,
+            league_name=st.session_state.league_name,
+        )

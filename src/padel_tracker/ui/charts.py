@@ -5,6 +5,7 @@ import altair as alt
 from padel_tracker.database.db import DB
 from padel_tracker.models.events import EventCategory
 from padel_tracker.services import ranking_manager
+from padel_tracker.ui.cache import update_cache_rank_hist_current_league
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
@@ -289,6 +290,44 @@ def _generate_player_metric_history_chart(
     return chart
 
 
+@st.cache_data(max_entries=32)
+def _generate_player_rank_history_chart(
+    df_rank_hist: pd.DataFrame,
+    player_name: str,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    limit_last: int | None = 15,
+    temporal_time_scale: bool = False,
+) -> alt.Chart:
+    # Clean df
+    max_rank = int(df_rank_hist["rank"].max())
+    df_hist = df_rank_hist.query(f"player_name == '{player_name}'")
+    col_to_keep = ["date", "rank"]
+    df_hist = df_hist[col_to_keep].copy()
+    df_hist["date"] = pd.to_datetime(df_hist["date"])
+    if limit_last:
+        df_hist = df_hist.tail(limit_last)
+    ## Rename to use user friendly/language names
+    df_hist = df_hist.rename(columns=translator.dict_lang)
+    # Plot
+    x_type = "temporal" if temporal_time_scale else "ordinal"
+    chart_base = alt.Chart(df_hist).mark_line(interpolate="step-after")
+    chart = chart_base.encode(
+        x=alt.X(
+            translator("date"),
+            type=x_type,
+            timeUnit="yearmonthdatehoursminutes",
+            title=translator("date"),
+        ),
+        y=alt.Y(
+            translator("rank") + ":Q",
+            scale=alt.Scale(reverse=True, domain=(1, max_rank), nice=False, zero=False),
+            axis=alt.Axis(values=list(range(1, max_rank + 1)), format="d"),
+        ),
+        tooltip=[translator("date"), translator("rank")],
+    )
+    return chart
+
+
 def make_player_metric_history_chart(
     player_name: str,
     df_elo_hist: pd.DataFrame,
@@ -298,20 +337,41 @@ def make_player_metric_history_chart(
     df_events: pd.DataFrame = None,
 ) -> None:
     # Metric selection
+    list_metrics = [
+        translator("elo_rating"),
+        translator("nb_won_games_diff"),
+        translator("rank"),
+    ]
     metric = st.pills(
         label=translator("metric"),
-        options=[translator("elo_rating"), translator("nb_won_games_diff")],
+        options=list_metrics,
         default=translator("nb_won_games_diff"),
     )
     # Gen chart
-    chart = _generate_player_metric_history_chart(
-        player_name=player_name,
-        metric=metric,
-        df_elo_hist=df_elo_hist,
-        df_matches=df_matches,
-        translator=translator,
-        limit_last_matches=limit_last_matches,
-    )
+    if metric in (translator("elo_rating"), translator("nb_won_games_diff")):
+        chart = _generate_player_metric_history_chart(
+            player_name=player_name,
+            metric=metric,
+            df_elo_hist=df_elo_hist,
+            df_matches=df_matches,
+            translator=translator,
+            limit_last_matches=limit_last_matches,
+        )
+    elif metric == translator("rank"):
+        # Fetch df_rank_hist
+        update_cache_rank_hist_current_league(session=None)
+        # Go chart
+        chart = _generate_player_rank_history_chart(
+            df_rank_hist=st.session_state.df_rank_hist,
+            player_name=player_name,
+            translator=translator,
+            limit_last=limit_last_matches,
+        )
+    else:
+        raise NotImplementedError(
+            f"{metric=} not in supported metrics ({list_metrics})"
+        )
+    ## Add events
     chart = add_events_to_chart(
         chart=chart,
         df_events=df_events,
