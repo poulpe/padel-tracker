@@ -10,7 +10,10 @@ from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.inputs import make_player_selectbox
 from padel_tracker.ui.charts import make_player_metric_history_chart
-from padel_tracker.ui.tables import make_player_overview_table
+from padel_tracker.ui.tables import (
+    make_player_overview_table,
+    make_download_as_csv_button,
+)
 from padel_tracker.ui.cache import check_not_empty_database_matches
 
 st.write("")
@@ -135,3 +138,22 @@ if player_name:
         matches_cont = st.container(border=True, height=900)
     with matches_cont:
         make_match_cards(df_matches=df_matches, limit_last=None)
+
+    # Download data
+    st.write("")
+    write_subheader(translator("download_data_as_csv"))
+    col_matches, col_elo_hist = st.columns(2)
+    with col_matches:
+        make_download_as_csv_button(
+            label=translator("match_history"),
+            df=df_matches,
+            file_name=f"{player_name}_match_history.csv",
+            translator=translator,
+        )
+    with col_elo_hist:
+        make_download_as_csv_button(
+            label=translator("elo_rating"),
+            df=df_elo_hist,
+            file_name=f"{player_name}_elo_history.csv",
+            translator=translator,
+        )

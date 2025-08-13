@@ -7,7 +7,10 @@ from padel_tracker.services.player_manager import (
 from padel_tracker.ui.cache import check_not_empty_database_matches
 from padel_tracker.ui.cards import make_match_cards, display_team_relationships
 from padel_tracker.ui.charts import make_team_metric_history_chart
-from padel_tracker.ui.tables import make_team_overview_table
+from padel_tracker.ui.tables import (
+    make_team_overview_table,
+    make_download_as_csv_button,
+)
 from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.headers import write_header, write_subheader
 
@@ -122,3 +125,14 @@ if "selected_team_name" in st.session_state and st.session_state["selected_team_
         matches_cont = st.container(border=True, height=900)
     with matches_cont:
         make_match_cards(df_matches=df_matches, limit_last=None)
+
+    # Download buttons
+    write_subheader(translator("download_data_as_csv"))
+    _, col_matches, _ = st.columns(3)
+    with col_matches:
+        make_download_as_csv_button(
+            label=translator("match_history"),
+            df=df_matches,
+            file_name=f"{team_name.replace("/","-")}_match_history.csv",
+            translator=translator,
+        )

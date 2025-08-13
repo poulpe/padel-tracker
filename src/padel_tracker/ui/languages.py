@@ -35,8 +35,9 @@ _DICT_TO_FR = {
     "add_player_in_league": "Nouveau joueur dans la ligue",
     "check_player": "Fiche de joueur",
     "check_team": "Fiche d'équipe",
-    "match_history": "Historique des matches",
+    "match_history": "Historique des matchs",
     "last_match_history": "Historique des derniers matchs",
+    "elo_rating_history": "Historique des points Elo",
     "billboard": "Billboard",
     "overview": "Vue générale",
     "matches": "Matchs",
@@ -198,6 +199,7 @@ _DICT_TO_FR = {
     "tournament": "Tournoi",
     "friendly_match": "Match amical",
     "friendly_match_help": "Un match amical n'update pas le classement Elo (seulement le nombre de matchs/victoires/défaites)",
+    "download_data_as_csv": "Télécharger mes données en .csv",
 }
 
 _DICT_TO_EN = {
@@ -230,6 +232,7 @@ _DICT_TO_EN = {
     "check_team": "Check team",
     "match_history": "Match history",
     "last_match_history": "Last matches history",
+    "elo_rating_history": "Elo rating history",
     "billboard": "Billboard",
     "overview": "Overview",
     "matches": "Matches",
@@ -250,6 +253,7 @@ _DICT_TO_EN = {
     "match_added_error": " Unknown error during match creation",
     "match_exists_error": " Match already added",
     "match_not_finished_error": "Scores are not valid for a finished match, please double check",
+    "match_deleted": "Match has been deleted",
     "see_updated_elo_below": "See updated elo ratings below:",
     "player_added_success": " added successfully !",
     "player_added_error": " Unknown error during player creation:",
@@ -386,6 +390,7 @@ _DICT_TO_EN = {
     "tournament": "Tournament",
     "friendly_match": "Friendly match",
     "friendly_match_help": "A friendly match doesn't update the Elo ranking (only the number of matches/wins/losses)",
+    "download_data_as_csv": "Download data as .csv",
 }
 
 _DICT_TO_ES = {
@@ -418,6 +423,7 @@ _DICT_TO_ES = {
     "check_team": "Ficha del equipo",
     "match_history": "Historial de partidos",
     "last_match_history": "Historial de los últimos partidos",
+    "elo_rating_history": "Historial de Elo",
     "billboard": "Clasificación",
     "overview": "Vista general",
     "matches": "Partidos",
@@ -438,6 +444,7 @@ _DICT_TO_ES = {
     "match_added_error": "No se pudo agregar el partido, error desconocido",
     "match_exists_error": "El partido ya ha sido registrado",
     "match_not_finished_error": "Los cálculos no cuadran, el marcador no coincide",
+    "match_deleted": "El partido ha sido eliminado",
     "see_updated_elo_below": "Aquí están los nuevos puntos Elo:",
     "player_added_success": " ha sido añadido con éxito!",
     "player_added_error": "No se pudo agregar el jugador, error desconocido:",
@@ -575,6 +582,7 @@ _DICT_TO_ES = {
     "tournament": "Torneo",
     "friendly_match": "Partido amistoso",
     "friendly_match_help": "Un partido amistoso no actualiza la clasificación Elo (solo el número de partidos/victorias/derrotas)",
+    "download_data_as_csv": "Descargar datos como .csv",
 }
 
 

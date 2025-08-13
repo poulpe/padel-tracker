@@ -1,4 +1,6 @@
 from pathlib import Path
+import re
+import unicodedata
 
 
 def get_absolute_path(current_file: str | Path, rel_path: str | Path) -> Path:
@@ -28,6 +30,20 @@ def get_absolute_path(current_file: str | Path, rel_path: str | Path) -> Path:
     if isinstance(rel_path, str):
         rel_path = Path(rel_path)
     return (current_file.parent / rel_path).resolve()
+
+
+def sanitize_filename(name: str, replacement: str = "_") -> str:
+    # Normalize accents (é -> e, ç -> c, etc.)
+    normalized = unicodedata.normalize("NFKD", name)
+    normalized = normalized.encode("ascii", "ignore").decode("ascii")
+    # Remove any character not in this set: letters, numbers, dash, underscore, dot, space
+    sanitized = re.sub(r"[^A-Za-z0-9._ -]", replacement, normalized)
+    # Collapse multiple replacements (___ -> _)
+    sanitized = re.sub(rf"{re.escape(replacement)}+", replacement, sanitized)
+    # Strip leading/trailing spaces, dots, or underscores (Windows hates trailing dots/spaces)
+    sanitized = sanitized.strip(" ._")
+
+    return sanitized or "untitled"
 
 
 APP_PATH = get_absolute_path(__file__, "../ui/streamlit_app.py")
