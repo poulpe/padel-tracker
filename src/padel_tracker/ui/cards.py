@@ -3,8 +3,6 @@ import streamlit as st
 
 from padel_tracker.utils.datetime_utils import TZ_FR
 from padel_tracker.models.matches import MatchScore
-from padel_tracker.database.db import DB
-from padel_tracker.services.match_manager import get_all_matches
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 from padel_tracker.ui.headers import write_subheader
 
@@ -112,6 +110,7 @@ def display_match_card(
     games_set2_team2: int = None,
     games_set3_team1: int = None,
     games_set3_team2: int = None,
+    # TODO : is_friendly: bool = False,
 ) -> None:
     # Sets winner logic for icon (no icon if no team won)
     if team1_won is None:
@@ -146,15 +145,11 @@ def display_match_card(
 
 
 def make_match_cards(
-    df_matches: pd.DataFrame = None,
+    df_matches: pd.DataFrame,
     limit_last: int | None = 15,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
 ) -> None:
-    if df_matches is None:
-        with DB.get_session() as session:
-            df_matches = get_all_matches(session=session, as_df=True)
-    else:
-        df_matches = df_matches.copy()
+    df_matches = df_matches.copy()
 
     # Handle empty df_matches
     if df_matches.empty:
@@ -192,6 +187,7 @@ def make_match_cards(
             games_set2_team2=match_score.games_set2_team2,
             games_set3_team1=match_score.games_set3_team1,
             games_set3_team2=match_score.games_set3_team2,
+            # TODO : is_friendly=row["is_friendly"],
         )
 
 

@@ -91,7 +91,7 @@ def create_match(
     date: datetime,
     score: str | MatchScore | None = None,
     is_finished: bool = True,
-    is_update_elo: bool = True,
+    is_friendly: bool = False,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
     logger = LOGGER.getChild("create")
@@ -157,18 +157,21 @@ def create_match(
         date=date,
         score=score,
         league=league,
+        is_friendly=is_friendly,
     )
     match.post_init()
     ## Commit
     logger.debug("committing to db")
     commit_to_db(match, league, session=session)
     logger.notif(
-        f"created new Match({match} date='{match.date.strftime("%d/%m/%Y %H:%M")}') with {is_update_elo=}"
+        f"created new Match({match} date='{match.date.strftime("%d/%m/%Y %H:%M")}')"
     )
     # Process it if finished
     if is_finished:
         process_finished_match(
-            session=session, match=match, is_update_elo=is_update_elo
+            session=session,
+            match=match,
+            is_update_elo=not is_friendly,
         )
     return match
 

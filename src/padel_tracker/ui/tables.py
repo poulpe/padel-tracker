@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+from padel_tracker.utils.paths import sanitize_filename
 from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import (
     get_all_players_from_league,
@@ -256,4 +257,34 @@ def make_league_overview_table(
         hide_index=True,
         use_container_width=use_container_width,
         column_config=column_config,
+    )
+
+
+# Download functions
+@st.cache_data
+def convert_df_for_csv_download(df: pd.DataFrame):
+    # Drop id columns
+    col_to_delete = []
+    for col in df.columns:
+        if col == "id" or "_id" in col:
+            col_to_delete.append(col)
+    df = df.drop(columns=col_to_delete)
+    return df.to_csv(index=False)
+
+
+def make_download_as_csv_button(
+    df: pd.DataFrame,
+    file_name: str,
+    translator: LanguageTranslator = DEFAULT_TRANSLATOR,
+    label: str | None = None,
+) -> None:
+    if label is None:
+        label = translator("download_as_csv")
+    st.download_button(
+        label=label,
+        data=convert_df_for_csv_download(df),
+        file_name=sanitize_filename(file_name),
+        mime="text/csv",
+        icon=":material/download:",
+        width="stretch",
     )

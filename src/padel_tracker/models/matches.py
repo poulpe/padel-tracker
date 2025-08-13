@@ -201,6 +201,7 @@ class Match(ValidatedSQLModel, table=True):
     )
     nb_won_sets_diff: NonNegativeInt | None = Field(None, le=3, repr=False)
     nb_won_games_diff: NonNegativeInt | None = Field(None, le=16, repr=False)
+    is_friendly: bool = Field(False, description="Friendly matches do not affect Elo")
     # Auto data creation
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str | None = Field(None, index=True, description="as 'p1/p2 vs p3/p4'")

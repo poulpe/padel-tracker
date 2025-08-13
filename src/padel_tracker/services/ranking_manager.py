@@ -428,6 +428,25 @@ def get_player_elo_rating_histories_in_league(
     )
 
 
+def get_all_rank_histories_from_league(
+    session: Session,
+    league_name: str,
+    as_df: bool = False,
+    limit_last: int = None,
+):
+    """
+    All rank from players registered in the league.
+    """
+    return read_from_db(
+        RankHistory,
+        where=RankHistory.league_name == league_name,
+        session=session,
+        order_by=RankHistory.date,
+        as_df=as_df,
+        limit_last=limit_last,
+    )
+
+
 def get_team_elo_rating_histories(
     session: Session,
     team_name: str,
