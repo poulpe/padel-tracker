@@ -69,6 +69,7 @@ def test_create_get_delete_match(db_session):
         date=datetime.datetime.now(),
         score="4-6, 2-6",
         is_finished=True,
+        is_friendly=False,
     )
     assert match.team1_name == t1.name
     assert match.team2_name == t2.name

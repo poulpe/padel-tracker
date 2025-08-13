@@ -133,7 +133,7 @@ with st.form("add_match"):
         time = st.time_input(translator("time"), value="18:30", step=1800)
 
     # Friendly match toggle button
-    _, center_col, _ = st.columns([1, 0.8, 1])
+    _, center_col, _ = st.columns([1.23, 1, 1], gap=None)
     with center_col:
         is_friendly_match = st.toggle(
             translator("friendly_match"), help=translator("friendly_match_help")
@@ -214,7 +214,8 @@ if submit_button:
                     league_name=st.session_state.league_name,
                     date=match_datetime,
                     score=match_score,
-                    is_finished=False,  # To trigger custom "process_finished_match"
+                    is_finished=False,  # To trigger separated "process_finished_match"
+                    is_friendly=is_friendly_match,
                 )
                 st.success(translator("match_added_success"), icon="🔥")
                 LOGGER.debug("created match, starting processing")
