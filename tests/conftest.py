@@ -101,6 +101,7 @@ def make_dummy_league(db_session):
     for name in created_league_names:
         league_manager.delete_league(db_session, name=name)
 
+
 ## user_manager
 @pytest.fixture
 def make_dummy_user(db_session):
