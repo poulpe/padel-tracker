@@ -178,6 +178,8 @@ def update_league_after_finished_match(
 def assign_admin_to_league(session: Session, user: User, league: League) -> None:
     league.admin_users.append(user)
     user.admin_leagues.append(league)
+    # Add associated player to league
+    assign_league_to_player(session, player=user.player, league=league)
     # If user doesn't have a default league, make it default
     if not user.default_league_name:
         user.default_league_name = league.name

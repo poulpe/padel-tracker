@@ -358,10 +358,6 @@ def get_all_teams_from_league(
     )
 
 
-def delete_team() -> None:
-    raise NotImplementedError("no real point of deleting a team ?")
-
-
 ##### Interactions ######
 def get_best_teammate(player_name: str, df_teams: pd.DataFrame) -> tuple[str, int]:
     """Returns teammate player with the most common wins and the nb of victories"""
