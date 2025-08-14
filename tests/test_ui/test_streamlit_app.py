@@ -1,6 +1,6 @@
 from streamlit.testing.v1 import AppTest
 
-from tests.conftest import APP_PATH
+from padel_tracker.utils.paths import APP_PATH
 
 
 # TODO : test_app_launch
