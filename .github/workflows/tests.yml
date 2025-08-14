@@ -42,7 +42,7 @@ jobs:
         run: uv sync --extra dev
           
       - name: Run pytest
-        run: uv run pytest --cov --junitxml=junit.xml
+        run: uv run pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
