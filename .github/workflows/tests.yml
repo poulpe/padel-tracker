@@ -1,6 +1,8 @@
 name: tests
 
 on:
+  push:
+    branches: [ main ] # To trigger code coverage on main
   pull_request:
   workflow_dispatch:  # Allows manual triggering from GitHub Actions UI
 
