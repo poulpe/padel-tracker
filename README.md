@@ -66,7 +66,8 @@ The application is hosted on **Streamlit Community Cloud** and can be used on we
   - [x] League description ?
   - [x] Manage league ? (i.e: league admin to add/remove players, rename league)
 - Tests
-  - [x] Basic tests on models and services
+  - [x] Basic tests on models 
+  - [x] Basic tests on services
   - [ ] UI tests
 - Feedback
   - [x] "Report bug" form
