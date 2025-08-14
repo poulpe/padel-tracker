@@ -1,13 +1,17 @@
 from typing import Any
 
 import sqlalchemy
-import pydantic
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import UserNotFoundError, UserExistsError
 from padel_tracker.utils.datetime_utils import now
-from padel_tracker.database.db import Session, commit_to_db, read_from_db
+from padel_tracker.database.db import (
+    Session,
+    commit_to_db,
+    read_from_db,
+    delete_from_db,
+)
 from padel_tracker.models.players import Player
 from padel_tracker.models.users import User, UserRole
 from padel_tracker.services import player_manager, league_manager
@@ -45,14 +49,17 @@ def get_all_users(session: Session, as_df: bool = False) -> list[User] | pd.Data
 def determine_default_username(dict_auth_user: dict[str, Any]) -> str:
     try:
         name = dict_auth_user["name"]
-    except pydantic.ValidationError:
+    except KeyError:
         try:
             name = dict_auth_user["nickname"]
-        except pydantic.ValidationError:
-            name = dict_auth_user["nickname"]
-            for char in [".", "@", "_", "-"]:
-                name = name.replace(char, " ")
-            name = name.capitalize()
+        except KeyError:
+            err_msg = "cannot determine default username, did not find 'name' or 'nickname' in user dict"
+            LOGGER.error(f"{err_msg}. {dict_auth_user=}")
+            raise KeyError(err_msg) from None
+    # Sanitize name
+    for char in [".", "@", "_", "-"]:
+        name = name.replace(char, " ")
+    name = Player.sanitize_name(name)
     return name
 
 
@@ -155,3 +162,23 @@ def log_user_visit(session: Session, auth_user_id: str) -> None:
     commit_to_db(user, session=session)
     log_msg = f"user '{user.name}' logged in ({auth_user_id=})"
     LOGGER.notif(log_msg)
+
+
+# DELETE
+def delete_user(session: Session, name: str) -> None:
+    logger = LOGGER.getChild("delete")
+    # Fetch user
+    try:
+        user = get_user_from_name(session=session, name=name)
+    except UserNotFoundError:
+        err_msg = f"{name} doesn't exist, cannot delete it"
+        logger.error(err_msg)
+        raise UserNotFoundError(err_msg)
+    except Exception as exc:
+        logger.exception(exc)
+        raise exc
+    # Perform delete
+    name = user.name
+    auth_user_id = user.auth_user_id
+    delete_from_db(user, session=session)
+    logger.notif(f"deleted User({name=}, {auth_user_id=}) successfully")

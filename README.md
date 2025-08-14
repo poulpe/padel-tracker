@@ -1,8 +1,9 @@
 # Padel Tracker
 [![GitHub release](https://img.shields.io/github/v/release/poulpe/padel-tracker?include_prereleases)](https://github.com/poulpe/padel-tracker/releases)
-[![CI](https://github.com/poulpe/padel-tracker/actions/workflows/tests.yml/badge.svg)](https://github.com/poulpe/padel-tracker/actions/workflows/tests.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![CI](https://github.com/poulpe/padel-tracker/actions/workflows/tests.yml/badge.svg)](https://github.com/poulpe/padel-tracker/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/github/poulpe/padel-tracker/graph/badge.svg?token=Y6B3TQYD3T)](https://codecov.io/github/poulpe/padel-tracker)
 
 Small app to keep track of Padel matches
 
