@@ -51,3 +51,8 @@ prepend_sys_path = ["."]
 name = "black"
 type = "console_scripts"
 entrypoint = "black"
+
+[tool.pytest.ini_options]
+markers = [
+    "ui",
+]
