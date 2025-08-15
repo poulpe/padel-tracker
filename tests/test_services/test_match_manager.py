@@ -153,3 +153,24 @@ def test_make_dummy_match(make_dummy_match):
         score="6-2, 7-6",
     )
     assert match.team1_won
+
+
+def test_populate_db(db_session, populate_db):
+    # Populate db
+    league_name = "Ultra Liga"
+    player_names = [
+        "Agustin Tapas",
+        "Martin Di Neuneu",
+        "Juan Cabron",
+        "Ale Gralan",
+        "Arturo Cono",
+        "Juan Trellent",
+        "Oui Tres",
+        "Oui Cuatro",
+    ]
+    nb_matches = 6
+    populate_db(league_name, player_names, nb_matches=nb_matches)
+    # Check league has been updated
+    league = league_manager.get_league_from_name(db_session, league_name)
+    assert league.nb_matches == nb_matches
+    assert league.nb_players == len(player_names)

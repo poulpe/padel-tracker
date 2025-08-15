@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from random import randint, sample
 
 import pytest
 
@@ -8,6 +9,7 @@ from padel_tracker.utils.errors import (
     PlayerExistsError,
     LeagueExistsError,
     MatchExistsError,
+    TeamNotFoundError,
 )
 from padel_tracker.models.leagues import League
 from padel_tracker.models.players import Player, Team
@@ -145,9 +147,12 @@ def make_dummy_team(db_session):
 
     # Delete
     for names in created_team_player_names:
-        player_manager.delete_team(
-            db_session, player1_name=names[0], player2_name=names[1]
-        )
+        try:
+            player_manager.delete_team(
+                db_session, player1_name=names[0], player2_name=names[1]
+            )
+        except TeamNotFoundError:  # For ease of fixture teardown/cleaning orders...
+            pass
 
 
 ## user_manager
@@ -212,10 +217,15 @@ def make_dummy_user(db_session):
 
 ## match_manager
 @pytest.fixture
-def make_dummy_match(db_session, make_dummy_league, make_dummy_player, make_dummy_team):
+def make_dummy_match(db_session, make_dummy_team, make_dummy_player, make_dummy_league):
     """
     Create dummy match with given name (or fetch if already existing) and then make sure
     it's deleted at the end of the test
+
+    Notes
+    -----
+    Important to not change the order of fixtures needed for proper cleaning/deletes at the end.
+    Must be this order: db_session, make_dummy_team, make_dummy_player, make_dummy_league
 
     Examples
     --------
@@ -246,6 +256,7 @@ def make_dummy_match(db_session, make_dummy_league, make_dummy_player, make_dumm
         league_name: str,
         is_finished: bool = True,
         is_friendly: bool = False,
+        delete_afterwards: bool = True,
     ) -> Match:
         # Fetch league
         league = make_dummy_league(name=league_name)
@@ -268,7 +279,8 @@ def make_dummy_match(db_session, make_dummy_league, make_dummy_player, make_dumm
                 is_finished=is_finished,
                 is_friendly=is_friendly,
             )
-            created_match_ids.append(match.id)
+            if delete_afterwards:
+                created_match_ids.append(match.id)
         except MatchExistsError:
             match = match_manager.get_match(
                 db_session, teams=[team1, team2], league_name=league_name, date=date
@@ -323,10 +335,47 @@ def make_dummy_event(db_session):
 
 ## Cross services
 # TODO : populate_db
-def populate_db(
-    league_name: str,
-    player_names: list[str],
-    nb_matches: int = 10,
-):
-    """Populate the db with and `nb_matches` random matches between players"""
-    pass
+@pytest.fixture
+def populate_db(make_dummy_match):
+    def _factory(
+        league_name: str,
+        player_names: list[str],
+        nb_matches: int = 10,
+        date_start: datetime = None,
+        time_interval: timedelta = timedelta(days=2),
+    ) -> None:
+        """Populate the db with and `nb_matches` random matches between players.
+        Make simple scores : always 1 valid set (i.e : 6-3, or 2-6...) for simplicity
+
+        Parameters
+        ----------
+        date_start
+            Datetime of the 1st match. If not provided, will default to "now - nb_matches*time_interval - 1 day"
+        time_interval
+            Time interval during 2 matches. Default: 2 days
+        """
+        # Manage date_start
+        if not date_start:
+            date_start = datetime.now() - nb_matches * time_interval - timedelta(days=1)
+        # Create random matches
+        for n in range(nb_matches):
+            ## Select 4 random names in all players
+            match_player_names = sample(player_names, 4)
+            ## Make random score
+            team1_won = randint(0, 1)
+            loser_games = randint(0, 4)
+            score = f"6-{loser_games}" if team1_won else f"{loser_games}-6"
+            ## Make match date
+            match_date = date_start + n * time_interval
+            make_dummy_match(
+                team1_player1_name=match_player_names[0],
+                team1_player2_name=match_player_names[1],
+                team2_player1_name=match_player_names[2],
+                team2_player2_name=match_player_names[3],
+                league_name=league_name,
+                date=match_date,
+                score=score,
+                delete_afterwards=False,  # Will be deleted when deleting team
+            )
+
+    return _factory
