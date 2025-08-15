@@ -358,6 +358,18 @@ def get_all_teams_from_league(
     )
 
 
+def delete_team(session: Session, player1_name: str, player2_name: str) -> None:
+    logger = LOGGER.getChild("delete")
+    # Fetch team
+    team = get_team_from_players_name(
+        session, player1_name, player2_name, create_if_not_found=False
+    )
+    team_name = team.name
+    # Delete
+    delete_from_db(team, session=session)
+    logger.notif(f"deleted Team '{team_name}' successfully from database")
+
+
 ##### Interactions ######
 def get_best_teammate(player_name: str, df_teams: pd.DataFrame) -> tuple[str, int]:
     """Returns teammate player with the most common wins and the nb of victories"""
