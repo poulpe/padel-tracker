@@ -105,3 +105,9 @@ def test_create_get_delete_user_with_player(db_session):
     # Delete
     user_manager.delete_user(session=db_session, name=user_name)
     player_manager.delete_player(session=db_session, name=user_name)
+
+
+def test_make_dummy_user(make_dummy_user):
+    name = "Alfred"
+    user = make_dummy_user(name, is_create_player=False)
+    assert user.name == name

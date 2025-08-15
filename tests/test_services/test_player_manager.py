@@ -70,3 +70,23 @@ def test_rename_player(db_session):
 
     # Delete it
     player_manager.delete_player(db_session, new_awesome_name)
+
+
+def test_make_dummy_player(make_dummy_player, make_dummy_league):
+    my_league = make_dummy_league("ZeLeague")
+    name = "Alfred"
+    player = make_dummy_player(name, league=my_league)
+    assert player.name == name
+
+
+def test_make_dummy_team(make_dummy_team, make_dummy_player, make_dummy_league):
+    p1_name = "Oui"
+    p2_name = "Muchacho"
+    league_name = "Daliga"
+    # Ensure league and players exists
+    make_dummy_league(league_name)
+    make_dummy_player(p1_name)
+    make_dummy_player(p2_name)
+    # Go
+    team = make_dummy_team(p1_name, p2_name, league_name=league_name)
+    assert p1_name in team.name

@@ -4,9 +4,8 @@ from streamlit.testing.v1 import AppTest
 from padel_tracker.utils.paths import APP_PATH
 
 
-# TODO : test_app_launch
 @pytest.mark.ui
-def test_app_launch():
+def test_app_launch_as_guest():
     at = AppTest.from_file(APP_PATH, default_timeout=12)
     # Declare dummy secrets
     at.secrets["general.db_mode"] = "local"
@@ -30,4 +29,6 @@ def test_app_launch():
     assert button_connect_as_guest is not None
     # Enter as Guest
     button_connect_as_guest.click().run()
+
+    # Check
     # print(at)
