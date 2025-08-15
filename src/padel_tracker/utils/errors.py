@@ -69,3 +69,8 @@ class UserNotFoundError(Exception):
 
 class UserExistsError(Exception):
     """User already exists in database"""
+
+
+# Event errors
+class EventExistsError(Exception):
+    """Event already exists in database"""
