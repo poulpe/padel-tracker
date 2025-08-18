@@ -200,6 +200,8 @@ _DICT_TO_FR = {
     "friendly_match": "Match amical",
     "friendly_match_help": "Un match amical n'update pas le classement Elo (seulement le nombre de matchs/victoires/défaites)",
     "download_data_as_csv": "Télécharger mes données en .csv",
+    "retrieve_match": "Retrouver un match",
+    "delete_match_from_id": "Supprimer directement depuis l'ID",
 }
 
 _DICT_TO_EN = {
