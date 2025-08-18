@@ -4,10 +4,10 @@ from padel_tracker.utils.errors import LeagueNotFoundError
 from padel_tracker.services import league_manager
 
 
-def test_create_get_delete_league(db_session):
+def test_create_get_delete_league(db_session, make_dummy_league):
     league_name = "CrashTest League"
     # Create
-    league = league_manager.create_league(db_session, name=league_name, is_private=True)
+    league = make_dummy_league(name=league_name, is_private=True)
     assert league.name == league_name
     assert league.is_private is True
     assert league.nb_matches == 0
@@ -16,8 +16,7 @@ def test_create_get_delete_league(db_session):
     found_league = league_manager.get_league_from_name(db_session, league_name)
     assert found_league is not None
     assert found_league.name == league_name
-    # Delete
-    league_manager.delete_league(db_session, league_name)
+    # Delete is done in the teardown of 'make_dummy_league' fixture
 
 
 def test_delete_unexisting_league(db_session):

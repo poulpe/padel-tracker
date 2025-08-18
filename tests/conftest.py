@@ -1,5 +1,5 @@
+import random
 from datetime import datetime, timedelta
-from random import randint, sample
 
 import pytest
 
@@ -25,6 +25,9 @@ from padel_tracker.services import (
     event_manager,
 )
 
+# Fix random seed
+random.seed(12)
+
 # General const
 ## Dummy names
 TEST_LEAGUE_NAME = "Liga Demo"
@@ -32,6 +35,17 @@ TEST_P1_NAME = "ElTrueno"
 TEST_P2_NAME = "Raqueta Loca"
 TEST_P3_NAME = "LaBiba"
 TEST_P4_NAME = "Chaco Smash"
+TEST_DUMMY_LEAGUE_NAME = "Ultra Liga"
+TEST_DUMMY_PLAYER_NAMES = [
+    "Agustin Tapas",
+    "Martin Di Neuneu",
+    "Juan Cabron",
+    "Alejandro Gralan",
+    "Arturo Coño",
+    "Juan Trellent",
+    "Federico Zigotto",
+    "Franco Chupachups",
+]
 
 # Database
 DB_TEST = Database(db_mode=DBMode.LOCAL, run_mode=RunMode.TEST)
@@ -96,13 +110,13 @@ def make_dummy_player(db_session):
     ...     player = make_dummy_player(name, league=my_league)
     ...     assert player.name == name
     """
-    created_player_names = []
+    created_player_ids = []
 
     def _factory(name: str, league: League | list[League] | None = None) -> Player:
         # Create it, otherwise fetch it
         try:
             player = player_manager.create_player(db_session, name=name, league=league)
-            created_player_names.append(name)
+            created_player_ids.append(player.id)
         except PlayerExistsError:
             player = player_manager.get_player_from_name(db_session, name=name)
         return player
@@ -111,8 +125,9 @@ def make_dummy_player(db_session):
     yield _factory
 
     # Delete
-    for name in created_player_names:
-        player_manager.delete_player(db_session, name=name)
+    for id in created_player_ids:
+        player = player_manager.get_player_from_id(db_session, id=id)
+        player_manager.delete_player(db_session, name=player.name)
 
 
 @pytest.fixture
@@ -259,7 +274,7 @@ def make_dummy_match(db_session, make_dummy_team, make_dummy_player, make_dummy_
         delete_afterwards: bool = True,
     ) -> Match:
         # Fetch league
-        league = make_dummy_league(name=league_name)
+        league = make_dummy_league(name=league_name, is_private=False)
         # Fetch players
         make_dummy_player(name=team1_player1_name, league=league)
         make_dummy_player(name=team1_player2_name, league=league)
@@ -334,13 +349,12 @@ def make_dummy_event(db_session):
 
 
 ## Cross services
-# TODO : populate_db
 @pytest.fixture
-def populate_db(make_dummy_match):
+def populate_db(make_dummy_match, make_dummy_player, make_dummy_league):
     def _factory(
         league_name: str,
         player_names: list[str],
-        nb_matches: int = 10,
+        nb_matches: int = 4,
         date_start: datetime = None,
         time_interval: timedelta = timedelta(days=2),
     ) -> None:
@@ -357,13 +371,17 @@ def populate_db(make_dummy_match):
         # Manage date_start
         if not date_start:
             date_start = datetime.now() - nb_matches * time_interval - timedelta(days=1)
+        # Ensure creation of league and players
+        league = make_dummy_league(league_name)
+        for name in player_names:
+            make_dummy_player(name, league=league)
         # Create random matches
         for n in range(nb_matches):
             ## Select 4 random names in all players
-            match_player_names = sample(player_names, 4)
+            match_player_names = random.sample(player_names, 4)
             ## Make random score
-            team1_won = randint(0, 1)
-            loser_games = randint(0, 4)
+            team1_won = random.randint(0, 1)
+            loser_games = random.randint(0, 4)
             score = f"6-{loser_games}" if team1_won else f"{loser_games}-6"
             ## Make match date
             match_date = date_start + n * time_interval
@@ -375,7 +393,7 @@ def populate_db(make_dummy_match):
                 league_name=league_name,
                 date=match_date,
                 score=score,
-                delete_afterwards=False,  # Will be deleted when deleting team
+                delete_afterwards=False,  # Will be deleted when deleting teams/players/league
             )
 
     return _factory
