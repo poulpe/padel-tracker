@@ -2,6 +2,7 @@
 CRUD on Players and Teams
 """
 
+from uuid import UUID
 from collections import Counter
 
 import sqlalchemy
@@ -51,6 +52,29 @@ def get_player_from_name(session: Session, name: str) -> Player:
         )
     except sqlalchemy.exc.NoResultFound:
         raise PlayerNotFoundError(f"player '{name}' not found in database")
+    return player
+
+
+def get_player_from_id(session: Session, id: UUID) -> Player:
+    """
+    Parameters
+    ----------
+    session:Session
+        Database session
+    id:UUID
+        Player id
+
+    Raises
+    ------
+    PlayerNotFoundError
+        If player doesn't exist in database
+    """
+    try:
+        player = read_from_db(
+            Player, where=Player.id == id, unique=True, session=session
+        )
+    except sqlalchemy.exc.NoResultFound:
+        raise PlayerNotFoundError(f"player id='{id}' not found in database")
     return player
 
 
