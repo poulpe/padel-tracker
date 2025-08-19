@@ -22,7 +22,6 @@ from padel_tracker.database.db import (
 )
 from padel_tracker.models.links import LinkPlayerLeague
 from padel_tracker.models.players import Player
-from padel_tracker.models.matches import Match
 from padel_tracker.models.leagues import League
 from padel_tracker.models.users import User
 from padel_tracker.services import user_manager, match_manager
@@ -144,7 +143,6 @@ def assign_league_to_player(session: Session, player: Player, league: League) ->
 
 
 def remove_player_from_league(session: Session, player: Player, league: League) -> None:
-    """"""
     # Fetch link
     link_to_delete = None
     for link in player.league_links:
@@ -159,20 +157,6 @@ def remove_player_from_league(session: Session, player: Player, league: League) 
     # Delete link
     delete_from_db(link_to_delete, session=session)
     LOGGER.notif(f"{player=} has been removed from {league=}")
-
-
-def update_league_after_finished_match(
-    session: Session,
-    match: Match,
-    league: League,
-) -> League:
-    LOGGER.debug("starting update of league")
-    league.nb_matches += 1
-    if not league.last_match_date or (league.last_match_date < match.date):
-        league.last_match_date = match.date
-    commit_to_db(league, session=session)
-    LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
-    return league
 
 
 def assign_admin_to_league(session: Session, user: User, league: League) -> None:

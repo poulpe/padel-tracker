@@ -1,7 +1,7 @@
 """
 CRUD on Matches and repercussions on players/teams
 
-'session' refers as "database session", that can be obtained via call to get_db_session()
+'session' refers as "database session", that can be obtained via call to DB.get_session()
 """
 
 import logging
