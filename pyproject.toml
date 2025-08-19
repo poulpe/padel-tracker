@@ -3,7 +3,7 @@ name = "padel-tracker"
 version = "0.4.4"
 description = "App to keep track of Padel matches"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13.6"
 authors = [
     {name = "Pierre Letousey"},
 ]
@@ -23,7 +23,7 @@ dev = [
     "alembic>=1.16.0", # For database migrations
     "pytest>=8.3.4",
     "pytest-cov>=6.2.1",
-    "pytest-env>=1.1.5"
+    "pytest-env>=1.1.5",
 ]
 wakeup = [
     "selenium>=4.29",
