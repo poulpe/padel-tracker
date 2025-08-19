@@ -1,6 +1,6 @@
 import pytest
+from uuid import uuid4
 
-from padel_tracker.database.db import commit_to_db
 from padel_tracker.utils.errors import (
     PlayerExistsError,
     PlayerNotFoundError,
@@ -25,22 +25,35 @@ def test_create_get_delete_player_no_league(db_session, make_dummy_player):
     # Delete is done in the teardown of 'make_dummy_player' fixture
 
 
-def test_delete_unexisting_player(db_session):
+def test_unexisting_player(db_session):
     with pytest.raises(PlayerNotFoundError):
         player_manager.delete_player(db_session, name="Nope SureNotExists")
+    with pytest.raises(PlayerNotFoundError):
+        player_manager.get_player_from_id(db_session, id=uuid4())
 
 
-def test_rename_player(db_session, make_dummy_player):
+def test_rename_player(db_session, make_dummy_player, populate_db):
+    # Prepare db
     lame_player_name = "Thisname Sucks"
     new_awesome_name = "RoxXorz Smashorz"
-    # Create and make him play a bit (virtually, outside of league/match managers...)
+    populate_db(
+        league_name="Lame league",
+        player_names=[lame_player_name, "Lame Dos", "Lame Tres", "Lame Cuatro"],
+    )
+    # Store some stats before renaming player to compare afterwards
     player = make_dummy_player(name=lame_player_name)
-    player.nb_matches = 12
-    player.nb_defeats = 10
-    player.nb_victories = 2
-    commit_to_db(player, session=db_session)
+    nb_matches_before = player.nb_matches
+    nb_victories_before = player.nb_victories
 
     # Rename
+    ## Ensure cannot rename to existing player
+    with pytest.raises(PlayerExistsError):
+        player_manager.rename_player(
+            db_session,
+            current_name=lame_player_name,
+            new_name="Lame Dos",
+        )
+    ## Go rename
     player_manager.rename_player(
         db_session, current_name=lame_player_name, new_name=new_awesome_name
     )
@@ -50,10 +63,8 @@ def test_rename_player(db_session, make_dummy_player):
     ## Ensure stats are still the same
     player = player_manager.get_player_from_name(db_session, new_awesome_name)
     assert player.name == new_awesome_name
-    assert player.nb_matches == 12
-    assert player.nb_defeats == 10
-    assert player.nb_victories == 2
-
+    assert player.nb_matches == nb_matches_before
+    assert player.nb_victories == nb_victories_before
     # Delete is done in the teardown of 'make_dummy_player' fixture
 
 

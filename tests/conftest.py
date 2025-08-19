@@ -203,7 +203,7 @@ def make_dummy_user(db_session):
             dict_created_user_names[name] = is_create_player
         except UserExistsError:
             user = user_manager.get_user_from_name(db_session, name=name)
-            if default_league_name:
+            if default_league_name and not user.default_league_name:
                 default_league = league_manager.get_league_from_name(
                     db_session, name=default_league_name
                 )
@@ -246,7 +246,7 @@ def make_dummy_match(db_session, make_dummy_team, make_dummy_player, make_dummy_
     --------
     >>> def test_make_dummy_match(make_dummy_match):
     ...     # Make a date
-    ...     date = make_datetime(day=5, month=2, year=2025, hour=19, minute=30)
+    ...     date = datetime(day=5, month=2, year=2025, hour=19, minute=30)
     ...     # Go
     ...     match = make_dummy_match(
     ...         team1_player1_name="Agustin Tapas",
