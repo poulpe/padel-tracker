@@ -138,7 +138,6 @@ class PagesCollection:
                 page_add_league,
             ],
             translator("my_account"): [page_join_league],  # , page_manage_account],
-            # TODO: cool form #translator("administration"): [page_delete_match],
             translator("about_and_feedback"): [page_about, page_feedback],
         }
         self.ADMIN = {

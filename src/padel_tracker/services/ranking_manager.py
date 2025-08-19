@@ -328,20 +328,6 @@ def apply_season_reset_to_all_players(
     )
 
 
-def get_all_elo_rating_histories(
-    session: Session,
-    as_df: bool = False,
-    limit_last: int = None,
-) -> list[EloRatingHistory] | pd.DataFrame:
-    return read_from_db(
-        EloRatingHistory,
-        session=session,
-        order_by=EloRatingHistory.date,
-        as_df=as_df,
-        limit_last=limit_last,
-    )
-
-
 def get_all_elo_rating_histories_from_league(
     session: Session,
     league_name: str,

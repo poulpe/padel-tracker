@@ -2,6 +2,7 @@
 CRUD on Players and Teams
 """
 
+from uuid import UUID
 from collections import Counter
 
 import sqlalchemy
@@ -51,6 +52,29 @@ def get_player_from_name(session: Session, name: str) -> Player:
         )
     except sqlalchemy.exc.NoResultFound:
         raise PlayerNotFoundError(f"player '{name}' not found in database")
+    return player
+
+
+def get_player_from_id(session: Session, id: UUID) -> Player:
+    """
+    Parameters
+    ----------
+    session:Session
+        Database session
+    id:UUID
+        Player id
+
+    Raises
+    ------
+    PlayerNotFoundError
+        If player doesn't exist in database
+    """
+    try:
+        player = read_from_db(
+            Player, where=Player.id == id, unique=True, session=session
+        )
+    except sqlalchemy.exc.NoResultFound:
+        raise PlayerNotFoundError(f"player id='{id}' not found in database")
     return player
 
 
@@ -356,6 +380,18 @@ def get_all_teams_from_league(
         session=session,
         as_df=as_df,
     )
+
+
+def delete_team(session: Session, player1_name: str, player2_name: str) -> None:
+    logger = LOGGER.getChild("delete")
+    # Fetch team
+    team = get_team_from_players_name(
+        session, player1_name, player2_name, create_if_not_found=False
+    )
+    team_name = team.name
+    # Delete
+    delete_from_db(team, session=session)
+    logger.notif(f"deleted Team '{team_name}' successfully from database")
 
 
 ##### Interactions ######

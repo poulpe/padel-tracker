@@ -1,7 +1,7 @@
 """
 CRUD on Matches and repercussions on players/teams
 
-'session' refers as "database session", that can be obtained via call to get_db_session()
+'session' refers as "database session", that can be obtained via call to DB.get_session()
 """
 
 import logging
@@ -16,6 +16,7 @@ from padel_tracker.utils.errors import (
     MatchExistsError,
     MatchNotFinishedError,
     SamePlayerInBothTeamsError,
+    MatchNotFoundError,
 )
 from padel_tracker.models.leagues import League
 from padel_tracker.models.players import Team, EloRatingHistory, TeamEloRatingHistory
@@ -201,6 +202,39 @@ def get_all_matches_from_league(
     )
 
 
+def get_match(
+    session: Session,
+    teams: list[Team],
+    league_name: str,
+    date: datetime,
+) -> Match:
+    """Get match from general data (teams/league_name/date)
+
+    Notes
+    -----
+    If match id is known, you should use `get_match_from_id()` instead
+
+    Remark 2 : Score is not included in the search : isOK
+        because a match with the same team + same date cannot exist physically...
+
+    Raises
+    ------
+    MatchNotFoundError
+    """
+    list_matches_same_date = read_from_db(
+        Match,
+        session=session,
+        where=(Match.date == date, Match.league_name == league_name),
+    )
+    if list_matches_same_date:
+        for match in list_matches_same_date:
+            if (teams[0] in match.teams) and (teams[1] in match.teams):
+                return match
+
+    err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league_name=} not found"
+    raise MatchNotFoundError(err_msg)
+
+
 def check_match_not_already_created(
     session: Session,
     teams: list[Team],
@@ -215,17 +249,14 @@ def check_match_not_already_created(
     Score is not included in the search : isOK
         because a match with the same team + same date cannot exist physically...
     """
-    list_matches_same_date = read_from_db(
-        Match,
-        session=session,
-        where=(Match.date == date, Match.league_name == league_name),
-    )
-    if list_matches_same_date:
-        for match in list_matches_same_date:
-            if (teams[0] in match.teams) and (teams[1] in match.teams):
-                err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league_name=} already exists"
-                logger.error(err_msg)
-                raise MatchExistsError(err_msg)
+    try:
+        get_match(session=session, teams=teams, league_name=league_name, date=date)
+    except MatchNotFoundError:
+        return  # it's OK
+    else:
+        err_msg = f"match ({teams[0]} vs {teams[1]}, {date=}) in {league_name=} already exists"
+        logger.error(err_msg)
+        raise MatchExistsError(err_msg)
 
 
 # DELETE
