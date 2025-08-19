@@ -3,7 +3,7 @@ name = "padel-tracker"
 version = "0.4.4"
 description = "App to keep track of Padel matches"
 readme = "README.md"
-requires-python = ">=3.13.6"
+requires-python = ">=3.13.4"
 authors = [
     {name = "Pierre Letousey"},
 ]
