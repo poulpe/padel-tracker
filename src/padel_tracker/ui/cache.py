@@ -4,10 +4,11 @@ import pandas as pd
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
 
-from padel_tracker.database.db import DB, Session
-from padel_tracker.models.users import UserRole
 from padel_tracker.utils.errors import UserNotFoundError
 from padel_tracker.utils.logs import get_logger
+from padel_tracker.utils.conf import is_test_mode
+from padel_tracker.database.db import DB, Session
+from padel_tracker.models.users import UserRole
 from padel_tracker.services import (
     player_manager,
     match_manager,
@@ -16,6 +17,7 @@ from padel_tracker.services import (
     user_manager,
     event_manager,
 )
+from padel_tracker.ui.common import determine_is_logged_in
 
 LOGGER = get_logger("ui.cache")
 
@@ -46,21 +48,27 @@ CACHE_KEYS_NO_USER = tuple(list_cache_keys_no_user)
 
 
 def update_cache_user(session: Session, force: bool = False):
+    """
+    Notes
+    -----
+    Don't do anything if in test mode, to allow defining user in tests files
+    """
     key = str(CacheKey.user)
     if (key not in st.session_state) or force:
-        if ("is_logged_in" in st.user) and st.user.is_logged_in:
-            auth_user_id = st.user["sub"]
-            try:
-                user = user_manager.get_user_from_auth_user_id(
-                    session=session, auth_user_id=auth_user_id
-                )
-                st.session_state.user = user.model_dump()
-                st.session_state.user["admin_leagues"] = [
-                    league.name for league in user.admin_leagues
-                ]
-            except UserNotFoundError:
-                # Means new user, will be redirected to "finalize_signup"
-                st.session_state.user = None
+        if determine_is_logged_in():
+            if not is_test_mode():
+                auth_user_id = st.user["sub"]
+                try:
+                    user = user_manager.get_user_from_auth_user_id(
+                        session=session, auth_user_id=auth_user_id
+                    )
+                    st.session_state.user = user.model_dump()
+                    st.session_state.user["admin_leagues"] = [
+                        league.name for league in user.admin_leagues
+                    ]
+                except UserNotFoundError:
+                    # Means new user, will be redirected to "finalize_signup"
+                    st.session_state.user = None
         else:
             st.session_state.user = None
 

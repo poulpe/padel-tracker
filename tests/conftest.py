@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from padel_tracker.utils.conf import DBMode, RunMode
 from padel_tracker.utils.errors import (
     UserExistsError,
     PlayerExistsError,
@@ -16,7 +15,7 @@ from padel_tracker.models.players import Player, Team
 from padel_tracker.models.users import User
 from padel_tracker.models.matches import Match
 from padel_tracker.models.events import Event
-from padel_tracker.database.db import Database, init_db_and_tables
+from padel_tracker.database.db import init_db_and_tables, DB
 from padel_tracker.services import (
     user_manager,
     player_manager,
@@ -47,14 +46,12 @@ TEST_DUMMY_PLAYER_NAMES = [
     "Franco Chupachups",
 ]
 
+
 # Database
-DB_TEST = Database(db_mode=DBMode.LOCAL, run_mode=RunMode.TEST)
-
-
 @pytest.fixture
 def db_session():
-    init_db_and_tables(DB_TEST)
-    session = DB_TEST.get_session()
+    init_db_and_tables(DB)
+    session = DB.get_session()
     yield session
     session.close()
 
