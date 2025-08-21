@@ -67,3 +67,7 @@ def get_conf() -> dict[str, Any]:
 
 
 DICT_CONF = get_conf()
+
+
+def is_test_mode() -> bool:
+    return DICT_CONF["general"]["run_mode"] == RunMode.TEST.value

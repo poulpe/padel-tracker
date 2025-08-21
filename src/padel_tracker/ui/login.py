@@ -7,16 +7,13 @@ from padel_tracker.services import player_manager, league_manager, user_manager
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.languages import LanguageTranslator
 from padel_tracker.ui.cache import refresh_cache, ALL_CACHE_KEYS
+from padel_tracker.ui.common import determine_is_logged_in as determine_is_logged_in
 
 LOGGER = get_logger("ui.login")
 
 
 def determine_is_guest() -> bool:
     return ("is_guest" in st.session_state) and (st.session_state.is_guest)
-
-
-def determine_is_logged_in() -> bool:
-    return ("is_logged_in" in st.user) and st.user.is_logged_in
 
 
 def make_login_form(translator: LanguageTranslator) -> None:

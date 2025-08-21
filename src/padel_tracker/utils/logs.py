@@ -70,7 +70,8 @@ class DatabaseLogHandler(logging.Handler):
 
     def close(self):
         """Close properly the ThreadPoolExecutor"""
-        self.thread_pool.shutdown(wait=True)
+        if self.is_threaded:
+            self.thread_pool.shutdown(wait=True)
         super().close()
 
 
@@ -191,11 +192,3 @@ def get_logger(
     if log_level is not None and log_name:
         logger.setLevel(log_level)
     return logger
-
-
-def set_logging_level(log_level: str | int) -> None:
-    logging.getLogger(MAIN_LOG_NAME).setLevel(log_level)
-
-
-def disable_loggings() -> None:
-    logging.getLogger(MAIN_LOG_NAME).setLevel(logging.CRITICAL)

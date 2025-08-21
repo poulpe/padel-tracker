@@ -10,6 +10,12 @@ from tests.conftest import TEST_DUMMY_PLAYER_NAMES
 
 @pytest.mark.ui
 def test_app_as_guest(db_session, populate_db, make_dummy_event):
+    """
+    Notes
+    -----
+    Cannot test mutllpage/navigation app yet from Streamlit limit (Aug 2025 with v1.48)
+    Typically at.switch_page("page_two.py").run() doesn't work
+    """
     # Populate db with 2 leagues
     populate_db(
         league_name="MegaPro Liga", player_names=TEST_DUMMY_PLAYER_NAMES, nb_matches=4
@@ -89,17 +95,10 @@ def test_app_as_guest(db_session, populate_db, make_dummy_event):
         if translator("check_player") == button.label:
             button_check_player = button
     assert button_check_player is not None
-    button_check_player.click().run()  # at.switch_page("page_check_player.py").run()
+    button_check_player.click().run()
     ## Check "Select player" is there
     select_player_box = None
     for box in at.main.selectbox:
         if box.label == translator("player"):
             select_player_box = box
     assert select_player_box is not None
-    ##TODO (prio 2) : Check basic
-    ###TODO:  Click on all metrics buttons
-    # at.main.button_group[0].set_value([translator("rank")]).run()
-    # button_check_player.click().run()
-
-    # TODO: Check "check team" page
-    # at.switch_page("page_check_team.py").run()
