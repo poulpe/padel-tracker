@@ -8,7 +8,7 @@ on:
 jobs:
   season_reset:
     runs-on: ubuntu-latest
-    environment: test  # prod or test
+    environment: prod  # prod or test
     steps:
       - uses: actions/checkout@v4
 
