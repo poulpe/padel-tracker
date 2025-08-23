@@ -8,7 +8,7 @@ on:
 jobs:
   season_reset:
     runs-on: ubuntu-latest
-    environment: prod
+    environment: prod  # prod or test
     steps:
       - uses: actions/checkout@v4
 
@@ -18,12 +18,7 @@ jobs:
       - name: Launch season_reset Python script
         run: uv run ./scripts/season_reset.py
         env:
-          db_mode: ${{ secrets.DB_MODE }}
-          run_mode: ${{ secrets.RUN_MODE }}
-          dbname: ${{ secrets.DBNAME }}
-          password : ${{ secrets.PASSWORD }}
-          supabase_api_url : ${{ secrets.SUPABASE_API_URL }}
-          supabase_api_key : ${{ secrets.SUPABASE_API_KEY }}
-          user : ${{ secrets.USER }}
-          host : ${{ secrets.HOST }}
-          port : ${{ secrets.PORT }}
+          db_mode: ${{ vars.DB_MODE }}
+          run_mode: ${{ vars.RUN_MODE }}
+          db_url_cloud_prod: ${{ secrets.DB_URL_CLOUD_PROD }}
+          db_url_cloud_test: ${{ secrets.DB_URL_CLOUD_TEST }}

@@ -1,10 +1,22 @@
 name: tests
 
 on:
+  workflow_dispatch:  # Allows manual triggering from GitHub Actions UI
+  pull_request:
+    paths: # Only in case of changes in the following files/folders
+      - "src/**"
+      - "tests/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".gitignore"
   push:
     branches: [ main ] # To trigger code coverage on main
-  pull_request:
-  workflow_dispatch:  # Allows manual triggering from GitHub Actions UI
+    paths: # Only in case of changes in the following files/folders
+      - "src/**"
+      - "tests/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".gitignore"
 
 jobs:
   test-lint:
