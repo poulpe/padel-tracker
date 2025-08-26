@@ -1,9 +1,12 @@
+from typing import Any
+
 import streamlit as st
 
 from padel_tracker.utils.errors import InvalidPlayerNameError
 from padel_tracker.utils.logs import get_logger
+from padel_tracker.utils.conf import is_test_mode
 from padel_tracker.database.db import DB
-from padel_tracker.services import player_manager, league_manager, user_manager
+from padel_tracker.services import player_manager, user_manager
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.languages import LanguageTranslator
 from padel_tracker.ui.cache import refresh_cache, ALL_CACHE_KEYS
@@ -14,6 +17,13 @@ LOGGER = get_logger("ui.login")
 
 def determine_is_guest() -> bool:
     return ("is_guest" in st.session_state) and (st.session_state.is_guest)
+
+
+def get_dict_auth_user() -> dict[str, Any]:
+    if not is_test_mode():
+        return st.user.to_dict()
+    else:
+        return st.session_state["dict_auth_user"]
 
 
 def make_login_form(translator: LanguageTranslator) -> None:
@@ -71,7 +81,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
     ## Create if clicked
     if submit_button_existing:
         try:
-            dict_auth_user = st.user.to_dict()
+            dict_auth_user = get_dict_auth_user()
             dict_auth_user["name"] = existing_player_name
             dict_auth_user["nickname"] = existing_player_name
             with DB.get_session() as session:
@@ -108,9 +118,8 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
         )
         # Name
         try:
-            fetched_default_name = user_manager.determine_default_username(
-                st.user.to_dict()
-            )
+            dict_auth = get_dict_auth_user()
+            fetched_default_name = user_manager.determine_default_username(dict_auth)
         except Exception:
             fetched_default_name = ""
         username = st.text_input(
@@ -139,7 +148,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
     ## Create if clicked
     if submit_button_not_existing:
         try:
-            dict_auth_user = st.user.to_dict()
+            dict_auth_user = get_dict_auth_user()
             dict_auth_user["name"] = username
             dict_auth_user["nickname"] = username
             with DB.get_session() as session:
@@ -150,17 +159,6 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
                     is_create_player=True,
                     default_league_name=existing_league_name,
                 )
-                # Fetch freshly created player and assign to league
-                if existing_league_name:
-                    player = player_manager.get_player_from_name(
-                        session=session, name=username
-                    )
-                    league = league_manager.get_league_from_name(
-                        session=session, name=existing_league_name
-                    )
-                    league_manager.assign_league_to_player(
-                        session=session, player=player, league=league
-                    )
             st.success(translator("user_added_success"), icon="🔥")
         except InvalidPlayerNameError:
             st.error(f"{username}{translator("player_invalid_name_error")}", icon="💢")
