@@ -1,4 +1,5 @@
 import random
+from typing import Any
 from datetime import datetime, timedelta
 
 import pytest
@@ -394,3 +395,62 @@ def populate_db(make_dummy_match, make_dummy_player, make_dummy_league):
             )
 
     return _factory
+
+
+# UI
+
+
+def find_st_object(
+    object_list: list[Any],
+    label: str,
+    extras: dict[str, Any] | None = None,
+    raise_err: bool = True,
+) -> Any | None:
+    """
+    Find streamlit object in a list of AppTest objects with corresponding 'label'.
+    Raise AssertionError if object not been found (if 'raise_err' is True, default)
+
+    Parameters
+    ----------
+    object_list: list[Any]
+        List of AppTest objects to look on
+    label:str
+        Label of the element
+    extras: dict[str,Any] | None, optional
+        Extra attributs for the research. Under the format {"attribute":"value"} (i.e: {"form_id":"finalize_signup_not_existing_player"})
+    raise_err:bool, optional
+        Raise AssertionError if button has not been found. Default : True
+
+    Returns
+    -------
+    Any | None
+        Found streamlit object, or None if 'raise_err' is False
+
+    Examples
+    --------
+    >>> submit_button = find_st_object(at.main.button, translator("submit"))
+    >>> submit_button.click().run()
+
+    >>> time_scale_toggle_button = find_st_object(at.toggle, translator("time_scale"))
+
+    >>> select_player_box = find_st_object(at.main.selectbox, translator("player"))
+
+    >>> submit_button = find_st_object(
+    ...     at.main.button,
+    ...     translator("submit"),
+    ...     extras={"form_id":"finalize_signup_not_existing_player"}
+    ... )
+    """
+    found_object = None
+    for obj in object_list:
+        if obj.label == label:
+            if extras:
+                if all(getattr(obj, attr, object()) == val for attr, val in extras.items()):  # fmt: skip
+                    found_object = obj
+                    break
+            else:
+                found_object = obj
+                break
+    if raise_err:
+        assert found_object is not None
+    return found_object
