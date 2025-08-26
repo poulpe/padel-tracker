@@ -131,12 +131,9 @@ def test_populate_db(db_session, populate_db):
     player_names = [
         "Agustin Tapas",
         "Martin Di Neuneu",
-        "Juan Cabron",
         "Alejandro Gralan",
-        "Arturo Coño",
         "Juan Trellent",
         "Federico Zigotto",
-        "Franco Chupachups",
     ]
     nb_matches = 3
     populate_db(league_name, player_names, nb_matches=nb_matches)
