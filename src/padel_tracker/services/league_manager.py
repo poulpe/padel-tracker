@@ -160,10 +160,14 @@ def remove_player_from_league(session: Session, player: Player, league: League) 
 
 
 def assign_admin_to_league(session: Session, user: User, league: League) -> None:
+    """And add associated player to league if not already in"""
     league.admin_users.append(user)
     user.admin_leagues.append(league)
     # Add associated player to league
-    assign_league_to_player(session, player=user.player, league=league)
+    try:
+        assign_league_to_player(session, player=user.player, league=league)
+    except PlayerAlreadyInLeagueError:
+        pass
     # If user doesn't have a default league, make it default
     if not user.default_league_name:
         user.default_league_name = league.name

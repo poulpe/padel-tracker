@@ -37,6 +37,7 @@ def process_finished_match(
     session: Session,
     match: Match,
     is_update_elo: bool = True,
+    is_update_rank: bool = False,
     delete_on_error: bool = True,
     thread_pool: ThreadPoolExecutor = None,
 ) -> tuple[dict[str, int], dict[str, int]]:
@@ -65,7 +66,7 @@ def process_finished_match(
         LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
         LOGGER.notif(f"processed finished_match id={match.id}")
     # Update_players_rank in a thread
-    if is_update_elo:
+    if is_update_elo and is_update_rank:
         if thread_pool:
             thread_pool.submit(
                 ranking_manager.update_players_rank,

@@ -25,6 +25,9 @@ dev = [
     "pytest-cov>=6.2.1",
     "pytest-env>=1.1.5",
 ]
+cli = [
+    "typer>=0.16.1",
+]
 wakeup = [
     "selenium>=4.29",
 ]
@@ -34,7 +37,7 @@ requires = ["setuptools>=64.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-padel-tracker = "padel_tracker.main:run_streamlit_app"
+padel-tracker = "padel_tracker.cli:app"
 
 [project.urls]
 Repository = "https://github.com/poulpe/padel-tracker"

@@ -114,7 +114,7 @@ otherwise it falls back to checking if a `.streamlit/secrets.toml` file is there
 3) In a terminal, go to folder and run the project via typing this command:  
 (it will install project automatically if not already installed)
 ```shell
-uv run padel-tracker
+uv run padel-tracker ui
 ```
 
 Note: this actually runs the following command inside a venv:  

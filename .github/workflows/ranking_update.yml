@@ -1,0 +1,27 @@
+name: ranking_update
+
+on:
+  workflow_dispatch:  # Manually
+  schedule:
+    - cron: "12 0 * * *"  # Everyday at 0:12 UTC
+
+jobs:
+  season_reset:
+    runs-on: ubuntu-latest
+    environment: prod  # prod or test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Launch season_reset Python script
+        run: uv run --extra cli padel-tracker ranking update
+        env:
+          db_mode: ${{ vars.DB_MODE }}
+          run_mode: ${{ vars.RUN_MODE }}
+          db_url_cloud_prod: ${{ secrets.DB_URL_CLOUD_PROD }}
+          db_url_cloud_test: ${{ secrets.DB_URL_CLOUD_TEST }}
