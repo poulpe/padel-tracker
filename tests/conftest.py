@@ -396,9 +396,7 @@ def populate_db(db_session, make_dummy_match, make_dummy_player, make_dummy_leag
             )
         # Apply rank calculation
         ranking_manager.update_players_rank(
-            league_name=league_name,
-            league_id=league.id,
-            session=db_session,
+            league_name=league_name, league_id=league.id, session=db_session
         )
 
     return _factory

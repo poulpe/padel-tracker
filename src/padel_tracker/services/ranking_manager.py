@@ -433,13 +433,13 @@ def get_all_rank_histories_from_league(
 
 def get_last_rank_history_from_league(
     session: Session,
-    league_id: UUID,
+    league_name: str,
     as_df: bool = False,
 ) -> RankHistory | pd.DataFrame:
     """Last rank history from last player in the league"""
     list_last_hist = get_all_rank_histories_from_league(
         session=session,
-        league_id=league_id,
+        league_name=league_name,
         as_df=as_df,
         limit_last=1,
     )
