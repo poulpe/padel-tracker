@@ -228,6 +228,7 @@ if submit_button:
                     session=session,
                     match=match,
                     is_update_elo=not is_friendly_match,
+                    is_update_rank=False,  # Made every night auto via Github action
                     delete_on_error=True,
                     thread_pool=get_thread_pool(),
                 )

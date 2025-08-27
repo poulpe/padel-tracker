@@ -1,10 +1,8 @@
-import subprocess
 from concurrent.futures.thread import ThreadPoolExecutor
 
 # Must keep this line below to init all SQLModel defined
 from padel_tracker import models as models
 from padel_tracker.utils.logs import init_loggings
-from padel_tracker.utils.paths import APP_PATH
 from padel_tracker.database.db import init_db_and_tables
 
 
@@ -20,12 +18,3 @@ def init_app(
         thread_pool=thread_pool,
     )
     init_db_and_tables()
-
-
-def run_streamlit_app() -> None:
-    subprocess.run(["streamlit", "run", str(APP_PATH)])
-
-
-if __name__ == "__main__":
-    # init_app() is already called in streamlit app, no needs to recall it
-    run_streamlit_app()

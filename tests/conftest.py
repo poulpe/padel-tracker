@@ -23,6 +23,7 @@ from padel_tracker.services import (
     league_manager,
     match_manager,
     event_manager,
+    ranking_manager,
 )
 
 # Fix random seed
@@ -348,7 +349,7 @@ def make_dummy_event(db_session):
 
 ## Cross services
 @pytest.fixture
-def populate_db(make_dummy_match, make_dummy_player, make_dummy_league):
+def populate_db(db_session, make_dummy_match, make_dummy_player, make_dummy_league):
     def _factory(
         league_name: str,
         player_names: list[str],
@@ -393,6 +394,12 @@ def populate_db(make_dummy_match, make_dummy_player, make_dummy_league):
                 score=score,
                 delete_afterwards=False,  # Will be deleted when deleting teams/players/league
             )
+        # Apply rank calculation
+        ranking_manager.update_players_rank(
+            league_name=league_name,
+            league_id=league.id,
+            session=db_session,
+        )
 
     return _factory
 
