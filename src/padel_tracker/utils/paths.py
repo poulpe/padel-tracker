@@ -25,11 +25,7 @@ def get_absolute_path(current_file: str | Path, rel_path: str | Path) -> Path:
     abs_path : Path
         Resolved absolute path from relative "rel_path"
     """
-    if isinstance(current_file, str):
-        current_file = Path(current_file)
-    if isinstance(rel_path, str):
-        rel_path = Path(rel_path)
-    return (current_file.parent / rel_path).resolve()
+    return (Path(current_file).parent / Path(rel_path)).resolve()
 
 
 def sanitize_filename(name: str, replacement: str = "_") -> str:

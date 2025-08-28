@@ -27,10 +27,10 @@ def get_db_url(
         # Determine db_url vs modes
         if run_mode == RunMode.TEST:
             db_file = get_absolute_path(__file__, f"../../../tests/data/{db_name}.db")
-            # Need to ensure directory is created and access OK (for Github action)
-            db_file.parent.mkdir(parents=True, exist_ok=True)
         else:
             db_file = get_absolute_path(__file__, f"../../../data/{db_name}.db")
+        # Need to ensure directory is created and access OK (for Github action)
+        db_file.parent.mkdir(parents=True, exist_ok=True)
         db_url = f"sqlite:///{db_file}"
     elif db_mode == DBMode.CLOUD:
         db_url = db_url_cloud
