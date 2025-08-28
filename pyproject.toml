@@ -1,6 +1,6 @@
 [project]
 name = "padel-tracker"
-version = "0.4.4"
+version = "0.4.5"
 description = "App to keep track of Padel matches"
 readme = "README.md"
 requires-python = ">=3.13.4"
@@ -33,8 +33,8 @@ wakeup = [
 ]
 
 [build-system]
-requires = ["setuptools>=64.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project.scripts]
 padel-tracker = "padel_tracker.cli:app"
