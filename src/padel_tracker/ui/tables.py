@@ -2,23 +2,16 @@ import streamlit as st
 import pandas as pd
 
 from padel_tracker.utils.paths import sanitize_filename
-from padel_tracker.database.db import DB
-from padel_tracker.services.player_manager import (
-    get_all_players_from_league,
-    get_all_teams_from_league,
-)
-from padel_tracker.services.league_manager import get_linkplayerleague_from_league
 from padel_tracker.ui.languages import LanguageTranslator, DEFAULT_TRANSLATOR
 
 
 @st.cache_data(max_entries=32)
 def _generate_player_overview_table(
-    df_players: pd.DataFrame = None,
+    df_players: pd.DataFrame,
     df_linkplayerleague: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     extra_col: bool | list[str] = False,
     is_single: bool = False,
-    league_name: str = None,
 ) -> pd.DataFrame:
     """
     Parameters
@@ -32,26 +25,11 @@ def _generate_player_overview_table(
     is_single
     use_container_width
     """
-    # Get data as df in db if not provided
-    if df_players is None:
-        with DB.get_session() as session:
-            df_players = get_all_players_from_league(
-                session=session, league_name=league_name, as_df=True
-            ).copy()
-    else:
-        df_players = df_players.copy()
-    if df_linkplayerleague is None:
-        with DB.get_session() as session:
-            df_linkplayerleague = get_linkplayerleague_from_league(
-                session=session, league_name=league_name, as_df=True
-            ).copy()
-    else:
-        df_linkplayerleague = df_linkplayerleague.copy()
-    # Join df_linkplayerleague to df_players (for rank and best_rank)
-    df_linkplayerleague = df_linkplayerleague[["player_name", "rank", "best_rank"]]
-    df_linkplayerleague = df_linkplayerleague.rename(columns={"player_name": "name"})
-    df_players = pd.merge(df_players, df_linkplayerleague, on="name")
+    df_players = df_players.copy()
     # Deduct extras from current data
+    df_players["rank"] = (
+        df_players["elo_rating"].rank(ascending=False, method="min").astype(int)
+    )
     df_players["ratio_vd"] = df_players["nb_victories"] / df_players["nb_defeats"]
     # Keep only useful columns
     col_to_keep = []
@@ -67,6 +45,14 @@ def _generate_player_overview_table(
         "last_match_date",
     ]
     if extra_col:
+        if df_linkplayerleague is None:
+            err_msg = "'extra_col' specified without 'df_linkplayerleague', cannot deduct best_rank"
+            raise ValueError(err_msg)
+        # Join df_linkplayerleague to df_players (for best_rank only)
+        df_link = df_linkplayerleague.copy()
+        df_link = df_link[["player_name", "best_rank"]]
+        df_link = df_link.rename(columns={"player_name": "name"})
+        df_players = pd.merge(df_players, df_link, on="name")
         if isinstance(extra_col, bool):
             col_to_keep += ["best_elo_rating", "best_rank", "creation_date"]
         else:
@@ -91,12 +77,11 @@ def apply_highlight_player_row(
 
 
 def make_player_overview_table(
-    df_players: pd.DataFrame = None,
+    df_players: pd.DataFrame,
     df_linkplayerleague: pd.DataFrame = None,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     extra_col: bool | list[str] = False,
     is_single: bool = False,
-    league_name: str = None,
     use_container_width: bool = True,
     highlight_player_name: str = None,
 ) -> None:
@@ -118,7 +103,6 @@ def make_player_overview_table(
         translator=translator,
         extra_col=extra_col,
         is_single=is_single,
-        league_name=league_name,
     )
     column_config = {
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
@@ -150,7 +134,6 @@ def _generate_team_overview_table(
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     extra_col: bool | list[str] = False,
     is_single: bool = False,
-    league_name: str = None,
 ) -> pd.DataFrame:
     """
     Parameters
@@ -163,14 +146,7 @@ def _generate_team_overview_table(
     is_single
     use_container_width
     """
-    # Get data as df in db if not provided
-    if df_teams is None:
-        with DB.get_session() as session:
-            df_teams = get_all_teams_from_league(
-                session=session, league_name=league_name, as_df=True
-            ).copy()
-    else:
-        df_teams = df_teams.copy()
+    df_teams = df_teams.copy()
     # Deduct extras from current data
     df_teams["ratio_vd"] = df_teams["nb_victories"] / df_teams["nb_defeats"]
     # Keep only useful columns
@@ -179,7 +155,6 @@ def _generate_team_overview_table(
         col_to_keep += ["name"]
     col_to_keep += [
         "elo_rating",
-        # "rank",
         "nb_matches",
         "nb_victories",
         "nb_defeats",
@@ -198,11 +173,10 @@ def _generate_team_overview_table(
 
 
 def make_team_overview_table(
-    df_teams: pd.DataFrame = None,
+    df_teams: pd.DataFrame,
     translator: LanguageTranslator = DEFAULT_TRANSLATOR,
     extra_col: bool | list[str] = False,
     is_single: bool = False,
-    league_name: str = None,
     use_container_width: bool = True,
 ) -> None:
     """
@@ -221,7 +195,6 @@ def make_team_overview_table(
         translator=translator,
         extra_col=extra_col,
         is_single=is_single,
-        league_name=league_name,
     )
     column_config = {
         translator("last_match_date"): st.column_config.DateColumn(format="DD-MM-YYYY"),
