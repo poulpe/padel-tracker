@@ -112,10 +112,11 @@ def init_loggings(
     db: Database = DB,
     is_threaded: bool = True,
     thread_pool: ThreadPoolExecutor = None,
-    silent: bool = False,
 ) -> LoggerWithNotif:
-
+    # Check if loggings have already been init (to return fast if not needed)
     main_logger = logging.getLogger(MAIN_LOG_NAME)
+    if main_logger.hasHandlers():
+        return
     main_logger.setLevel("DEBUG")
 
     # Get default parameters if None
@@ -135,14 +136,6 @@ def init_loggings(
         except (KeyError, ValueError):
             run_mode = RunMode.DEBUG
 
-    # Check if loggings have already been init (to return fast if not needed)
-    init_msg = f"init with conf: db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_db=}"
-    if main_logger.hasHandlers():
-        # Log starting message logging
-        if not silent:
-            main_logger.getChild("init_logs").info(init_msg)
-        return
-
     # Add console handler
     log_handler_console = NoTracebackStreamHandler()
     log_handler_console.setFormatter(DEFAULT_LOG_FORMATTER)
@@ -157,8 +150,8 @@ def init_loggings(
     main_logger.addHandler(log_handler_database)
 
     # Log starting message logging
-    if not silent:
-        main_logger.getChild("init_logs").info(init_msg)
+    msg = f"init with conf: db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_db=}"
+    main_logger.getChild("init_logs").info(msg)
 
     return main_logger
 
@@ -189,7 +182,7 @@ def get_logger(
     """
     # If loggings have not been init, init them
     if not logging.getLogger(MAIN_LOG_NAME).hasHandlers():
-        init_loggings(silent=True)
+        init_loggings()
     # Create logger
     if log_name:
         logger_name = f"{MAIN_LOG_NAME}.{log_name}"
