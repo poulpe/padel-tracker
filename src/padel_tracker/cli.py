@@ -88,7 +88,8 @@ def list_players(
         bool, typer.Option("--all", help="Show all players from all leagues")
     ] = False,
     no_user: Annotated[
-        bool, typer.Option("--no-user", help="Only show players without associated user")
+        bool,
+        typer.Option("--no-user", help="Only show players without associated user"),
     ] = False,
     with_user: Annotated[
         bool, typer.Option("--with-user", help="Only show players with associated user")
@@ -153,7 +154,7 @@ def run_streamlit_app():
 
 @app.command("conf")
 def show_conf():
-    """Display read configuration in .env and .secrets.toml"""
+    """Display read configuration from .env and .secrets.toml"""
     print(get_conf_message())
 
 
