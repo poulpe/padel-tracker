@@ -52,7 +52,7 @@ TEST_DUMMY_PLAYER_NAMES = [
 # Database
 @pytest.fixture
 def db_session():
-    init_db_and_tables(DB)
+    init_db_and_tables()
     session = DB.get_session()
     yield session
     session.close()
