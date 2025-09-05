@@ -20,11 +20,13 @@ leagues_admin_app = typer.Typer(help="For league administrator related commands"
 leagues_app.add_typer(leagues_admin_app, name="admin")
 players_app = typer.Typer(help="CRUD on Players and Teams")
 ranking_app = typer.Typer(help="Rank and Elo rating related commands")
+user_app = typer.Typer(help="CRUD on Users")
 ## Main app
 app = typer.Typer(no_args_is_help=True)
 app.add_typer(leagues_app, name="leagues")
 app.add_typer(players_app, name="players")
 app.add_typer(ranking_app, name="ranking")
+app.add_typer(user_app, name="users")
 
 
 # Leagues related
@@ -83,7 +85,13 @@ def delete_player(name: str):
 def list_players(
     league_name: Annotated[str, typer.Argument()] = "",
     all: Annotated[
-        bool, typer.Option(help="Show all players from all leagues")
+        bool, typer.Option("--all", help="Show all players from all leagues")
+    ] = False,
+    no_user: Annotated[
+        bool, typer.Option("--no-user", help="Only show players without associated user")
+    ] = False,
+    with_user: Annotated[
+        bool, typer.Option("--with-user", help="Only show players with associated user")
     ] = False,
 ):
     """List players from given 'league_name' in database, or from all leagues if --all"""
@@ -91,12 +99,18 @@ def list_players(
         raise typer.BadParameter("can't use --all and specify league at the same time")
 
     with DB.get_session() as session:
+        # Fetch db
         if all:
             players = player_manager.get_all_players(session)
         elif league_name:
             players = player_manager.get_all_players_from_league(session, league_name)
         else:
             raise typer.BadParameter("provide a `league_name` or use --all")
+        # Manage 'with_user/no_user' option
+        if no_user:
+            players = [p for p in players if not p.user]
+        elif with_user:
+            players = [p for p in players if p.user]
 
     for player in players:
         print(repr(player))
