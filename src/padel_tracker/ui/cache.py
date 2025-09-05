@@ -18,8 +18,18 @@ from padel_tracker.services import (
     event_manager,
 )
 from padel_tracker.ui.common import determine_is_logged_in
+from padel_tracker.main import init_app
 
 LOGGER = get_logger("ui.cache")
+
+
+@st.cache_resource
+def init_streamlit_app() -> None:
+    """
+    Init app and will run only once thanks to the @st.cache_resource
+    (and not at every rerun or other session_state)
+    """
+    init_app()
 
 
 class CacheKey(StrEnum):

@@ -30,7 +30,8 @@ from padel_tracker.database.db import (
 from padel_tracker.services.common import check_players_all_in_league
 from padel_tracker.services import ranking_manager
 
-LOGGER = get_logger("matches")
+LOGGER_NAME = "matches"
+LOGGER = get_logger(LOGGER_NAME)
 
 
 def process_finished_match(
@@ -64,7 +65,7 @@ def process_finished_match(
             league.last_match_date = match.date
         commit_to_db(league, session=session)
         LOGGER.info(f"league '{league.name}' has been updated from match id={match.id}")
-        LOGGER.notif(f"processed finished_match id={match.id}")
+        LOGGER.success(f"processed finished_match id={match.id}")
     # Update_players_rank in a thread
     if is_update_elo and is_update_rank:
         if thread_pool:
@@ -96,7 +97,7 @@ def create_match(
     is_friendly: bool = False,
 ) -> Match:
     """If score is not given, match will not be considered finished"""
-    logger = LOGGER.getChild("create")
+    logger = get_logger(f"{LOGGER_NAME}.create")
 
     # Normalize score as str for creation
     if isinstance(score, MatchScore):
@@ -165,7 +166,7 @@ def create_match(
     ## Commit
     logger.debug("committing to db")
     commit_to_db(match, league, session=session)
-    logger.notif(
+    logger.success(
         f"created new Match({match} date='{match.date.strftime("%d/%m/%Y %H:%M")}')"
     )
     # Process it if finished
@@ -269,7 +270,7 @@ def delete_match(
     """Delete match after removing history.elo_gain corresponding to this match from players/team current elo
     Also updates league nb_matches.
     """
-    logger = LOGGER.getChild("delete")
+    logger = get_logger(f"{LOGGER_NAME}.delete")
 
     if isinstance(match_id, str):
         match_id = UUID(match_id)
@@ -342,7 +343,7 @@ def delete_match(
         delete_from_db(*histories_to_delete, session=session)
     # Finally delete
     delete_from_db(match, session=session)
-    logger.notif(f"deleted {match_id=} successfully")
+    logger.success(f"deleted {match_id=} successfully")
     # Update ranks in a thread (non blocking)
     if thread_pool:
         thread_pool.submit(

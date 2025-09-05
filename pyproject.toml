@@ -15,6 +15,7 @@ dependencies = [
     "python-dotenv>=1.0.1", # Secret management in .env file (for cloud-hosted db)
     "pandas>=2.2.3", # Manage some data/statistics as dataframe
     "authlib>=1.4.1", # For User management in UI
+    "loguru>=0.7.3", # For loggings
 ]
 [project.optional-dependencies]
 dev = [
