@@ -19,6 +19,7 @@ class RunMode(StrEnum):
 
 _DEFAULT_CONF = {
     "log_level_console": "INFO",
+    "log_level_db": "SUCCESS",
     "db_mode": "local",
     "run_mode": "test",
 }
@@ -26,13 +27,13 @@ _DEFAULT_CONF = {
 
 def get_conf() -> dict[str, Any]:
     """Get conf in this order: try from dotenv first, else try from st.secrets
-    Fallback to None if not found.
+    Fallback to _DEFAULT_CONF if not found.
     """
     dict_conf = {}
     dict_conf["general"] = {}
     dict_conf["db_credentials"] = {}
 
-    conf_keys = ["db_mode", "run_mode", "log_level_console"]
+    conf_keys = ["db_mode", "run_mode", "log_level_console", "log_level_db"]
     db_keys = ["db_url_cloud"]
 
     load_dotenv()
@@ -71,3 +72,12 @@ DICT_CONF = get_conf()
 
 def is_test_mode() -> bool:
     return DICT_CONF["general"]["run_mode"] == RunMode.TEST.value
+
+
+def get_conf_message() -> str:
+    """Returns string with main parameters deducted from conf to init the app"""
+    log_level_console = DICT_CONF["general"]["log_level_console"]
+    log_level_db = DICT_CONF["general"]["log_level_db"]
+    db_mode = DBMode(DICT_CONF["general"]["db_mode"].lower())
+    run_mode = RunMode(DICT_CONF["general"]["run_mode"].lower())
+    return f"db_mode={str(db_mode)}, run_mode={str(run_mode)}, {log_level_console=}, {log_level_db=}"

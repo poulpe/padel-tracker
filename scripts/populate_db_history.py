@@ -2,9 +2,7 @@
 Populate db with previous data from my history on PadelID
 """
 
-import logging
-
-from padel_tracker.utils.logs import DEFAULT_LOG_FORMATTER
+from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.errors import PlayerExistsError, LeagueExistsError
 from padel_tracker.utils.datetime_utils import make_datetime
 from padel_tracker.database.db import Session, DB
@@ -15,13 +13,7 @@ from padel_tracker.services import (
 )
 from padel_tracker.main import init_app
 
-LOG_LEVEL = "DEBUG"
-LOGGER = logging.getLogger("populate_db_history")
-LOGGER.setLevel(LOG_LEVEL)
-LOG_HANDLER = logging.StreamHandler()
-LOG_HANDLER.setLevel(LOG_LEVEL)
-LOG_HANDLER.setFormatter(DEFAULT_LOG_FORMATTER)
-LOGGER.addHandler(LOG_HANDLER)
+LOGGER = get_logger("populate_db_history", use_app_name=False)
 
 # fmt: off
 list_match_data = [
@@ -100,6 +92,7 @@ def create_matches(session: Session, list_match_data, league_name: str):
 
 
 if __name__ == "__main__":
+    LOGGER.warning("STARTING")
     init_app()
 
     # Populate leagues

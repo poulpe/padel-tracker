@@ -22,7 +22,8 @@ from padel_tracker.models.events import EventCategory
 from padel_tracker.database.db import Session, commit_to_db, read_from_db, DB
 from padel_tracker.services import player_manager, event_manager
 
-LOGGER = get_logger("ranking")
+LOGGER_NAME = "ranking"
+LOGGER = get_logger(LOGGER_NAME)
 
 
 def update_players_results_after_finished_match(
@@ -45,7 +46,7 @@ def update_players_results_after_finished_match(
         New elo for convenience, as dict[player.name, updated_elo_rating]
     """
     logger = LOGGER
-    logger_debug = logger.getChild("update_players_results")
+    logger_debug = get_logger(f"{LOGGER_NAME}.update_players_results")
     logger_debug.debug("starting update")
 
     # Retrieve Match
@@ -196,7 +197,7 @@ def update_players_results_after_finished_match(
         match,
         session=session,
     )
-    logger.notif(f"updated players results for match id={match.id}, {is_update_elo=}")
+    logger.success(f"updated players results for match id={match.id}, {is_update_elo=}")
 
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
@@ -212,7 +213,7 @@ def update_players_rank(
     """
     # Get all players, sorted by top Elo to bottom Elo (descending order)
     logger = LOGGER
-    logger_debug = logger.getChild("update_players_rank")
+    logger_debug = get_logger(f"{LOGGER_NAME}.update_players_rank")
 
     if session is None:
         session = DB.get_session()
@@ -264,7 +265,7 @@ def update_players_rank(
             logger_debug.debug(f"created rank_history_entry for {player.name=}")
         # Commit
         commit_to_db(*playerleague_links, *rank_history_entries, session=session)
-        logger.notif(f"updated players ranking in league={league_name}")
+        logger.success(f"updated players ranking in league={league_name}")
     finally:
         if not is_session_provided:
             session.close()
@@ -282,8 +283,8 @@ def apply_season_reset_to_all_players(
     Must perform it on ALL players at same time, to avoid issues with players belonging
     to several leagues
     """
-    logger = LOGGER.getChild("season_reset")
-    logger.notif(f"initiating Elo reset for {season_name=}")
+    logger = get_logger(f"{LOGGER_NAME}.season_reset")
+    logger.success(f"initiating Elo reset for {season_name=}")
 
     # Manage optional date
     if not event_date:
@@ -323,7 +324,7 @@ def apply_season_reset_to_all_players(
         category=EventCategory.SEASON_RESET,
         description=event_description,
     )
-    logger.notif(
+    logger.success(
         f"successfully performed season reset of {season_name=} ({event_description=})"
     )
 

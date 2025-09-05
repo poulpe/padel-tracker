@@ -19,7 +19,8 @@ from padel_tracker.models.leagues import League
 from padel_tracker.models.links import LinkEventLeague
 from padel_tracker.services import league_manager
 
-LOGGER = get_logger("events")
+LOGGER_NAME = "events"
+LOGGER = get_logger(LOGGER_NAME)
 
 
 def create_event(
@@ -34,7 +35,7 @@ def create_event(
     """Create an event
     If no `league_name` is specified, it will declare this event for all existing leagues
     """
-    logger = LOGGER.getChild("create")
+    logger = get_logger(f"{LOGGER_NAME}.create")
 
     # Create and commit it to get ID
     if category and not isinstance(category, EventCategory):
@@ -62,7 +63,7 @@ def create_event(
         list_objects_to_commit.append(league)
     commit_to_db(event, *list_objects_to_commit, session=session)
 
-    logger.notif(f"created {event = }")
+    logger.success(f"created {event = }")
     return event
 
 
@@ -108,7 +109,7 @@ def get_last_season_reset_event(session: Session) -> Event:
 
 
 def delete_event(session: Session, event_id: UUID | str) -> None:
-    logger = LOGGER.getChild("delete")
+    logger = get_logger(f"{LOGGER_NAME}.delete")
 
     if isinstance(event_id, str):
         event_id = UUID(event_id)
@@ -125,4 +126,4 @@ def delete_event(session: Session, event_id: UUID | str) -> None:
     event_date = event.date
 
     delete_from_db(event, session=session)
-    logger.notif(f"deleted Event({event_name=}, {event_id=}, {event_date=})")
+    logger.success(f"deleted Event({event_name=}, {event_id=}, {event_date=})")

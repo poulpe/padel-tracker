@@ -26,7 +26,8 @@ from padel_tracker.models.leagues import League
 from padel_tracker.models.users import User
 from padel_tracker.services import user_manager, match_manager
 
-LOGGER = get_logger("leagues")
+LOGGER_NAME = "leagues"
+LOGGER = get_logger(LOGGER_NAME)
 
 # GET/UPDATE
 
@@ -139,7 +140,7 @@ def assign_league_to_player(session: Session, player: Player, league: League) ->
     )
     league.nb_players += 1
     commit_to_db(link, player, league, session=session)
-    LOGGER.notif(f"{player=} has been assigned to {league=}")
+    LOGGER.success(f"{player=} has been assigned to {league=}")
 
 
 def remove_player_from_league(session: Session, player: Player, league: League) -> None:
@@ -156,7 +157,7 @@ def remove_player_from_league(session: Session, player: Player, league: League) 
     commit_to_db(league, session=session)
     # Delete link
     delete_from_db(link_to_delete, session=session)
-    LOGGER.notif(f"{player=} has been removed from {league=}")
+    LOGGER.success(f"{player=} has been removed from {league=}")
 
 
 def assign_admin_to_league(session: Session, user: User, league: League) -> None:
@@ -172,14 +173,14 @@ def assign_admin_to_league(session: Session, user: User, league: League) -> None
     if not user.default_league_name:
         user.default_league_name = league.name
     commit_to_db(league, user, session=session)
-    LOGGER.notif(f"assigned user='{user.name}' as admin of league='{league.name}'")
+    LOGGER.success(f"assigned user='{user.name}' as admin of league='{league.name}'")
 
 
 def make_league_private(session: Session, league: League) -> None:
     if not league.is_private:
         league.is_private = True
         commit_to_db(league, session=session)
-        LOGGER.notif(f"league '{league.name}' has been made 'private'")
+        LOGGER.success(f"league '{league.name}' has been made 'private'")
     else:
         raise ValueError(f"league '{league.name}' is already 'private'")
 
@@ -188,7 +189,7 @@ def make_league_public(session: Session, league: League) -> None:
     if league.is_private:
         league.is_private = False
         commit_to_db(league, session=session)
-        LOGGER.notif(f"league '{league.name}' has been made 'public'")
+        LOGGER.success(f"league '{league.name}' has been made 'public'")
     else:
         raise ValueError(f"league '{league.name}' is already 'public'")
 
@@ -210,7 +211,7 @@ def create_league(
     admin_name: str = "",
     **kwargs,
 ) -> League:
-    logger = LOGGER.getChild("create")
+    logger = get_logger(f"{LOGGER_NAME}.create")
     # Clean name (capitalize 1st letter + remove leading/trailing space)
     name = (name[0].upper() + name[1:]).strip() if name else name
     # Checks league doesn't exist
@@ -232,7 +233,7 @@ def create_league(
         raise exc
     # Commit if successfull
     commit_to_db(league, session=session)
-    logger.notif(f"created {league = }")
+    logger.success(f"created {league = }")
     # Assign admin
     if admin_name:
         admin_user = user_manager.get_user_from_name(session=session, name=admin_name)
@@ -242,7 +243,7 @@ def create_league(
 
 # DELETE
 def delete_league(session: Session, name: str) -> None:
-    logger = LOGGER.getChild("delete")
+    logger = get_logger(f"{LOGGER_NAME}.delete")
 
     # Fetch league
     try:
@@ -277,4 +278,4 @@ def delete_league(session: Session, name: str) -> None:
 
     # Delete
     delete_from_db(league, session=session)
-    logger.notif(f"deleted '{name}' successfully from database")
+    logger.success(f"deleted '{name}' successfully from database")

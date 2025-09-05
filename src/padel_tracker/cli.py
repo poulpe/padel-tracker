@@ -3,8 +3,8 @@ import subprocess
 
 import typer
 
-from padel_tracker.utils.logs import init_loggings
 from padel_tracker.utils.paths import APP_PATH
+from padel_tracker.utils.conf import get_conf_message
 from padel_tracker.database.db import DB
 from padel_tracker.services import (
     player_manager,
@@ -154,7 +154,7 @@ def run_streamlit_app():
 @app.command("conf")
 def show_conf():
     """Display read configuration in .env and .secrets.toml"""
-    init_loggings()
+    print(get_conf_message())
 
 
 if __name__ == "__main__":

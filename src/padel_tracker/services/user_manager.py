@@ -16,7 +16,8 @@ from padel_tracker.models.players import Player
 from padel_tracker.models.users import User, UserRole
 from padel_tracker.services import player_manager, league_manager
 
-LOGGER = get_logger("users")
+LOGGER_NAME = "users"
+LOGGER = get_logger(LOGGER_NAME)
 
 # GET
 
@@ -86,7 +87,7 @@ def create_user_from_auth_user(
     username:str
         If None, will get from default determining. Otherwise will use it
     """
-    logger = LOGGER.getChild("create")
+    logger = get_logger(f"{LOGGER_NAME}.create")
 
     # Extract auth_user_id
     try:
@@ -127,7 +128,7 @@ def create_user_from_auth_user(
     )
     # Commit
     commit_to_db(user, session=session)
-    logger.notif(f"created {user=}")
+    logger.success(f"created {user=}")
     # Create player if specified
     if is_create_player:
         default_league = None
@@ -151,7 +152,7 @@ def assign_player_to_user(session: Session, user: User, player: Player) -> None:
     user.name = player.name
     commit_to_db(user, player, session=session)
     log_msg = f"Player(name={player.name}, id={player.id}) has been assigned to User(id={user.id}, player_id={user.player_id}, email={user.email})"
-    LOGGER.notif(log_msg)
+    LOGGER.success(log_msg)
 
 
 def log_user_visit(session: Session, auth_user_id: str) -> None:
@@ -161,12 +162,12 @@ def log_user_visit(session: Session, auth_user_id: str) -> None:
     user.last_visit_date = now()
     commit_to_db(user, session=session)
     log_msg = f"user '{user.name}' logged in ({auth_user_id=})"
-    LOGGER.notif(log_msg)
+    LOGGER.success(log_msg)
 
 
 # DELETE
 def delete_user(session: Session, name: str) -> None:
-    logger = LOGGER.getChild("delete")
+    logger = get_logger(f"{LOGGER_NAME}.delete")
     # Fetch user
     try:
         user = get_user_from_name(session=session, name=name)
@@ -181,4 +182,4 @@ def delete_user(session: Session, name: str) -> None:
     name = user.name
     auth_user_id = user.auth_user_id
     delete_from_db(user, session=session)
-    logger.notif(f"deleted User({name=}, {auth_user_id=}) successfully")
+    logger.success(f"deleted User({name=}, {auth_user_id=}) successfully")
