@@ -3,7 +3,6 @@ import streamlit as st
 from padel_tracker.models.users import UserRole
 from padel_tracker.ui.cards import define_cards_css
 from padel_tracker.ui.headers import write_subheader
-from padel_tracker.ui.threads import get_thread_pool
 from padel_tracker.ui.images import display_logo_and_top_header
 from padel_tracker.ui.pages import PagesCollection
 from padel_tracker.ui.cache import (
@@ -12,6 +11,7 @@ from padel_tracker.ui.cache import (
     CacheKey,
     determine_session_state_device_type,
     determine_session_state_league_name,
+    init_streamlit_app,
 )
 from padel_tracker.ui.languages import (
     DEFAULT_LANGUAGE,
@@ -27,13 +27,10 @@ from padel_tracker.ui.login import (
     display_sidebar_logout_button,
     log_user_visit,
 )
-from padel_tracker.main import init_app
 
 ##### Init #####
 st.set_page_config(page_title="Padel Tracker", page_icon="🥎")
-if ("is_app_init" not in st.session_state) or (not st.session_state.is_app_init):
-    init_app(threaded_logs=True, thread_pool=get_thread_pool())
-    st.session_state.is_app_init = True
+init_streamlit_app()
 
 ##### Translation feature in Session state
 if "language" not in st.session_state:

@@ -88,7 +88,10 @@ DB = Database()
 
 
 def init_db_and_tables(db: Database = DB):
-    """To be called in main at init"""
+    """
+    Create database tables if they don't exist. Will do nothing if already existing.
+    To be called in main at init.
+    """
     SQLModel.metadata.create_all(db.engine)
 
 

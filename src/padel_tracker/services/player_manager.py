@@ -28,7 +28,8 @@ from padel_tracker.models.players import Player, Team
 from padel_tracker.models.matches import Match
 from padel_tracker.models.links import LinkPlayerLeague, LinkTeamLeague
 
-LOGGER = get_logger("players")
+LOGGER_NAME = "players"
+LOGGER = get_logger(LOGGER_NAME)
 
 
 ##### Players #####
@@ -148,7 +149,7 @@ def create_player(
     InvalidPlayerNameError
 
     """
-    logger = LOGGER.getChild("create")
+    logger = get_logger(f"{LOGGER_NAME}.create")
     # Clean name (capitalize 1st letter + remove leading/trailing space)
     name = Player.sanitize_name(name)
     # Checks player doesn't exist
@@ -184,12 +185,12 @@ def create_player(
             links.append(league)
     # Commit if successfull
     commit_to_db(player, *links, session=session)
-    logger.notif(f"created {player = }")
+    logger.success(f"created {player = }")
     return player
 
 
 def delete_player(session: Session, name: str) -> None:
-    logger = LOGGER.getChild("delete")
+    logger = get_logger(f"{LOGGER_NAME}.delete")
     # Fetch player
     try:
         player = get_player_from_name(session=session, name=name)
@@ -218,11 +219,11 @@ def delete_player(session: Session, name: str) -> None:
 
     # Finally delete player
     delete_from_db(player, session=session)
-    logger.notif(f"deleted '{name}' successfully from database")
+    logger.success(f"deleted '{name}' successfully from database")
 
 
 def rename_player(session: Session, current_name: str, new_name: str) -> None:
-    logger = LOGGER.getChild("rename")
+    logger = get_logger(f"{LOGGER_NAME}.rename")
     new_name = Player.sanitize_name(new_name)
     # Check new_name is not already taken by existing player
     try:
@@ -296,7 +297,7 @@ def rename_player(session: Session, current_name: str, new_name: str) -> None:
         *updated_rank_histories,
         session=session,
     )
-    logger.notif(
+    logger.success(
         f"renamed player '{current_name}' to new_name='{new_name}' ({player.id=})"
     )
 
@@ -383,7 +384,7 @@ def get_all_teams_from_league(
 
 
 def delete_team(session: Session, player1_name: str, player2_name: str) -> None:
-    logger = LOGGER.getChild("delete")
+    logger = get_logger(f"{LOGGER_NAME}.delete")
     # Fetch team
     team = get_team_from_players_name(
         session, player1_name, player2_name, create_if_not_found=False
@@ -391,7 +392,7 @@ def delete_team(session: Session, player1_name: str, player2_name: str) -> None:
     team_name = team.name
     # Delete
     delete_from_db(team, session=session)
-    logger.notif(f"deleted Team '{team_name}' successfully from database")
+    logger.success(f"deleted Team '{team_name}' successfully from database")
 
 
 ##### Interactions ######

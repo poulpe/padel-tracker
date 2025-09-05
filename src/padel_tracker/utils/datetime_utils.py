@@ -2,6 +2,9 @@ import datetime
 from zoneinfo import ZoneInfo
 
 TZ_FR = ZoneInfo("Europe/Paris")
+DATETIME_TZ_FR = datetime.timezone(
+    datetime.datetime.now().astimezone(TZ_FR).utcoffset(), "Europe/Paris"
+)
 
 
 def now() -> datetime.datetime:
