@@ -3,7 +3,7 @@ name = "padel-tracker"
 version = "0.4.5"
 description = "App to keep track of Padel matches"
 readme = "README.md"
-requires-python = ">=3.13.4"
+requires-python = ">=3.13.4, <3.14"
 authors = [
     {name = "Pierre Letousey"},
 ]
@@ -48,6 +48,12 @@ lint.ignore = [
     "F821", # Must for compatibility with SQLModel Relationship ("name not defined")
 ]
 exclude = ["src/padel_tracker/database/migrations/versions/*.py"]
+
+[tool.ty]
+src.exclude = ["tests/*", "src/padel_tracker/database/migrations/*"]
+rules.invalid-parameter-default = "ignore"
+rules.unresolved-reference = "ignore"
+rules.unresolved-attribute = "ignore"
 
 [tool.alembic]
 script_location = "src/padel_tracker/database/migrations"
