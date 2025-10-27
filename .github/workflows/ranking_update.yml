@@ -19,7 +19,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Launch ranking_update Python script
-        run: uv run --extra cli padel-tracker ranking update
+        run: uv run --extra cli --python 3.13 padel-tracker ranking update
         env:
           db_mode: ${{ vars.DB_MODE }}
           run_mode: ${{ vars.RUN_MODE }}
