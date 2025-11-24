@@ -312,6 +312,7 @@ def check_not_empty_database_players() -> None:
                 st.session_state.translator("not_enough_players_database_error"),
                 icon="💢",
             )
+            # TODO 3) : display button to go to "Add player in league" form (page_add_player_in_league.py)
             st.stop()
 
 

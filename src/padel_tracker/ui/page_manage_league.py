@@ -84,8 +84,42 @@ if not (is_user_league_admin or is_user_admin):
 write_header(translator("administration"))
 # FORMS Add/Recruit in
 left_col, right_col = st.columns(2)
-## FORM Recruit existing in league
+## FORM Declare new player in league
 with left_col:
+    form = st.form("add_player_in_league")
+    with form:
+        write_subheader(translator("add_player_in_league"))
+        _, center_col, _ = st.columns([1, 5, 1])
+        with center_col:
+            player_name = st.text_input(translator("name"))
+        _, center_col, _ = st.columns([1, 2, 1])
+        with center_col:
+            add_new_submit_button = st.form_submit_button(
+                label=translator("submit"),
+                use_container_width=True,
+            )
+    if add_new_submit_button:
+        try:
+            with DB.get_session() as session:
+                league = league_manager.get_league_from_name(session, league_name)
+                player_manager.create_player(
+                    session=session, name=player_name, league=league
+                )
+                st.success(
+                    f"{player_name}{translator("player_added_success")}", icon="🔥"
+                )
+        except PlayerExistsError:
+            st.error(f"{player_name}{translator("player_exists_error")}", icon="💢")
+        except InvalidPlayerNameError:
+            st.error(
+                f"{player_name}{translator("player_invalid_name_error")}", icon="💢"
+            )
+        except Exception as exc:
+            st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
+        else:
+            refresh_cache(threaded=False)
+## FORM Recruit existing in league
+with right_col:
     form = st.form("add_existing_in_league")
     with form:
         write_subheader(translator("add_existing_in_league"))
@@ -130,41 +164,6 @@ with left_col:
             st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
         else:
             refresh_cache(threaded=True)
-
-## FORM Declare new player in league
-with right_col:
-    form = st.form("add_player_in_league")
-    with form:
-        write_subheader(translator("add_player_in_league"))
-        _, center_col, _ = st.columns([1, 5, 1])
-        with center_col:
-            player_name = st.text_input(translator("name"))
-        _, center_col, _ = st.columns([1, 2, 1])
-        with center_col:
-            add_new_submit_button = st.form_submit_button(
-                label=translator("submit"),
-                use_container_width=True,
-            )
-    if add_new_submit_button:
-        try:
-            with DB.get_session() as session:
-                league = league_manager.get_league_from_name(session, league_name)
-                player_manager.create_player(
-                    session=session, name=player_name, league=league
-                )
-                st.success(
-                    f"{player_name}{translator("player_added_success")}", icon="🔥"
-                )
-        except PlayerExistsError:
-            st.error(f"{player_name}{translator("player_exists_error")}", icon="💢")
-        except InvalidPlayerNameError:
-            st.error(
-                f"{player_name}{translator("player_invalid_name_error")}", icon="💢"
-            )
-        except Exception as exc:
-            st.error(f"{translator("player_added_error")}: {exc}", icon="💥")
-        else:
-            refresh_cache(threaded=False)
 
 # FORM Remove player from league
 form = st.form("remove_from_league")

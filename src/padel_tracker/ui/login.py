@@ -6,7 +6,7 @@ from padel_tracker.utils.errors import InvalidPlayerNameError
 from padel_tracker.utils.logs import get_logger
 from padel_tracker.utils.conf import is_test_mode
 from padel_tracker.database.db import DB
-from padel_tracker.services import player_manager, user_manager
+from padel_tracker.services import player_manager, user_manager, league_manager
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.languages import LanguageTranslator
 from padel_tracker.ui.cache import refresh_cache, ALL_CACHE_KEYS
@@ -117,36 +117,59 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
             font_size=18,
         )
         # Name
-        try:
-            dict_auth = get_dict_auth_user()
-            fetched_default_name = user_manager.determine_default_username(dict_auth)
-        except Exception:
-            fetched_default_name = ""
-        username = st.text_input(
-            translator("name"),
-            value=fetched_default_name,
-            help=translator("username_help"),
-        )
-        # Assign default league if wanted
-        try:
-            leagues = st.session_state.league_names
-        except (AttributeError, KeyError):
-            leagues = None
-        existing_league_name = st.selectbox(
-            translator("existing_league"),
-            options=leagues,
-            placeholder=translator("existing_league_message"),
-            index=None,
-            help=translator("existing_league_help"),
-        )
-        # Submit button
-        _, center_col, _ = st.columns([1, 2, 1])
-        with center_col:
-            submit_button_not_existing = st.form_submit_button(
-                label=translator("submit"), use_container_width=True
+        username = st.text_input(translator("name"), help=translator("username_help"))
+        # League
+        left_col, right_col = st.columns(2, border=True)
+        ## League : Join exisiting ? Assign default league if wanted
+        with left_col:
+            # TODO (prio1) : proper messages
+            st.write(translator("join_existing_league"))
+            st.write(translator("existing_league_message"))
+            try:
+                leagues = st.session_state.league_names
+            except (AttributeError, KeyError):
+                leagues = None
+            existing_league_name = st.selectbox(
+                translator("existing_league"),
+                options=leagues,
+                placeholder=translator("existing_league_message"),
+                index=None,
+                help=translator("existing_league_help"),
             )
+            # Submit button
+            _, center_col, _ = st.columns([1, 2, 1])
+            with center_col:
+                submit_button_not_existing_join_league = st.form_submit_button(
+                    # TODO (prio1) : proper label submit
+                    # label=translator("submit"),
+                    label="submit_button_not_existing_join_league",
+                    use_container_width=True,
+                )
+        ## League : or create new league on your own
+        with right_col:
+            # TODO (prio1) : proper messages
+            st.write(translator("add_league"))
+            st.write(translator("create_new_league_on_your_own_where_you_are_admin"))
+            new_league_name = st.text_input(translator("name"))
+            new_league_description = st.text_area(translator("description"))
+            _, center_col, _ = st.columns([1, 5, 1])
+            with center_col:
+                is_private_league = st.checkbox(
+                    translator("private_league"), help=translator("private_league_help")
+                )
+            # Submit button
+            _, center_col, _ = st.columns([1, 2, 1])
+            with center_col:
+                submit_button_not_existing_add_league = st.form_submit_button(
+                    # label=translator("submit"),
+                    # TODO (prio1) : proper label submit
+                    label="submit_button_not_existing_add_league",
+                    use_container_width=True,
+                )
+
     ## Create if clicked
-    if submit_button_not_existing:
+    if submit_button_not_existing_join_league or submit_button_not_existing_add_league:
+        ### Create user
         try:
             dict_auth_user = get_dict_auth_user()
             dict_auth_user["name"] = username
@@ -159,7 +182,20 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
                     is_create_player=True,
                     default_league_name=existing_league_name,
                 )
-            st.success(translator("user_added_success"), icon="🔥")
+                st.success(translator("user_added_success"), icon="🔥")
+                ### Create new league if applicable
+                if submit_button_not_existing_add_league:
+                    league_manager.create_league(
+                        session=session,
+                        name=new_league_name,
+                        is_private=is_private_league,
+                        admin_name=username,
+                        description=new_league_description,
+                    )
+                    st.success(
+                        f"{new_league_name}{translator("league_added_success")}",
+                        icon="🔥",
+                    )
         except InvalidPlayerNameError:
             st.error(f"{username}{translator("player_invalid_name_error")}", icon="💢")
         except Exception as exc:
