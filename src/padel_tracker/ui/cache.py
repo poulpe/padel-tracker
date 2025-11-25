@@ -357,6 +357,19 @@ def determine_session_state_league_name() -> None:
                 # st.warning(translator("no_league_database_error"), icon="💢")
                 # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
                 st.stop()
+    elif (
+        "forced_league_name" in st.session_state and st.session_state.forced_league_name
+    ):
+        st.session_state.league_name = st.session_state.forced_league_name
+        st.session_state.forced_league_name = None
+        refresh_cache()  # Already all cache keys no user by default
+
+
+def force_league_name_refresh(league_name: str) -> None:
+    """Set `forced_league_name` in session state to force league_name update at next script run/rerun.
+    Must do that because cannot assign value directly of already instantiated st.selectbox of 'league_name'.
+    """
+    st.session_state.forced_league_name = league_name
 
 
 ### Optional cache (on-demand)
