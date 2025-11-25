@@ -145,6 +145,14 @@ def update_players_rank(
                 )
 
 
+# Users related
+@user_app.command("delete")
+def delete_user(username: str):
+    """Delete a user"""
+    with DB.get_session() as session:
+        user_manager.delete_user(session=session, name=username)
+
+
 # App related
 @app.command("ui")
 def run_streamlit_app():
