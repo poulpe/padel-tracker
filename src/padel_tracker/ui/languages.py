@@ -623,7 +623,7 @@ _DICT_LANGUAGES = {
         Language.EN: "Last match",
         Language.ES: "Último partido",
     },
-    "join_existing_league":{
+    "join_existing_league": {
         Language.FR: "Rejoindre une ligue existante",
         Language.EN: "Join existing league",
         Language.ES: "Unirte a una existente liga",
@@ -722,7 +722,11 @@ _DICT_LANGUAGES = {
         Language.ES: "Ganancia de puntos",
     },
     "league_name": {Language.FR: "Ligue", Language.EN: "League", Language.ES: "Liga"},
-    "new_league_name": {Language.FR: "Nom de la ligue", Language.EN: "League name", Language.ES: "Nombre de la Liga"},
+    "new_league_name": {
+        Language.FR: "Nom de la ligue",
+        Language.EN: "League name",
+        Language.ES: "Nombre de la Liga",
+    },
     "feedback_subsubheader": {
         Language.FR: """
             N'hesite pas à me faire ton retour !
