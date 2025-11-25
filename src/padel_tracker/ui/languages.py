@@ -12,7 +12,7 @@ class Language(StrEnum):
     ES = "Español"
 
 
-_DICT_LANGUAGES = {
+_DICT_TRANSLATIONS = {
     "about_and_feedback": {
         Language.FR: "À propos & Feedback",
         Language.EN: "About & Feedback",
@@ -865,11 +865,14 @@ class LanguageTranslator:
     lang: str | Language
 
     def __post_init__(self):
-        self.dict_lang = _DICT_LANGUAGES
+        self.dict_lang = {
+            key: translations[self.lang]
+            for key, translations in _DICT_TRANSLATIONS.items()
+        }
 
     def __call__(self, key: str):
         try:
-            result = self.dict_lang[key][self.lang]
+            result = self.dict_lang[key]
             if not result:  # If "" or None
                 raise KeyError
         except KeyError:
