@@ -4,7 +4,11 @@ import sqlalchemy
 import pandas as pd
 
 from padel_tracker.utils.logs import get_logger
-from padel_tracker.utils.errors import UserNotFoundError, UserExistsError
+from padel_tracker.utils.errors import (
+    UserNotFoundError,
+    UserExistsError,
+    InvalidPlayerNameError,
+)
 from padel_tracker.utils.datetime_utils import now
 from padel_tracker.database.db import (
     Session,
@@ -108,6 +112,10 @@ def create_user_from_auth_user(
     ## Default to None/False missing data
     if not username:
         username = determine_default_username(dict_auth_user)
+    if not username:
+        err_msg = f"got empty username during user creation for {auth_user_id=}"
+        logger.error(err_msg)
+        raise InvalidPlayerNameError(err_msg)
     username = (username[0].upper() + username[1:]).strip()
     for key in ["email", "picture"]:
         if key not in dict_auth_user.keys():

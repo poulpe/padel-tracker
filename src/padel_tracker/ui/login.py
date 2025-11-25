@@ -122,9 +122,10 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
         left_col, right_col = st.columns(2, border=True)
         ## League : Join exisiting ? Assign default league if wanted
         with left_col:
-            # TODO (prio1) : proper messages
-            st.write(translator("join_existing_league"))
-            st.write(translator("existing_league_message"))
+            write_subheader(translator("join_existing_league"))
+            write_subheader(
+                translator("join_existing_league_message"), bold=False, font_size=16
+            )
             try:
                 leagues = st.session_state.league_names
             except (AttributeError, KeyError):
@@ -132,27 +133,24 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
             existing_league_name = st.selectbox(
                 translator("existing_league"),
                 options=leagues,
-                placeholder=translator("existing_league_message"),
+                placeholder=translator("join_existing_league_message"),
                 index=None,
-                help=translator("existing_league_help"),
+                help=translator("join_existing_league_help"),
             )
             # Submit button
             _, center_col, _ = st.columns([1, 2, 1])
             with center_col:
                 submit_button_not_existing_join_league = st.form_submit_button(
-                    # TODO (prio1) : proper label submit
-                    # label=translator("submit"),
-                    label="submit_button_not_existing_join_league",
+                    label=translator("submit"),
                     use_container_width=True,
                 )
         ## League : or create new league on your own
         with right_col:
-            # TODO (prio1) : proper messages
-            st.write(translator("add_league"))
-            st.write(translator("create_new_league_on_your_own_where_you_are_admin"))
-            new_league_name = st.text_input(translator("name"))
+            write_subheader(translator("add_league"))
+            write_subheader(translator("add_league_message"), bold=False, font_size=16)
+            new_league_name = st.text_input(translator("new_league_name"))
             new_league_description = st.text_area(translator("description"))
-            _, center_col, _ = st.columns([1, 5, 1])
+            _, center_col, _ = st.columns([1.8, 4, 1])
             with center_col:
                 is_private_league = st.checkbox(
                     translator("private_league"), help=translator("private_league_help")
@@ -161,9 +159,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
             _, center_col, _ = st.columns([1, 2, 1])
             with center_col:
                 submit_button_not_existing_add_league = st.form_submit_button(
-                    # label=translator("submit"),
-                    # TODO (prio1) : proper label submit
-                    label="submit_button_not_existing_add_league",
+                    label=translator("submit_2"),
                     use_container_width=True,
                 )
 
@@ -178,6 +174,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
                 user_manager.create_user_from_auth_user(
                     session=session,
                     dict_auth_user=dict_auth_user,
+                    username=username,
                     default_language=st.session_state.language,
                     is_create_player=True,
                     default_league_name=existing_league_name,
