@@ -44,7 +44,7 @@ _DICT_TRANSLATIONS = {
         Language.ES: "Crear una nueva liga en la que serás el jefe",
     },
     "add_league_long_message": {
-        Language.FR: "Créer une nouvelle ligue dont tu seras l'admin et dans laquelle tu pourras ajouter des joueurs via la page 'Gérer la ligue'",
+        Language.FR: "Créer une nouvelle ligue dont tu seras l'admin et dans laquelle tu pourras ajouter des joueurs via la page 'Gérer ma ligue'",
         Language.EN: "Create a new league where you will be the admin and you can add players via the 'Manage league' page",
         Language.ES: "Crear una nueva liga de la que serás el administrador y en la que podrás añadir jugadores a través de la página 'Gestionar la liga'",
     },
@@ -59,8 +59,8 @@ _DICT_TRANSLATIONS = {
         Language.ES: "Jugadores de la liga con un Elo similar (+/- {x} puntos)",
     },
     "no_match_database_error": {
-        Language.FR: "Il n'y a aucun match dans cette ligue pour le moment. Assure toi de rentrer tes premiers joueurs via la page 'Gérer la ligue -> Nouveau joueur', puis ton premier match via la page 'Nouveau match'.",
-        Language.EN: "There's no match in this league at the moment. Ensure your players are declared via the page 'Manage League -> New player' and enter your first match via the page 'New match'.",
+        Language.FR: "Il n'y a aucun match dans cette ligue pour le moment. Assure toi de rentrer tes premiers joueurs via la page 'Nouveau joueur', puis ton premier match via la page 'Nouveau match'.",
+        Language.EN: "There's no match in this league at the moment. Ensure your players are declared via the page 'New player' and enter your first match via the page 'New match'.",
         Language.ES: "No hay ningún partido en esta liga por el momento. Asegúrate de registrar a tus primeros jugadores en la página 'Nuevo jugador', luego ingresa tu primer partido en la página 'Nuevo partido'.",
     },
     "match_not_finished_error": {
@@ -133,7 +133,12 @@ _DICT_TRANSLATIONS = {
     "add_player_in_league": {
         Language.FR: "Nouveau joueur dans la ligue",
         Language.EN: "Add player in league",
-        # Language.ES: None,
+        Language.ES: "Nuevo jugador en la liga",
+    },
+    "add_player_in_league_info": {
+        Language.FR: "Tu peux aussi cliquer sur le bouton ci-dessous pour ajouter les premiers joueurs dans ta ligue",
+        Language.EN: "You can also click on button below to add first new players to your league",
+        # Language.ES: "Nuevo jugador en la liga",
     },
     "players_teams": {
         Language.FR: "Joueurs/Équipes",
@@ -329,8 +334,8 @@ _DICT_TRANSLATIONS = {
         Language.ES: "Unirse a una liga",
     },
     "not_enough_players_database_error": {
-        Language.FR: "Il n'y a pas encore assez de joueurs enregistrés dans cette ligue pour faire un match. Assure toi d'avoir créé au moins 4 joueurs via la page 'Gérer la ligue -> Nouveau joueur'.",
-        Language.EN: "Not enough players yet registered in this league to make a match. Ensure you've created at least 4 players via the page 'Manage league -> New player'.",
+        Language.FR: "Il n'y a pas encore assez de joueurs enregistrés dans cette ligue pour faire un match. Assure toi d'avoir créé au moins 4 joueurs via la page 'Nouveau joueur'.",
+        Language.EN: "Not enough players yet registered in this league to make a match. Ensure you've created at least 4 players via the page 'New player'.",
         Language.ES: "Todavía no hay suficientes jugadores registrados en esta liga para jugar un partido. Asegúrate de haber creado al menos 4 jugadores en la página 'Nuevo jugador'.",
     },
     "player_exists_error": {
@@ -866,14 +871,14 @@ class LanguageTranslator:
 
     def __post_init__(self):
         self.dict_lang = {
-            key: translations[self.lang]
+            key: translations.get(self.lang, "")
             for key, translations in _DICT_TRANSLATIONS.items()
         }
 
     def __call__(self, key: str):
         try:
             result = self.dict_lang[key]
-            if not result:  # If "" or None
+            if not result:  # if "" or None
                 raise KeyError
         except KeyError:
             result = key[0].upper() + key[1:].replace("_", " ") if key else key

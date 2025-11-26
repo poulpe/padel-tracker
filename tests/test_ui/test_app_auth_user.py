@@ -135,7 +135,7 @@ def test_app_as_new_auth_user(db_session, populate_db):
     }
     at.run()
     translator = at.session_state.translator
-    ## Test signup form : not existing player
+    ## Test signup form : not existing player joining existing league
     name_input_widget = find_st_object(
         at.main.text_input,
         translator("name"),
@@ -151,7 +151,7 @@ def test_app_as_new_auth_user(db_session, populate_db):
     league_selectbox.select(league_name).run()
     submit_button = find_st_object(
         at.main.button,
-        translator("submit"),
+        translator("submit"),  # Will be "submit_2" key for case "and create new league"
         extras={"form_id": "finalize_signup_not_existing_player"},
     )
     submit_button.click().run()
@@ -175,3 +175,5 @@ def test_app_as_new_auth_user(db_session, populate_db):
     ### Delete created user
     user_manager.delete_user(db_session, name=new_user_name)
     player_manager.delete_player(db_session, name=new_user_name)
+
+    ##TODO (prio3) : Test signup form : not existing player creating new league

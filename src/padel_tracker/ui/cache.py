@@ -17,7 +17,10 @@ from padel_tracker.services import (
     user_manager,
     event_manager,
 )
-from padel_tracker.ui.common import determine_is_logged_in
+from padel_tracker.ui.common import (
+    determine_is_logged_in,
+    display_add_player_in_league_button,
+)
 from padel_tracker.main import init_app
 
 LOGGER = get_logger("ui.cache")
@@ -301,6 +304,8 @@ def check_not_empty_database_matches() -> None:
             st.warning(
                 st.session_state.translator("no_match_database_error"), icon="💢"
             )
+            if len(st.session_state[str(CacheKey.df_players)]) < 4:
+                display_add_player_in_league_button(st.session_state.translator)
             st.stop()
 
 
@@ -312,7 +317,7 @@ def check_not_empty_database_players() -> None:
                 st.session_state.translator("not_enough_players_database_error"),
                 icon="💢",
             )
-            # TODO 3) : display button to go to "Add player in league" form (page_add_player_in_league.py)
+            display_add_player_in_league_button(st.session_state.translator)
             st.stop()
 
 
