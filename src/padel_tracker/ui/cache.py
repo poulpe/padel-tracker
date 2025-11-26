@@ -20,6 +20,7 @@ from padel_tracker.services import (
 from padel_tracker.ui.common import (
     determine_is_logged_in,
     display_add_player_in_league_button,
+    display_add_league_button,
 )
 from padel_tracker.main import init_app
 
@@ -298,6 +299,9 @@ def refresh_cache(
 
 
 def check_not_empty_database_matches() -> None:
+    """Stops execution of streamlit script via st.stop() if no matches in current league.
+    If less than 4 players in the league, also displays "Add player" button for user convenience.
+    """
     key = CacheKey.df_elo_hist
     if key in st.session_state:
         if len(st.session_state[key]) == 0:
@@ -310,6 +314,9 @@ def check_not_empty_database_matches() -> None:
 
 
 def check_not_empty_database_players() -> None:
+    """Stops execution of streamlit script via st.stop() if less than 4 players in the current league.
+    Also display "Add player" button for ease in this case.
+    """
     key = str(CacheKey.df_players)
     if key in st.session_state:
         if len(st.session_state[key]) < 4:
@@ -322,6 +329,7 @@ def check_not_empty_database_players() -> None:
 
 
 def check_not_empty_database_leagues() -> None:
+    """Stops execution of streamlit script via st.stop() if no league in database"""
     key = str(CacheKey.df_leagues)
     if key in st.session_state:
         if len(st.session_state[key]) == 0:
@@ -331,6 +339,11 @@ def check_not_empty_database_leagues() -> None:
             )
             st.stop()
 
+
+def check_user_has_default_league() -> None:
+    """Displays warning message + help button if connected user without default league"""
+
+    pass
 
 def determine_session_state_device_type() -> None:
     if ("screen_inner_width" not in st.session_state) or (
@@ -359,8 +372,10 @@ def determine_session_state_league_name() -> None:
             try:
                 st.session_state.league_name = st.session_state.league_names[0]
             except (KeyError, TypeError):
-                # st.warning(translator("no_league_database_error"), icon="💢")
-                # TODO (prio3): fallback display page_add_league (because pg.run() won't run)
+                st.warning(
+                    st.session_state.translator("no_league_database_error"), icon="💢"
+                )
+                display_add_league_button(st.session_state.translator)
                 st.stop()
     elif (
         "forced_league_name" in st.session_state and st.session_state.forced_league_name

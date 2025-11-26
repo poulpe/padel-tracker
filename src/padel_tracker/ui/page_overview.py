@@ -51,6 +51,7 @@ if button_feature_2:
     st.switch_page("page_check_player.py")
 
 check_not_empty_database_matches()
+#TODO 1) : display warning "You don't have any league" if user without default league
 
 st.write("")
 st.write("")

@@ -21,12 +21,12 @@ _DICT_TRANSLATIONS = {
     "match_added_error": {
         Language.FR: " Impossible d'ajouter le match, erreur inconnue",
         Language.EN: " Unknown error during match creation",
-        Language.ES: "No se pudo agregar el partido, error desconocido",
+        Language.ES: " No se pudo agregar el partido, error desconocido",
     },
     "player_not_selected_error": {
         Language.FR: " Assure toi d'avoir selectionné tous les joueurs",
-        Language.EN: "Make sure all players have been selected",
-        Language.ES: "Asegúrate de haber seleccionado todos los jugadores",
+        Language.EN: " Make sure all players have been selected",
+        Language.ES: " Asegúrate de haber seleccionado todos los jugadores",
     },
     "x_matches_together": {
         Language.FR: "{x} matchs ensemble",
@@ -122,7 +122,7 @@ _DICT_TRANSLATIONS = {
     },
     "match_deletion_error": {
         Language.FR: "Erreur pendant la suppression du match: ",
-        Language.EN: "Erro during match deletion: ",
+        Language.EN: "Error during match deletion: ",
         # Language.ES: None,
     },
     "players_same_category": {
