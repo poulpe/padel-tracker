@@ -783,7 +783,7 @@ _DICT_TRANSLATIONS = {
     "same_player_in_both_teams_error": {
         Language.FR: " Un joueur est présent dans les 2 équipes en meme temps, c'est chaud de se dupliquer des 2 cotés du terrain !",
         Language.EN: " A player is in both teams, it's hard to be in 2 places at the same time",
-        Language.ES: "Un jugador está presente en ambos equipos al mismo tiempo, ¡difícil estar en dos sitios a la vez!",
+        Language.ES: " Un jugador está presente en ambos equipos al mismo tiempo, ¡difícil estar en dos sitios a la vez!",
     },
     "welcome_not_logged": {
         Language.FR: "Bienvenue sur Padel Tracker !",
@@ -850,7 +850,7 @@ _DICT_TRANSLATIONS = {
     "team_same_player_error": {
         Language.FR: " Le meme joueur a été sélectionné dans une meme équipe, 1v2 c'est pas fairplay !",
         Language.EN: " Same player has been selected in one team, 1v2 is not fairplay !",
-        Language.ES: "El mismo jugador ha sido seleccionado en el mismo equipo, ¡1 contra 2 no es justo!",
+        Language.ES: " El mismo jugador ha sido seleccionado en el mismo equipo, ¡1 contra 2 no es justo!",
     },
     "x_victories_together": {
         Language.FR: "{x} victoires ensemble",
@@ -861,6 +861,20 @@ _DICT_TRANSLATIONS = {
         Language.FR: "{x} victoires contre lui/elle",
         Language.EN: "{x} victories against",
         Language.ES: "{x} victorias contra él/ella",
+    },
+    "user_without_default_league_message": {
+        Language.FR: """
+            Tu ne fais parti d'aucune ligue pour le moment, rejoins en une ou crées en une nouvelle via le bouton ci-dessous 'Nouvelle ligue' si tu veux pouvoir enregistrer tes premiers matchs !
+            Sinon, si tu veux seulement regarder les stats des ligues publiques, tu peux rester comme ça, c'est aussi OK !",
+        """,
+        Language.EN: """
+            You are not part of any league at the moment, join one or create a new one via the 'Add league' button below if you want to be able to record your first matches!
+            Otherwise, if you only want to look at the stats of the public leagues, you can stay like that, it’s also OK!
+        """,
+        Language.ES: """
+            No eres parte de ninguna liga en este momento, únete a una o crea una nueva a través del botón 'Nueva liga' si quieres poder grabar tus primeros partidos!
+            De lo contrario, si solo quieres ver las estadísticas de las ligas públicas, puedes quedarte así, ¡también está bien!
+        """,
     },
 }
 

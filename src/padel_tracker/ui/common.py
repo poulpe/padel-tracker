@@ -28,7 +28,6 @@ def display_add_player_in_league_button(translator: LanguageTranslator) -> None:
 
 
 def display_add_league_button(translator: LanguageTranslator) -> None:
-    # st.info(translator("add_league_info"), icon="↘️")
     _, col_center, _ = st.columns([1, 5, 1])
     with col_center:
         button_add_league = st.button(
@@ -37,3 +36,8 @@ def display_add_league_button(translator: LanguageTranslator) -> None:
     if button_add_league:
         st.switch_page("page_add_league.py")
 
+
+def display_no_default_league_warning(translator: LanguageTranslator) -> None:
+    """Display warning message + help button"""
+    st.info(translator("user_without_default_league_message"), icon="⚠️")
+    display_add_league_button(translator)

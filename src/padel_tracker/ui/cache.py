@@ -21,6 +21,7 @@ from padel_tracker.ui.common import (
     determine_is_logged_in,
     display_add_player_in_league_button,
     display_add_league_button,
+    display_no_default_league_warning,
 )
 from padel_tracker.main import init_app
 
@@ -342,8 +343,10 @@ def check_not_empty_database_leagues() -> None:
 
 def check_user_has_default_league() -> None:
     """Displays warning message + help button if connected user without default league"""
+    if "user" in st.session_state and st.session_state.user is not None:
+        if not st.session_state.user["default_league_name"]:
+            display_no_default_league_warning(st.session_state.translator)
 
-    pass
 
 def determine_session_state_device_type() -> None:
     if ("screen_inner_width" not in st.session_state) or (
