@@ -47,6 +47,7 @@ Repository = "https://github.com/poulpe/padel-tracker"
 lint.ignore = [
     "F821", # Must for compatibility with SQLModel Relationship ("name not defined")
 ]
+lint.extend-select = ["N"] # Enforce pep8 naming convention compliance
 exclude = ["src/padel_tracker/database/migrations/versions/*.py"]
 
 [tool.ty]

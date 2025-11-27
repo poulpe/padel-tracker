@@ -19,9 +19,7 @@ with form:
     player_name = make_player_selectbox()
     _, col, _ = st.columns(3)
     with col:
-        submit_button = st.form_submit_button(
-            translator("delete"), use_container_width=True
-        )
+        submit_button = st.form_submit_button(translator("delete"), width="stretch")
 
 if submit_button and player_name:
     try:

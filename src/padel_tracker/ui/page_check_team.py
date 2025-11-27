@@ -42,8 +42,7 @@ with form:
     _, col_center, _ = st.columns([1, 3, 1])
     with col_center:
         submit_button = st.form_submit_button(
-            label=translator("submit"),
-            use_container_width=True,
+            label=translator("submit"), width="stretch"
         )
 
 # Checks and store selected_team in session_state

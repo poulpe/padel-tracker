@@ -115,9 +115,7 @@ with st.form("add_match"):
         score_cont = st.container(border=True)
         with score_cont:
             write_subheader(translator("score"), bold=True)
-            df_score = st.data_editor(
-                df, use_container_width=True, column_config=column_config
-            )
+            df_score = st.data_editor(df, width="stretch", column_config=column_config)
             games_set1_team1 = df_score.at[f"{team_word}1", "Set1"]
             games_set1_team2 = df_score.at[f"{team_word}2", "Set1"]
             games_set2_team1 = df_score.at[f"{team_word}1", "Set2"]
@@ -145,7 +143,7 @@ with st.form("add_match"):
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button = st.form_submit_button(
-            label=translator("submit"), use_container_width=True
+            label=translator("submit"), width="stretch"
         )
 
 # Launch processing once clicked

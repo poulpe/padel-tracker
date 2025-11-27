@@ -24,7 +24,7 @@ with form:
     with center_col:
         submit_button = st.form_submit_button(
             label=translator("submit"),
-            use_container_width=True,
+            width="stretch",
         )
 
 if submit_button:

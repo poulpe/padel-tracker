@@ -164,7 +164,7 @@ def make_overview_elo_history_chart(
         translator=translator,
     )
     # Plug it to Streamlit
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width="stretch")
 
 
 def _apply_determine_match_result(
@@ -380,7 +380,7 @@ def make_player_metric_history_chart(
         translator=translator,
     )
     # Plug it to Streamlit
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width="stretch")
 
 
 @st.cache_data(max_entries=32)
@@ -503,4 +503,4 @@ def make_team_metric_history_chart(
         translator=translator,
     )
     # Plug it to Streamlit
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width="stretch")

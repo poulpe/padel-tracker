@@ -21,7 +21,7 @@ def display_add_player_in_league_button(translator: LanguageTranslator) -> None:
     _, col_center, _ = st.columns([1, 5, 1])
     with col_center:
         button_add_player = st.button(
-            translator("add_player"), type="primary", use_container_width=True
+            translator("add_player"), type="primary", width="stretch"
         )
     if button_add_player:
         st.switch_page("page_add_player_in_league.py")
@@ -31,7 +31,7 @@ def display_add_league_button(translator: LanguageTranslator) -> None:
     _, col_center, _ = st.columns([1, 5, 1])
     with col_center:
         button_add_league = st.button(
-            translator("add_league"), type="primary", use_container_width=True
+            translator("add_league"), type="primary", width="stretch"
         )
     if button_add_league:
         st.switch_page("page_add_league.py")

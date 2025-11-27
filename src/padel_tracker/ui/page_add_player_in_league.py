@@ -22,7 +22,7 @@ with form:
     with center_col:
         submit_button = st.form_submit_button(
             label=translator("submit"),
-            use_container_width=True,
+            width="stretch",
         )
 
 if submit_button:
@@ -66,7 +66,7 @@ if submit_button:
 #     with center_col:
 #         add_submit_button = st.form_submit_button(
 #             label=translator("submit"),
-#             use_container_width=True,
+#             width="stretch",
 #         )
 # if add_submit_button:
 #     try:
@@ -105,7 +105,7 @@ if submit_button:
 #     with center_col:
 #         add_new_submit_button = st.form_submit_button(
 #             label=translator("submit"),
-#             use_container_width=True,
+#             width="stretch",
 #         )
 # if add_new_submit_button:
 #     try:
