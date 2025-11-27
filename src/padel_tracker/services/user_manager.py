@@ -158,6 +158,9 @@ def assign_player_to_user(session: Session, user: User, player: Player) -> None:
     if user.role == UserRole.GUEST:
         user.role = UserRole.PLAYER
     user.name = player.name
+    # Add default league of player to user if any
+    if player.league_links:
+        user.default_league_name = player.league_links[0].league_name
     commit_to_db(user, player, session=session)
     log_msg = f"Player(name={player.name}, id={player.id}) has been assigned to User(id={user.id}, player_id={user.player_id}, email={user.email})"
     LOGGER.success(log_msg)
