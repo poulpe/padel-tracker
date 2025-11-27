@@ -123,6 +123,7 @@ class PagesCollection:
             translator("players_teams"): [page_check_player, page_check_team],
             translator("league"): [
                 page_manage_league,
+                page_add_player_in_league,
                 page_add_league,
             ],
             translator("my_account"): [page_join_league],  # , page_manage_account],

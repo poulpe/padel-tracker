@@ -3,8 +3,8 @@ import streamlit as st
 from padel_tracker.utils.errors import LeagueExistsError, InvalidLeagueNameError
 from padel_tracker.database.db import DB
 from padel_tracker.services import league_manager
-from padel_tracker.ui.cache import refresh_cache
-from padel_tracker.ui.headers import write_header
+from padel_tracker.ui.cache import refresh_cache, force_league_name_refresh
+from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.languages import get_translator
 
 st.write("")
@@ -12,6 +12,7 @@ st.write("")
 translator = get_translator()
 
 write_header(translator("add_league"))
+write_subheader(translator("add_league_long_message"), bold=False)
 
 form = st.form("add_league")
 with form:
@@ -55,3 +56,4 @@ if submit_button:
         st.error(f"{translator("league_added_error")}: {exc}", icon="💥")
     else:
         refresh_cache(threaded=True)
+        force_league_name_refresh(league_name)

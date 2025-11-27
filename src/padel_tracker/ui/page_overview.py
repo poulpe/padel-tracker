@@ -11,6 +11,7 @@ from padel_tracker.ui.tables import (
 from padel_tracker.ui.cache import (
     check_not_empty_database_matches,
     check_not_empty_database_leagues,
+    check_user_has_default_league,
 )
 from padel_tracker.ui.login import determine_is_guest
 
@@ -51,6 +52,7 @@ if button_feature_2:
     st.switch_page("page_check_player.py")
 
 check_not_empty_database_matches()
+check_user_has_default_league()
 
 st.write("")
 st.write("")
@@ -58,7 +60,7 @@ st.write("")
 # Overview chart
 nb_last_matches = 50
 subtitle = translator("ranking_evolution_over_x_last_matches").format(x=nb_last_matches)
-write_header("Billboard", subtitle, bold_subheader=False)
+write_header(translator("billboard"), subtitle, bold_subheader=False)
 make_overview_elo_history_chart(
     df_elo_hist=st.session_state.df_elo_hist,
     translator=translator,
