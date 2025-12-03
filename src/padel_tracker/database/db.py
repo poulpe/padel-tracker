@@ -1,7 +1,7 @@
 from typing import Iterable
 
 import pandas as pd
-from sqlalchemy.engine.base import Engine
+import sqlalchemy
 from sqlmodel import SQLModel, create_engine, Session, select
 
 # Must keep this line below to init all SQLModel defined
@@ -44,15 +44,16 @@ def set_db_engine(
     db_mode: DBMode = DICT_CONF["general"]["db_mode"],
     run_mode: RunMode = DICT_CONF["general"]["run_mode"],
     db_url_cloud: str = DICT_CONF["db_credentials"]["db_url_cloud"],
-) -> Engine:
+) -> sqlalchemy.Engine:
     # Create url based on modes
     db_url = get_db_url(db_mode=db_mode, run_mode=run_mode, db_url_cloud=db_url_cloud)
     # Create engine
     if db_mode == DBMode.CLOUD:
         connect_args = {"options": "-csearch_path=public"}
+        db_engine = create_engine(db_url, connect_args=connect_args)
+        # IDEA: to try adding create_engine(..., poolclass=sqlalchemy.NullPool)
     else:
-        connect_args = {}
-    db_engine = create_engine(db_url, connect_args=connect_args)
+        db_engine = create_engine(db_url)
     return db_engine
 
 
@@ -71,7 +72,7 @@ class Database:
         self.db_url_cloud = db_url_cloud
 
     @property
-    def engine(self):
+    def engine(self) -> sqlalchemy.Engine:
         if not self._engine:
             self._engine = set_db_engine(
                 db_mode=self.db_mode,
