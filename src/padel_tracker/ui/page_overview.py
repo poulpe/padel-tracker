@@ -29,13 +29,13 @@ if not is_guest:
         button_add_match = st.button(
             translator("add_match"),
             type="primary",
-            use_container_width=True,
+            width="stretch",
         )
     with col_button_2:
         button_feature_2 = st.button(
             translator("check_player"),
             type="primary",
-            use_container_width=True,
+            width="stretch",
         )
     if button_add_match:
         st.switch_page("page_add_match.py")
@@ -45,7 +45,7 @@ else:
         button_feature_2 = st.button(
             translator("check_player"),
             type="primary",
-            use_container_width=True,
+            width="stretch",
         )
 
 if button_feature_2:

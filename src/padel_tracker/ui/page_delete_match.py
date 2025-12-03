@@ -99,7 +99,7 @@ with st.form(translator("retrieve_match")):
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         submit_button_no_id = st.form_submit_button(
-            label=translator("delete"), use_container_width=True
+            label=translator("delete"), width="stretch"
         )
 
 ## Form "ID is known"
@@ -108,9 +108,7 @@ with st.form(translator("delete_match_from_id")):
     match_id = st.text_input("match_id")
     _, col, _ = st.columns(3)
     with col:
-        submit_button_id = st.form_submit_button(
-            translator("delete"), use_container_width=True
-        )
+        submit_button_id = st.form_submit_button(translator("delete"), width="stretch")
 
 # Process if clicked
 if submit_button_no_id or (submit_button_id and match_id):

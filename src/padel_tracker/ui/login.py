@@ -44,7 +44,7 @@ def make_login_form(translator: LanguageTranslator) -> None:
         translator("login_signup"),
         on_click=st.login,
         kwargs={"provider": "auth0"},
-        use_container_width=True,
+        width="stretch",
         type="primary",
     )
     st.write("")
@@ -52,7 +52,7 @@ def make_login_form(translator: LanguageTranslator) -> None:
     write_subheader(translator("click_to_connect_as_guest"), bold=False)
     _, col, _ = st.columns([1, 3, 1])
     guest_button = col.button(
-        translator("connect_as_guest"), use_container_width=True, type="secondary"
+        translator("connect_as_guest"), width="stretch", type="secondary"
     )
     st.write("")
     st.write("")
@@ -85,7 +85,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
         _, center_col, _ = st.columns([1, 2, 1])
         with center_col:
             submit_button_existing = st.form_submit_button(
-                label=translator("submit"), use_container_width=True
+                label=translator("submit"), width="stretch"
             )
     ## Create if clicked
     if submit_button_existing:
@@ -151,7 +151,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
             with center_col:
                 submit_button_not_existing_join_league = st.form_submit_button(
                     label=translator("submit"),
-                    use_container_width=True,
+                    width="stretch",
                 )
         ## League : or create new league on your own
         with right_col:
@@ -169,7 +169,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
             with center_col:
                 submit_button_not_existing_add_league = st.form_submit_button(
                     label=translator("submit_2"),
-                    use_container_width=True,
+                    width="stretch",
                 )
 
     ## Create if clicked
@@ -263,7 +263,7 @@ def display_sidebar_logout_button(translator: LanguageTranslator) -> None:
         on_click=perform_logout,
         type="secondary",
         icon="🚪",
-        use_container_width=True,
+        width="stretch",
     )
 
 

@@ -27,9 +27,6 @@ def _generate_player_overview_table(
     """
     df_players = df_players.copy()
     # Deduct extras from current data
-    df_players["rank"] = (
-        df_players["elo_rating"].rank(ascending=False, method="min").astype(int)
-    )
     df_players["ratio_vd"] = df_players["nb_victories"] / df_players["nb_defeats"]
     # Keep only useful columns
     col_to_keep = []
@@ -44,19 +41,26 @@ def _generate_player_overview_table(
         "ratio_vd",
         "last_match_date",
     ]
+    # Use extra info
     if extra_col:
         if df_linkplayerleague is None:
             err_msg = "'extra_col' specified without 'df_linkplayerleague', cannot deduct best_rank"
             raise ValueError(err_msg)
         # Join df_linkplayerleague to df_players (for best_rank only)
         df_link = df_linkplayerleague.copy()
-        df_link = df_link[["player_name", "best_rank"]]
+        df_link = df_link[["player_name", "rank", "best_rank"]]
         df_link = df_link.rename(columns={"player_name": "name"})
-        df_players = pd.merge(df_players, df_link, on="name")
+        df_players = pd.merge(df_players, df_link, on="name", suffixes=("_dummy", ""))
         if isinstance(extra_col, bool):
             col_to_keep += ["best_elo_rating", "best_rank", "creation_date"]
         else:
             col_to_keep += extra_col
+    # Fallback to rank deduction from Elo if not already fetched via extra_col
+    if "rank" not in df_players.columns:
+        df_players["rank"] = (
+            df_players["elo_rating"].rank(ascending=False, method="min").astype(int)
+        )
+    # Render final df
     df_players = df_players[col_to_keep].copy()
     df_players = df_players.sort_values(by="rank")
     df_players = df_players.rename(columns=translator.dict_lang)
@@ -123,7 +127,7 @@ def make_player_overview_table(
     st.dataframe(
         df_plot,
         hide_index=True,
-        use_container_width=use_container_width,
+        width="stretch" if use_container_width else "content",
         column_config=column_config,
     )
 
@@ -204,7 +208,7 @@ def make_team_overview_table(
     st.dataframe(
         df_teams,
         hide_index=True,
-        use_container_width=use_container_width,
+        width="stretch" if use_container_width else "content",
         column_config=column_config,
     )
 
@@ -228,7 +232,7 @@ def make_league_overview_table(
     st.dataframe(
         df_plot,
         hide_index=True,
-        use_container_width=use_container_width,
+        width="stretch" if use_container_width else "content",
         column_config=column_config,
     )
 

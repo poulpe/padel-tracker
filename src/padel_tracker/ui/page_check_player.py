@@ -10,11 +10,11 @@ from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.inputs import make_player_selectbox
 from padel_tracker.ui.charts import make_player_metric_history_chart
+from padel_tracker.ui.cache import check_not_empty_database_matches
 from padel_tracker.ui.tables import (
     make_player_overview_table,
     make_download_as_csv_button,
 )
-from padel_tracker.ui.cache import check_not_empty_database_matches
 
 st.write("")
 check_not_empty_database_matches()

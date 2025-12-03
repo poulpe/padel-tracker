@@ -18,4 +18,4 @@ with DB.get_session() as session:
     )
 
 col = ["timestamp", "name", "level", "message"]
-st.dataframe(df_logs[col], hide_index=True, use_container_width=True, height=700)
+st.dataframe(df_logs[col], hide_index=True, width="stretch", height=700)
