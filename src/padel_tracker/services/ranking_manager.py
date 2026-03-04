@@ -19,7 +19,7 @@ from padel_tracker.models.ranking import (
 from padel_tracker.models.matches import Match, MatchScore
 from padel_tracker.models.links import LinkPlayerLeague
 from padel_tracker.models.events import EventCategory
-from padel_tracker.database.db import Session, commit_to_db, read_from_db, DB
+from padel_tracker.database.db import Session, commit_to_db, read_from_db
 from padel_tracker.services import player_manager, event_manager
 
 LOGGER_NAME = "ranking"
@@ -27,9 +27,7 @@ LOGGER = get_logger(LOGGER_NAME)
 
 
 def update_players_results_after_finished_match(
-    session: Session,
-    match: Match,
-    is_update_elo: bool = True,
+    session: Session, match: Match, is_update_elo: bool = True
 ) -> tuple[dict[str, int], dict[str, int]]:
     """Update for each players and each teams:
     - Elo ratings
@@ -202,9 +200,7 @@ def update_players_results_after_finished_match(
     return dict_elo_rating_gains, dict_updated_elo_ratings
 
 
-def update_players_rank(
-    league_name: str, league_id: UUID, session: Session = None
-) -> None:
+def update_players_rank(league_name: str, league_id: UUID, session: Session) -> None:
     """Calc ranks and updated database
     Notes
     -----
@@ -215,60 +211,50 @@ def update_players_rank(
     logger = LOGGER
     logger_debug = get_logger(f"{LOGGER_NAME}.update_players_rank")
 
-    if session is None:
-        session = DB.get_session()
-        is_session_provided = False
-    else:
-        is_session_provided = True
-
-    try:
-        # Fetch players
-        logger_debug.debug("starting rank update, fetching sorted_players")
-        sorted_players = player_manager.get_all_players_from_league(
+    # Fetch players
+    logger_debug.debug("starting rank update, fetching sorted_players")
+    sorted_players = player_manager.get_all_players_from_league(
+        session=session,
+        league_name=league_name,
+        order_by=Player.elo_rating,
+        order_descending=True,
+    )
+    # Update players
+    playerleague_links = []
+    rank_history_entries = []
+    for new_rank, player in enumerate(sorted_players, start=1):
+        # Fetch and update LinkPlayerLeague
+        logger_debug.debug(f"reading link for {player.name=}")
+        link = read_from_db(
+            LinkPlayerLeague,
+            where=(
+                LinkPlayerLeague.player_id == player.id,
+                LinkPlayerLeague.league_id == league_id,
+            ),
             session=session,
-            league_name=league_name,
-            order_by=Player.elo_rating,
-            order_descending=True,
+            unique=True,
         )
-        # Update players
-        playerleague_links = []
-        rank_history_entries = []
-        for new_rank, player in enumerate(sorted_players, start=1):
-            # Fetch and update LinkPlayerLeague
-            logger_debug.debug(f"reading link for {player.name=}")
-            link = read_from_db(
-                LinkPlayerLeague,
-                where=(
-                    LinkPlayerLeague.player_id == player.id,
-                    LinkPlayerLeague.league_id == league_id,
-                ),
-                session=session,
-                unique=True,
-            )
-            link.rank = new_rank
-            current_best_rank = link.best_rank
-            if (player.nb_matches > 3) and (
-                (current_best_rank is None) or (current_best_rank > new_rank)
-            ):
-                link.best_rank = new_rank
-            playerleague_links.append(link)
+        link.rank = new_rank
+        current_best_rank = link.best_rank
+        if (player.nb_matches > 3) and (
+            (current_best_rank is None) or (current_best_rank > new_rank)
+        ):
+            link.best_rank = new_rank
+        playerleague_links.append(link)
 
-            # Update RankHistory with League
-            rank_history_entry = RankHistory(
-                player_id=player.id,
-                player_name=player.name,
-                league_id=league_id,
-                league_name=league_name,
-                rank=new_rank,
-            )
-            rank_history_entries.append(rank_history_entry)
-            logger_debug.debug(f"created rank_history_entry for {player.name=}")
-        # Commit
-        commit_to_db(*playerleague_links, *rank_history_entries, session=session)
-        logger.success(f"updated players ranking in league={league_name}")
-    finally:
-        if not is_session_provided:
-            session.close()
+        # Update RankHistory with League
+        rank_history_entry = RankHistory(
+            player_id=player.id,
+            player_name=player.name,
+            league_id=league_id,
+            league_name=league_name,
+            rank=new_rank,
+        )
+        rank_history_entries.append(rank_history_entry)
+        logger_debug.debug(f"created rank_history_entry for {player.name=}")
+    # Commit
+    commit_to_db(*playerleague_links, *rank_history_entries, session=session)
+    logger.success(f"updated players ranking in league={league_name}")
 
 
 def apply_season_reset_to_all_players(
@@ -330,10 +316,7 @@ def apply_season_reset_to_all_players(
 
 
 def get_all_elo_rating_histories_from_league(
-    session: Session,
-    league_name: str,
-    as_df: bool = False,
-    limit_last: int = None,
+    session: Session, league_name: str, as_df: bool = False, limit_last: int = None
 ) -> list[EloRatingHistory] | pd.DataFrame:
     """
     Only records from matches inside the league only.
@@ -355,10 +338,7 @@ def get_all_elo_rating_histories_from_league(
 
 
 def get_all_elo_rating_histories_from_players_in_league(
-    session: Session,
-    league_name: str,
-    as_df: bool = False,
-    limit_last: int = None,
+    session: Session, league_name: str, as_df: bool = False, limit_last: int = None
 ):
     """
     All match records from players registered in the league.
@@ -380,10 +360,7 @@ def get_all_elo_rating_histories_from_players_in_league(
 
 
 def get_player_elo_rating_histories(
-    session: Session,
-    player_name: str,
-    as_df: bool = False,
-    limit_last: int = None,
+    session: Session, player_name: str, as_df: bool = False, limit_last: int = None
 ) -> list[EloRatingHistory] | pd.DataFrame:
     return read_from_db(
         EloRatingHistory,
@@ -416,10 +393,7 @@ def get_player_elo_rating_histories_in_league(
 
 
 def get_all_rank_histories_from_league(
-    session: Session,
-    league_name: str,
-    as_df: bool = False,
-    limit_last: int = None,
+    session: Session, league_name: str, as_df: bool = False, limit_last: int = None
 ) -> RankHistory | list[RankHistory] | pd.DataFrame:
     """All ranks from players registered in the league"""
     return read_from_db(
@@ -433,9 +407,7 @@ def get_all_rank_histories_from_league(
 
 
 def get_last_rank_history_from_league(
-    session: Session,
-    league_name: str,
-    as_df: bool = False,
+    session: Session, league_name: str, as_df: bool = False
 ) -> RankHistory | pd.DataFrame:
     """Last rank history from last player in the league"""
     list_last_hist = get_all_rank_histories_from_league(
@@ -448,10 +420,7 @@ def get_last_rank_history_from_league(
 
 
 def get_team_elo_rating_histories(
-    session: Session,
-    team_name: str,
-    as_df: bool = False,
-    limit_last: int = None,
+    session: Session, team_name: str, as_df: bool = False, limit_last: int = None
 ) -> list[EloRatingHistory] | pd.DataFrame:
     return read_from_db(
         TeamEloRatingHistory,

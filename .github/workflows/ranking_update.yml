@@ -2,8 +2,8 @@ name: ranking_update
 
 on:
   workflow_dispatch:  # Manually
-  schedule:
-    - cron: "12 0 * * *"  # Everyday at 0:12 UTC
+#  schedule:
+#    - cron: "12 0 * * *"  # Everyday at 0:12 UTC
 
 jobs:
   ranking_update:

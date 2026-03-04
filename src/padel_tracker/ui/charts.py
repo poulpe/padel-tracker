@@ -134,7 +134,7 @@ def _generate_overview_elo_history_chart(
                 translator("match_name"),
             ],
         )
-    chart = chart.add_params(player_selection).interactive()
+    chart = chart.add_params(player_selection).interactive(bind_y=False)
     return chart
 
 

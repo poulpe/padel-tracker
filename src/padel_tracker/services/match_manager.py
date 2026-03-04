@@ -4,7 +4,6 @@ CRUD on Matches and repercussions on players/teams
 'session' refers as "database session", that can be obtained via call to DB.get_session()
 """
 
-import logging
 from uuid import UUID
 from datetime import datetime
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -40,7 +39,7 @@ def process_finished_match(
     is_update_elo: bool = True,
     is_update_rank: bool = False,
     delete_on_error: bool = True,
-    thread_pool: ThreadPoolExecutor = None,
+    thread_pool: ThreadPoolExecutor | None = None,
 ) -> tuple[dict[str, int], dict[str, int]]:
     try:
         dict_elo_rating_gains, dict_updated_elo_ratings = (
@@ -172,9 +171,7 @@ def create_match(
     # Process it if finished
     if is_finished:
         process_finished_match(
-            session=session,
-            match=match,
-            is_update_elo=not is_friendly,
+            session=session, match=match, is_update_elo=not is_friendly
         )
     return match
 
@@ -242,7 +239,7 @@ def check_match_not_already_created(
     teams: list[Team],
     league_name: str,
     date: datetime,
-    logger: logging.Logger = LOGGER,
+    logger=LOGGER,
 ) -> None:
     """Raises MatchExistsError if already created, nothing otherwise
 
