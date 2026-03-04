@@ -201,12 +201,7 @@ def update_players_results_after_finished_match(
 
 
 def update_players_rank(league_name: str, league_id: UUID, session: Session) -> None:
-    """Calc ranks and updated database
-    Notes
-    -----
-    If wants to process in thread: session must be None (default).
-    It will create it, this allows running it in its own thread.
-    """
+    """Calc ranks and updated database"""
     # Get all players, sorted by top Elo to bottom Elo (descending order)
     logger = LOGGER
     logger_debug = get_logger(f"{LOGGER_NAME}.update_players_rank")

@@ -15,6 +15,7 @@ from padel_tracker.models.matches import MatchScore
 from padel_tracker.database.db import DB
 from padel_tracker.services.player_manager import get_team_from_players_name
 from padel_tracker.services.match_manager import create_match, process_finished_match
+from padel_tracker.services.ranking_manager import update_players_rank
 from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
@@ -225,12 +226,17 @@ if submit_button:
                     session=session,
                     match=match,
                     is_update_elo=not is_friendly_match,
-                    is_update_rank=not is_friendly_match,
                     delete_on_error=True,
+                    is_update_rank=False,  # Make it after displaying elo_rating gains
                     # thread_pool=get_thread_pool(),
                 )
                 if not is_friendly_match:
                     display_elo_rating_gains_metrics(dict_gains, dict_updated_ratings)
+                    update_players_rank(
+                        league_name=match.league.name,
+                        league_id=match.league.id,
+                        session=session,
+                    )
                 LOGGER.debug("finished processing")
             except MatchExistsError:
                 st.error(translator("match_exists_error"), icon="💢")
