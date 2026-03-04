@@ -19,7 +19,6 @@ from padel_tracker.ui.languages import get_translator
 from padel_tracker.ui.cards import display_elo_rating_gains_metrics
 from padel_tracker.ui.headers import write_header, write_subheader
 from padel_tracker.ui.cache import refresh_cache, check_not_empty_database_players
-from padel_tracker.ui.threads import get_thread_pool
 
 LOGGER = get_logger("ui.page_add_match")
 
@@ -226,9 +225,9 @@ if submit_button:
                     session=session,
                     match=match,
                     is_update_elo=not is_friendly_match,
-                    is_update_rank=False,  # Made every night auto via Github action
+                    is_update_rank=not is_friendly_match,
                     delete_on_error=True,
-                    thread_pool=get_thread_pool(),
+                    # thread_pool=get_thread_pool(),
                 )
                 if not is_friendly_match:
                     display_elo_rating_gains_metrics(dict_gains, dict_updated_ratings)
@@ -249,4 +248,4 @@ if submit_button:
 
     # Refresh cache outside of the previous db_session
     if is_success:
-        refresh_cache(threaded=True)
+        refresh_cache()
