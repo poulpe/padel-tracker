@@ -864,15 +864,15 @@ _DICT_TRANSLATIONS = {
     },
     "user_without_default_league_message": {
         Language.FR: """
-            Tu ne fais parti d'aucune ligue pour le moment, rejoins en une ou crées en une nouvelle via le bouton ci-dessous 'Nouvelle ligue' si tu veux pouvoir enregistrer tes premiers matchs !
-            Sinon, si tu veux seulement regarder les stats des ligues publiques, tu peux rester comme ça, c'est aussi OK !",
+            Tu ne fais parti d'aucune ligue pour le moment, rejoins en une ou crées en une nouvelle via le bouton ci-dessous 'Nouvelle ligue' si tu veux pouvoir enregistrer tes premiers matchs\n
+            Sinon, si tu veux seulement regarder les stats des ligues publiques, tu peux rester comme ça, c'est aussi OK !
         """,
         Language.EN: """
-            You are not part of any league at the moment, join one or create a new one via the 'Add league' button below if you want to be able to record your first matches!
-            Otherwise, if you only want to look at the stats of the public leagues, you can stay like that, it’s also OK!
+            You are not part of any league at the moment, join one or create a new one via the 'Add league' button below if you want to be able to record your first matches\n
+            Otherwise, if you only want to look at the stats of the public leagues, you can stay like that, it’s also OK !
         """,
         Language.ES: """
-            No eres parte de ninguna liga en este momento, únete a una o crea una nueva a través del botón 'Nueva liga' si quieres poder grabar tus primeros partidos!
+            No eres parte de ninguna liga en este momento, únete a una o crea una nueva a través del botón 'Nueva liga' si quieres poder grabar tus primeros partidos\n
             De lo contrario, si solo quieres ver las estadísticas de las ligas públicas, puedes quedarte así, ¡también está bien!
         """,
     },
