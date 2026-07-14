@@ -171,7 +171,7 @@ if submit_button:
         )
         if not match_score.is_match_finished():
             raise MatchNotFinishedError
-    except (ValidationError, ValueError, MatchNotFinishedError):
+    except ValidationError, ValueError, MatchNotFinishedError:
         st.error(translator("match_not_finished_error"), icon="💢")
         st.stop()
     except Exception as exc:

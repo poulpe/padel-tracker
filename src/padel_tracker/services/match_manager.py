@@ -291,7 +291,7 @@ def delete_match(
             try:
                 sorted_matches = sorted(player.matches, key=lambda match: match.date)
                 player.last_match_date = sorted_matches[-2].date
-            except (KeyError, AttributeError, Exception):
+            except KeyError, AttributeError, Exception:
                 player.last_match_date = None
         list_objects_to_update.append(player)
     ## Decrement nb_matches/wins/losses for teams
@@ -304,7 +304,7 @@ def delete_match(
             try:
                 sorted_matches = sorted(team.matches, key=lambda match: match.date)
                 team.last_match_date = sorted_matches[-2].date
-            except (KeyError, AttributeError, Exception):
+            except KeyError, AttributeError, Exception:
                 team.last_match_date = None
         list_objects_to_update.append(team)
 

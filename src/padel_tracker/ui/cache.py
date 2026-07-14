@@ -374,7 +374,7 @@ def determine_session_state_league_name() -> None:
         else:
             try:
                 st.session_state.league_name = st.session_state.league_names[0]
-            except (KeyError, TypeError):
+            except KeyError, TypeError:
                 st.warning(
                     st.session_state.translator("no_league_database_error"), icon="💢"
                 )

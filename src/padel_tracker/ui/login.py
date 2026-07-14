@@ -137,7 +137,7 @@ def make_finalize_signup_form(translator: LanguageTranslator) -> None:
             )
             try:
                 leagues = st.session_state.league_names
-            except (AttributeError, KeyError):
+            except AttributeError, KeyError:
                 leagues = None
             existing_league_name = st.selectbox(
                 translator("existing_league"),
