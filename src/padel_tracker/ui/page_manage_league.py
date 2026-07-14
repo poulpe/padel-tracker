@@ -129,6 +129,10 @@ with right_col:
                 names = player_manager.get_all_players_names_from_other_leagues(
                     session=session, league_name_exclude=league_name
                 )
+                names += player_manager.get_all_players_names_without_league(
+                    session=session
+                )
+            names = list(set(names))
             player_name = st.selectbox(
                 label=translator("player_name"),
                 options=names,
