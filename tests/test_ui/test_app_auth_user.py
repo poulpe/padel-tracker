@@ -168,7 +168,7 @@ def test_app_as_new_auth_user(db_session, populate_db):
     #### Find chart element
     chart_element = None
     for idx, el in at.main.children.items():
-        if el.type == "arrow_vega_lite_chart":
+        if el.type == "vega_lite_chart":
             chart_element = el
             break
     assert chart_element is not None

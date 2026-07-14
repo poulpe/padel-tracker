@@ -1,9 +1,9 @@
 [project]
 name = "padel-tracker"
-version = "0.4.5"
+version = "0.4.6"
 description = "App to keep track of Padel matches"
 readme = "README.md"
-requires-python = ">=3.13.4, <3.14"
+requires-python = ">=3.14"
 authors = [
     {name = "Pierre Letousey"},
 ]
@@ -15,6 +15,7 @@ dependencies = [
     "python-dotenv>=1.0.1", # Secret management in .env file (for cloud-hosted db)
     "pandas>=2.2.3", # Manage some data/statistics as dataframe
     "authlib>=1.4.1", # For User management in UI
+    "httpx>=0.28.1", # For User management in UI
     "loguru>=0.7.3", # For loggings
 ]
 [project.optional-dependencies]

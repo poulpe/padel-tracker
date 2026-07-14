@@ -51,7 +51,7 @@ def test_app_as_guest(db_session, populate_db, make_dummy_event, make_dummy_user
     ### Find chart element
     chart_element = None
     for idx, el in at.main.children.items():
-        if el.type == "arrow_vega_lite_chart":
+        if el.type == "vega_lite_chart":
             chart_element = el
             break
     assert chart_element is not None

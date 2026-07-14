@@ -44,7 +44,7 @@ def get_conf() -> dict[str, Any]:
         if value is None:
             try:
                 value = st.secrets["general"][key]
-            except (KeyError, FileNotFoundError):
+            except KeyError, FileNotFoundError:
                 value = _DEFAULT_CONF[key]
         dict_conf["general"][key] = value
     ## Check modes are valid
@@ -60,7 +60,7 @@ def get_conf() -> dict[str, Any]:
         if value is None:
             try:
                 value = st.secrets["db_credentials"][specific_key]
-            except (KeyError, FileNotFoundError):
+            except KeyError, FileNotFoundError:
                 pass
         dict_conf["db_credentials"][general_key] = value
 

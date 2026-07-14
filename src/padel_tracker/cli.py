@@ -137,7 +137,7 @@ def update_players_rank(
                         session=session, league_name=league.name
                     )
                     is_update_needed = league.last_match_date > last_rank_hist.date
-                except (KeyError, IndexError):
+                except KeyError, IndexError:
                     pass  # Means no match in league
             if is_update_needed or force:
                 ranking_manager.update_players_rank(
