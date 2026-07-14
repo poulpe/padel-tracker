@@ -90,6 +90,15 @@ def get_all_players_names(session: Session) -> list[str]:
     return read_from_db(Player.name, session=session)
 
 
+def get_all_players_names_without_league(session: Session) -> list[str]:
+    all_player_ids = read_from_db(Player.id, session=session)
+    league_player_ids = read_from_db(LinkPlayerLeague.player_id, session=session)
+    non_league_player_ids = list(set(all_player_ids) - set(league_player_ids))
+    return read_from_db(
+        Player.name, where=Player.id.in_(non_league_player_ids), session=session
+    )
+
+
 def get_all_players_from_league(
     session: Session,
     league_name: str,
