@@ -1,9 +1,11 @@
+import datetime
+
 import streamlit as st
 import pandas as pd
 from pydantic import ValidationError
 
 from padel_tracker.utils.logs import get_logger
-from padel_tracker.utils.datetime_utils import make_datetime_from_combi
+from padel_tracker.utils.datetime_utils import make_datetime_from_combi, now
 from padel_tracker.utils.errors import (
     MatchExistsError,
     MatchNotFinishedError,
@@ -37,6 +39,22 @@ for var in ["add_match_t1_p1", "add_match_t1_p2", "add_match_t2_p1", "add_match_
 
 player_names = st.session_state.player_names
 
+# Init/update match date and time inputs (to auto-increment after adding a match)
+if "add_match_nb_match" not in st.session_state:
+    st.session_state["add_match_nb_match"] = 0
+if "add_match_date" not in st.session_state:
+    st.session_state["add_match_date"] = now().date()
+if "add_match_time" not in st.session_state:
+    st.session_state["add_match_time"] = datetime.time(hour=18, minute=30)
+
+default_dt = make_datetime_from_combi(
+    st.session_state["add_match_date"], st.session_state["add_match_time"]
+)
+default_dt += st.session_state["add_match_nb_match"] * datetime.timedelta(minutes=30)
+st.session_state["add_match_date"] = default_dt.date()
+st.session_state["add_match_time"] = default_dt.time()
+
+# Form
 with st.form("add_match"):
     # Player selection
     col_team1, col_team2 = st.columns(2, border=True)
@@ -125,26 +143,21 @@ with st.form("add_match"):
 
     # Date selection
     _, date_col, time_col, _ = st.columns([1, 1, 1, 1])
-    with date_col:
-        date = st.date_input(translator("date"), format="DD/MM/YYYY")
-    with time_col:
-        time = st.time_input(translator("time"), value="18:30", step=1800)
+    date_col.date_input(translator("date"), key="add_match_date", format="DD/MM/YYYY")
+    time_col.time_input(translator("time"), key="add_match_time", step=1800)
 
     # Friendly match toggle button
     _, center_col, _ = st.columns([1.23, 1, 1], gap=None)
-    with center_col:
-        is_friendly_match = st.toggle(
-            translator("friendly_match"), help=translator("friendly_match_help")
-        )
-
+    is_friendly_match = center_col.toggle(
+        translator("friendly_match"), help=translator("friendly_match_help")
+    )
     st.write("")
 
     # Submit button
     _, center_col, _ = st.columns([1, 2, 1])
-    with center_col:
-        submit_button = st.form_submit_button(
-            label=translator("submit"), width="stretch"
-        )
+    submit_button = center_col.form_submit_button(
+        label=translator("submit"), width="stretch"
+    )
 
 # Launch processing once clicked
 if submit_button:
@@ -180,7 +193,9 @@ if submit_button:
         st.stop()
     # Go create match
     LOGGER.debug("launching match creation")
-    match_datetime = make_datetime_from_combi(date, time)
+    match_datetime = make_datetime_from_combi(
+        st.session_state["add_match_date"], st.session_state["add_match_time"]
+    )
     is_success = False
     with DB.get_session() as session:
         try:
@@ -254,4 +269,5 @@ if submit_button:
 
     # Refresh cache outside of the previous db_session
     if is_success:
+        st.session_state["add_match_nb_match"] += 1
         refresh_cache()
