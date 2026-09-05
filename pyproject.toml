@@ -1,6 +1,6 @@
 [project]
 name = "padel-tracker"
-version = "0.4.6"
+version = "0.4.7"
 description = "App to keep track of Padel matches"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -14,24 +14,26 @@ dependencies = [
     "psycopg2-binary>=2.9.11", # For PostgreSQL com on cloud-hosted db
     "python-dotenv>=1.0.1", # Secret management in .env file (for cloud-hosted db)
     "pandas>=2.2.3", # Manage some data/statistics as dataframe
-    "authlib>=1.4.1", # For User management in UI
-    "httpx>=0.28.1", # For User management in UI
+    "authlib>=1.8.0", # For User management in UI
+    "httpx2>=2.12.0", # For User management in UI
     "loguru>=0.7.3", # For loggings
 ]
 [project.optional-dependencies]
-dev = [
-    "black>=25.1.0",
-    "ruff>=0.9.6",
-    "alembic>=1.16.0", # For database migrations
-    "pytest>=8.3.4",
-    "pytest-cov>=6.2.1",
-    "pytest-env>=1.1.5",
-]
 cli = [
     "typer>=0.16.1",
 ]
 wakeup = [
     "selenium>=4.29",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "ruff>=0.9.6, <0.16.0",
+    "alembic>=1.16.0", # For database migrations
+    "pytest>=8.3.4",
+    "pytest-cov>=6.2.1",
+    "pytest-env>=1.1.5",
 ]
 
 [build-system]
