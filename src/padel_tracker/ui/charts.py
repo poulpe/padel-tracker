@@ -113,7 +113,9 @@ def _generate_overview_elo_history_chart(
         chart = base_chart.encode(
             x=alt.X(x_param + ":T", title=x_param, timeUnit="yearmonthdate"),
             y=alt.Y(y_param, scale=alt.Scale(zero=False), axis=alt.Axis(format="d")),
-            color=alt.Color(color_param),
+            color=alt.Color(
+                color_param, legend=alt.Legend(rowPadding=-50, labelPadding=0),
+            ),
             opacity=alt.condition(player_selection, alt.value(1), alt.value(0.1)),
             tooltip=[x_param, color_param, y_param, elo_gain_param],
         )
@@ -124,7 +126,9 @@ def _generate_overview_elo_history_chart(
                 f"{x_param}:O", title=x_param, timeUnit="yearmonthdatehoursminutes"
             ),
             y=alt.Y(y_param, scale=alt.Scale(zero=False), axis=alt.Axis(format="d")),
-            color=alt.Color(color_param),
+            color=alt.Color(
+                color_param, legend=alt.Legend(rowPadding=-50, labelPadding=0),
+            ),
             opacity=alt.condition(player_selection, alt.value(1), alt.value(0.1)),
             tooltip=[
                 x_param,
